@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plego Montessori STEM — Early Years Platform</title>
+
+  <!-- Google Fonts: Fredoka (Headings/Brand) & Nunito Sans (Body/UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap"
+    rel="stylesheet">
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind.config.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="min-h-screen flex flex-col antialiased selection:bg-sage selection:text-white">
+
+  <!-- ================= SCREEN 0: STRICT STARTUP LOGIN SCREEN ================= -->
+  <div id="auth-screen"
+    class="min-h-screen w-full flex items-center justify-center p-4 bg-sand-100 relative overflow-hidden">
+    <!-- Ambient garden decor -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-sage-100/60 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-sunshine-light/70 blur-3xl pointer-events-none">
+    </div>
+
+    <div class="w-full max-w-md bg-cream rounded-3xl p-8 border border-sand-200 shadow-float relative z-10 fade-enter">
+      <!-- Brand Header -->
+      <div class="text-center mb-6">
+        <div
+          class="w-14 h-14 mx-auto rounded-2xl bg-sage flex items-center justify-center text-cream shadow-soft mb-3 transform hover:rotate-6 transition">
+          <svg class="w-8 h-8 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 2v20M12 14c-4.418 0-8-3.582-8-8 4.418 0 8 3.582 8 8zm0 2c4.418 0 8-3.582 8-8-4.418 0-8 3.582-8 8z" />
+          </svg>
+        </div>
+        <div class="flex items-center justify-center gap-2">
+          <span class="font-heading font-bold text-2xl tracking-wide text-forest">plego</span>
+          <span
+            class="text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-sand-200 text-forest font-bold">Early
+            Years</span>
+        </div>
+        <p class="text-xs text-forest-light mt-1.5" data-i18n="login.subtitle">Montessori STEM Platform · Masuk Akun
+          Anda</p>
+      </div>
+
+      <!-- Credentials Form (NO ROLE DROPDOWN: System detects role automatically) -->
+      <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-forest mb-1.5" data-i18n="login.email">Email Akun
+            Terdaftar:</label>
+          <input type="email" id="login-email" placeholder="nama@sekolah.id" required
+            class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-bold text-forest" data-i18n="login.password">Kata Sandi (Password):</label>
+            <span class="text-[11px] text-sage hover:underline cursor-pointer"
+              onclick="showToast('Gunakan kata sandi demo: plegostem2026', '🔑')">Lupa Sandi?</span>
+          </div>
+          <input type="password" id="login-password" placeholder="••••••••" required
+            class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
+        </div>
+
+        <button type="submit"
+          class="w-full py-3 rounded-full bg-sage hover:bg-sage-600 text-white font-heading font-semibold text-sm shadow-soft garden-interactive-btn flex items-center justify-center gap-2 mt-3">
+          <span data-i18n="login.btn">Masuk ke Ruang Kerja</span>
+          <span>➔</span>
+        </button>
+      </form>
+
+      <!-- Quick Demo Access 1-Click Buttons -->
+      <div class="mt-6 pt-5 border-t border-sand-200/80">
+        <p class="text-[11px] font-bold text-forest-light text-center mb-2.5" data-i18n="login.quickDemo">Akses Demo
+          Cepat 1-Klik (Deteksi Peran Otomatis):</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="quickFillAndLogin('rina.kusuma@plego.id', 'plegostem2026')"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs group">
+            <span class="block text-base mb-0.5">👩‍🏫</span>
+            <strong class="block text-[11px] group-hover:text-sage">Bu Rina</strong>
+            <span class="text-[9px] text-forest-light">Guru PAUD</span>
+          </button>
+
+          <button type="button" onclick="quickFillAndLogin('hartini@plegoschools.id', 'plegostem2026')"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-violet-light text-forest border border-sand-200 hover:border-violet garden-interactive-btn text-center text-xs group">
+            <span class="block text-base mb-0.5">🏫</span>
+            <strong class="block text-[11px] group-hover:text-violet">Ibu Hartini</strong>
+            <span class="text-[9px] text-forest-light">Pemilik PAUD</span>
+          </button>
+
+          <button type="button" onclick="quickFillAndLogin('dimas.wijaya@gmail.com', 'plegostem2026')"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-sunshine-light text-forest border border-sand-200 hover:border-sunshine-dark garden-interactive-btn text-center text-xs group">
+            <span class="block text-base mb-0.5">👨‍👩‍👦</span>
+            <strong class="block text-[11px] group-hover:text-sunshine-dark">Pak Dimas</strong>
+            <span class="text-[9px] text-forest-light">Orang Tua</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= APP WRAPPER (HIDDEN AT STARTUP) ================= -->
+  <div id="app-wrapper" class="hidden flex-1 flex-col min-h-screen">
+
+    <!-- ================= TOP NAVIGATION BAR ================= -->
+    <header class="sticky top-0 z-40 bg-cream/95 backdrop-blur-md border-b border-sand-200 shadow-sm transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+
+        <!-- Brand & Ecosystem Link -->
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="handleBrandClick()">
+          <div
+            class="w-10 h-10 rounded-2xl bg-sage flex items-center justify-center text-cream shadow-soft group-hover:bg-sage-600 transition">
+            <svg class="w-6 h-6 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 2v20M12 14c-4.418 0-8-3.582-8-8 4.418 0 8 3.582 8 8zm0 2c4.418 0 8-3.582 8-8-4.418 0-8 3.582-8 8z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-heading font-bold text-lg tracking-wide text-forest">plego</span>
+              <span
+                class="text-xs uppercase tracking-widest px-2 py-0.5 rounded-full bg-sand-200 text-forest-light font-bold"
+                id="badge-app-mode">Early Years</span>
+            </div>
+            <p class="text-xs text-forest-light/75 hidden sm:block">Montessori STEM Platform</p>
+          </div>
+        </div>
+
+        <!-- Center: Context & Active Class (Hidden for Parent) -->
+        <div id="topbar-context-badge"
+          class="hidden md:flex items-center gap-3 bg-sand-100/70 py-1.5 px-3.5 rounded-full border border-sand-200 text-xs">
+          <span class="w-2 h-2 rounded-full bg-leaf animate-pulse"></span>
+          <span class="text-forest-light" data-i18n="topbar.currentClass">Kelas Aktif:</span>
+          <strong class="text-forest font-semibold" id="topbar-class-label">TK B1 — Little Botanists (4–5 th)</strong>
+        </div>
+
+        <!-- Right Controls: Language Switcher, Role Badge, Logout -->
+        <div class="flex items-center gap-3">
+
+          <!-- Instant EN/ID Language Switcher Pill -->
+          <div class="inline-flex rounded-full bg-sand-200 p-1 text-xs font-bold" role="group"
+            aria-label="Language Switcher">
+            <button id="btn-lang-id" onclick="setLanguage('id')"
+              class="px-2.5 py-1 rounded-full transition-all duration-200 bg-sage text-white shadow-sm">
+              ID
+            </button>
+            <button id="btn-lang-en" onclick="setLanguage('en')"
+              class="px-2.5 py-1 rounded-full transition-all duration-200 text-forest hover:text-sage">
+              EN
+            </button>
+          </div>
+
+          <!-- User Profile & Logout Dropdown -->
+          <div class="relative">
+            <button onclick="toggleProfileDropdown()"
+              class="flex items-center gap-2 bg-sand-100 hover:bg-sand-200/80 py-1 px-2.5 rounded-full border border-sand-200 transition garden-interactive-btn">
+              <div class="w-7 h-7 rounded-full overflow-hidden border border-sage flex-shrink-0">
+                <img id="user-avatar" src="" alt="Avatar" class="w-full h-full object-cover">
+              </div>
+              <span id="user-display-name" class="text-xs font-bold text-forest hidden sm:inline-block">Pengguna</span>
+              <svg class="w-3.5 h-3.5 text-forest-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="profile-dropdown"
+              class="hidden absolute right-0 mt-2 w-52 bg-cream rounded-2xl shadow-float border border-sand-200 py-2 z-50 text-xs fade-enter">
+              <div class="px-4 py-2 border-b border-sand-200">
+                <p class="font-bold text-forest" id="dropdown-full-name">Nama Pengguna</p>
+                <p class="text-[10px] text-forest-light" id="dropdown-role-label">Peran</p>
+              </div>
+              <button onclick="logout()"
+                class="w-full text-left px-4 py-2 hover:bg-berry/10 text-berry font-bold flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span data-i18n="nav.logout">Keluar (Logout)</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Navigation Tabs: Dynamically swapped between Teacher/Owner vs Parent -->
+      <nav id="app-nav"
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto no-scrollbar border-t border-sand-200/60 text-sm font-semibold">
+        <!-- Rendered dynamically by JS depending on role -->
+      </nav>
+    </header>
+
+    <!-- ================= MAIN CONTENT APP CONTAINER ================= -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+      <!-- ================= TEACHER / OWNER EXCLUSIVE VIEWS ================= -->
+
+      <!-- FLOW 1: TEACHER DASHBOARD (Teacher & Owner only) -->
+      <section id="view-dashboard" class="fade-enter space-y-6">
+        <!-- Greeting Banner -->
+        <div
+          class="bg-gradient-to-r from-cream to-sand-100 rounded-3xl p-6 md:p-8 border border-sand-200 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6 garden-card-hover">
+          <div>
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-50 text-sage-700 text-xs font-bold mb-3 border border-sage-100">
+              <span>🌱</span> <span data-i18n="dash.cycle">Siklus Pembelajaran Montessori 09:00 - 11:30</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold text-forest">
+              <span data-i18n="dash.greeting">Selamat pagi</span>, <span id="dash-greeting-name">Pendidik</span>! 👋
+            </h1>
+            <p class="text-forest-light text-sm mt-1 max-w-xl" data-i18n="dash.subtitle">
+              Hari ini ada 3 eksplorasi hands-on STEM yang terjadwal. 2 anak memerlukan pencatatan observasi
+              perkembangan.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <button onclick="openObservationModal()"
+              class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-sm shadow-soft garden-interactive-btn flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span data-i18n="dash.quickLog">Catat Observasi</span>
+            </button>
+            <button onclick="navigateTo('planner')"
+              class="px-5 py-2.5 rounded-full bg-cream hover:bg-white text-forest font-semibold text-sm border border-sand-200 shadow-sm garden-interactive-btn flex items-center gap-2">
+              <span data-i18n="dash.openPlanner">Buka Planner</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-cream rounded-2xl p-5 border border-sand-200 shadow-soft garden-card-hover">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest-light uppercase tracking-wider"
+                data-i18n="metrics.children">Anak di Kelas</span>
+              <div class="w-8 h-8 rounded-xl bg-sky-light text-sky flex items-center justify-center font-bold">👦</div>
+            </div>
+            <p class="text-3xl font-heading font-bold text-forest mt-3">18</p>
+            <p class="text-xs text-forest-light mt-1 flex items-center gap-1">
+              <span class="text-leaf font-bold">100%</span> <span data-i18n="metrics.active">aktif terdaftar</span>
+            </p>
+          </div>
+
+          <div class="bg-cream rounded-2xl p-5 border border-sand-200 shadow-soft garden-card-hover">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest-light uppercase tracking-wider"
+                data-i18n="metrics.lessons">Aktivitas Minggu Ini</span>
+              <div
+                class="w-8 h-8 rounded-xl bg-terracotta-light text-terracotta flex items-center justify-center font-bold">
+                🔬</div>
+            </div>
+            <p class="text-3xl font-heading font-bold text-forest mt-3">5</p>
+            <p class="text-xs text-forest-light mt-1 flex items-center gap-1">
+              <span class="text-terracotta font-bold">3/5</span> <span data-i18n="metrics.delivered">terlaksana</span>
+            </p>
+          </div>
+
+          <div class="bg-cream rounded-2xl p-5 border border-sand-200 shadow-soft garden-card-hover">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest-light uppercase tracking-wider"
+                data-i18n="metrics.observations">Observasi Dicatat</span>
+              <div
+                class="w-8 h-8 rounded-xl bg-sunshine-light text-sunshine-dark flex items-center justify-center font-bold">
+                📝</div>
+            </div>
+            <p class="text-3xl font-heading font-bold text-forest mt-3">24</p>
+            <p class="text-xs text-forest-light mt-1">
+              <span class="text-leaf font-bold">+8</span> <span data-i18n="metrics.fromYesterday">sejak kemarin</span>
+            </p>
+          </div>
+
+          <div class="bg-cream rounded-2xl p-5 border border-sand-200 shadow-soft garden-card-hover">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest-light uppercase tracking-wider"
+                data-i18n="metrics.reports">Laporan Siap Terbit</span>
+              <div class="w-8 h-8 rounded-xl bg-violet-light text-violet flex items-center justify-center font-bold">📬
+              </div>
+            </div>
+            <p class="text-3xl font-heading font-bold text-forest mt-3">4</p>
+            <p class="text-xs text-violet font-semibold mt-1" data-i18n="metrics.needsReview">Perlu verifikasi guru</p>
+          </div>
+        </div>
+
+        <!-- Schedule & Attention List -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft garden-card-hover">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-lg font-bold text-forest" data-i18n="dash.todayTitle">Jadwal Eksplorasi Hari Ini</h2>
+                <p class="text-xs text-forest-light" data-i18n="dash.todaySubtitle">Kamis, Siklus Kerja Terbimbing
+                  (Plego Blocks)</p>
+              </div>
+              <button onclick="navigateTo('planner')" class="text-xs font-bold text-sage hover:text-sage-600 transition"
+                data-i18n="dash.viewAllPlan">Lihat Semua →</button>
+            </div>
+            <div class="space-y-3" id="dashboard-schedule-container"></div>
+          </div>
+
+          <div
+            class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft flex flex-col justify-between garden-card-hover">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold text-forest" data-i18n="dash.attentionTitle">Perlu Observasi</h2>
+                <span class="text-xs bg-terracotta-light text-terracotta px-2 py-0.5 rounded-full font-bold">2
+                  Anak</span>
+              </div>
+              <p class="text-xs text-forest-light mb-4" data-i18n="dash.attentionDesc">
+                Belum ada data observasi dalam 7+ hari terakhir. Disarankan untuk difasilitasi dalam siklus bebas hari
+                ini.
+              </p>
+              <div class="space-y-3" id="attention-list"></div>
+            </div>
+
+            <div class="mt-6 p-4 rounded-2xl bg-sand-100/70 border border-sand-200 text-xs">
+              <p class="font-bold text-forest flex items-center gap-1 mb-1">
+                <span>💡</span> <span data-i18n="dash.pedagogyTipTitle">Prinsip Montessori Hari Ini</span>
+              </p>
+              <p class="text-forest-light italic leading-relaxed" data-i18n="dash.pedagogyTipDesc">
+                "Jangan pernah membantu anak pada tugas yang ia rasa mampu selesaikan sendiri." — Maria Montessori.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FLOW 2: CURRICULUM BROWSER (Teacher & Owner only) -->
+      <section id="view-curriculum" class="hidden fade-enter space-y-6">
+        <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft">
+
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-sand-200">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold text-forest" data-i18n="curr.title">Kurikulum Plego STEM & AI Path</h1>
+                <span class="text-xs bg-sage/10 text-sage-700 px-2 py-0.5 rounded-full font-bold">v3.2 Official</span>
+              </div>
+              <p class="text-xs text-forest-light mt-0.5" data-i18n="curr.subtitle">Pemetaan berjenjang dari Preschool
+                (Level 0) hingga SMA dengan Taxonomy Bloom & PLEGO Blocks</p>
+            </div>
+
+            <button onclick="openAddCurriculumModal()"
+              class="px-4 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-soft garden-interactive-btn flex items-center gap-2 self-start md:self-auto">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span data-i18n="curr.addBtn">+ Tambah Kurikulum Baru</span>
+            </button>
+          </div>
+
+          <!-- Level Segmented Controller -->
+          <div class="flex items-center justify-between flex-wrap gap-3 py-4 border-b border-sand-100">
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1" id="curriculum-level-pills">
+              <button onclick="setCurriculumLevel('level-0')"
+                class="px-3.5 py-1.5 rounded-full bg-sage text-white text-xs font-bold shadow-sm whitespace-nowrap garden-interactive-btn">
+                🟢 Level 0 - Green (Preschool / PAUD)
+              </button>
+              <button onclick="setCurriculumLevel('level-1')"
+                class="px-3.5 py-1.5 rounded-full bg-sand-100 hover:bg-sand-200 text-forest-light text-xs font-bold whitespace-nowrap garden-interactive-btn">
+                🟡 Level 1 - Yellow (SD 1–3)
+              </button>
+              <button onclick="setCurriculumLevel('level-2')"
+                class="px-3.5 py-1.5 rounded-full bg-sand-100 hover:bg-sand-200 text-forest-light text-xs font-bold whitespace-nowrap garden-interactive-btn">
+                🔴 Level 2 - Red (SD 4–5 AI)
+              </button>
+              <button onclick="setCurriculumLevel('level-3')"
+                class="px-3.5 py-1.5 rounded-full bg-sand-100 hover:bg-sand-200 text-forest-light text-xs font-bold whitespace-nowrap garden-interactive-btn">
+                🔵 Level 3 - Blue (SMP Text/AI)
+              </button>
+            </div>
+
+            <div class="inline-flex rounded-full bg-sand-100 p-1 border border-sand-200 text-xs font-bold">
+              <button onclick="setCurriculumSemester('all')" id="sem-all"
+                class="px-3 py-1 rounded-full bg-forest text-cream transition">Semua</button>
+              <button onclick="setCurriculumSemester('Gasal')" id="sem-gasal"
+                class="px-3 py-1 rounded-full text-forest-light hover:text-forest transition">Gasal</button>
+              <button onclick="setCurriculumSemester('Genap')" id="sem-genap"
+                class="px-3 py-1 rounded-full text-forest-light hover:text-forest transition">Genap</button>
+            </div>
+          </div>
+
+          <!-- TLO Banner -->
+          <div class="p-4 rounded-2xl bg-sand-50 border border-sand-200 my-4 text-xs" id="level-tlo-banner"></div>
+
+          <!-- Units Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2" id="curriculum-units-container"></div>
+        </div>
+      </section>
+
+      <!-- FLOW 3: OVERHAULED INTERACTIVE LESSON PLANNER (Teacher & Owner only) -->
+      <section id="view-planner" class="hidden fade-enter space-y-6">
+        <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft">
+
+          <!-- Planner Header with Date Range & View Switcher -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-sand-200">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-sage"
+                  data-i18n="planner.weeklyTag">Perencana Pembelajaran</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs bg-sand-200 text-forest font-bold"
+                  id="planner-period-label">16 – 20 Nov 2026</span>
+              </div>
+              <h1 class="text-2xl font-bold text-forest mt-1" data-i18n="planner.title">Jadwal Eksplorasi Kelompok B1
+              </h1>
+            </div>
+
+            <!-- View Layout Toggles (Day | Week | Month) & Quick Controls -->
+            <div class="flex items-center flex-wrap gap-3">
+              <!-- Day / Week / Month Segmented Switch -->
+              <div class="inline-flex rounded-full bg-sand-100 p-1 border border-sand-200 text-xs font-bold">
+                <button onclick="setPlannerLayout('day')" id="planner-btn-day"
+                  class="px-3.5 py-1.5 rounded-full text-forest-light hover:text-forest transition">Hari (Day)</button>
+                <button onclick="setPlannerLayout('week')" id="planner-btn-week"
+                  class="px-3.5 py-1.5 rounded-full bg-forest text-cream transition shadow-xs">Minggu (Week)</button>
+                <button onclick="setPlannerLayout('month')" id="planner-btn-month"
+                  class="px-3.5 py-1.5 rounded-full text-forest-light hover:text-forest transition">Bulan
+                  (Month)</button>
+              </div>
+
+              <!-- Quick action buttons -->
+              <div class="flex items-center gap-2">
+                <button onclick="showToast('Rencana disalin ke minggu depan!', '📋')"
+                  class="text-xs font-bold px-3 py-2 rounded-full border border-sand-200 bg-sand-50 hover:bg-sand-100 text-forest garden-interactive-btn flex items-center gap-1.5">
+                  <span data-i18n="planner.copyForward">Salin Jadwal</span>
+                </button>
+                <button onclick="window.print()"
+                  class="text-xs font-bold px-3 py-2 rounded-full bg-forest text-white hover:bg-forest-light shadow-sm garden-interactive-btn flex items-center gap-1.5">
+                  <span data-i18n="planner.print">Cetak PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date Navigation Bar -->
+          <div
+            class="flex items-center justify-between py-3 px-4 rounded-2xl bg-sand-50 border border-sand-200 mb-6 text-xs">
+            <div class="flex items-center gap-2">
+              <button onclick="changePlannerWeek(-1)"
+                class="w-7 h-7 rounded-full bg-cream border border-sand-200 flex items-center justify-center hover:bg-white text-forest font-bold garden-interactive-btn">‹</button>
+              <button onclick="resetPlannerWeek()"
+                class="px-3 py-1 rounded-full bg-cream border border-sand-200 font-bold hover:bg-white text-forest garden-interactive-btn">Hari
+                Ini (Today)</button>
+              <button onclick="changePlannerWeek(1)"
+                class="w-7 h-7 rounded-full bg-cream border border-sand-200 flex items-center justify-center hover:bg-white text-forest font-bold garden-interactive-btn">›</button>
+            </div>
+            <span class="text-forest-light font-semibold hidden sm:inline-block">💡 Klik sembarang slot atau tombol
+              tambah untuk menjadwalkan aktivitas</span>
+          </div>
+
+          <!-- Dynamic Planner Layout Container -->
+          <div id="planner-view-container">
+            <!-- Injected by renderPlanner() based on layout: Week, Day, or Month -->
+          </div>
+
+          <!-- Weekly Materials Aggregated Checklist -->
+          <div class="mt-8 p-6 rounded-2xl bg-sand-100/60 border border-sand-200">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-sage text-white flex items-center justify-center text-xs">📦</div>
+                <h3 class="font-heading font-bold text-forest text-base" data-i18n="planner.materialsTitle">Daftar
+                  Material & Bahan Nusantara Terjadwal</h3>
+              </div>
+              <span class="text-xs text-forest-light font-semibold" data-i18n="planner.autoAggregated">Otomatis
+                teragregasi dari slot aktif</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs" id="planner-materials-list"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- FLOW 5: OBSERVATION CHECKLIST (Teacher & Owner only) -->
+      <section id="view-observations" class="hidden fade-enter space-y-6">
+        <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft">
+
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-sand-200">
+            <div>
+              <h1 class="text-2xl font-bold text-forest" data-i18n="obs.title">Alat Observasi & Ceklis Capaian STEM</h1>
+              <p class="text-xs text-forest-light mt-0.5" data-i18n="obs.subtitle">Format observasi 3-ketukan yang
+                menghormati ritme alami anak saat bereksplorasi</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-forest-light font-semibold" data-i18n="obs.filterClass">Filter:</span>
+              <div class="inline-flex rounded-full bg-sand-100 p-1 border border-sand-200 text-xs">
+                <button class="px-3 py-1 rounded-full bg-sage text-white font-bold">Semua Anak (18)</button>
+                <button class="px-3 py-1 rounded-full text-forest-light hover:text-forest">Perlu Diobservasi
+                  (2)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Student Avatar Grid -->
+          <div class="mt-6">
+            <h2 class="text-xs font-bold text-forest-light uppercase tracking-wider mb-3" data-i18n="obs.selectStudent">
+              Pilih Anak untuk Dicatat / Dievaluasi:</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3" id="students-grid"></div>
+          </div>
+
+          <!-- Recent Observations Feed -->
+          <div class="mt-8 pt-6 border-t border-sand-200">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-heading font-bold text-forest text-base" data-i18n="obs.recentFeedTitle">Catatan Observasi
+                Terkini di Kelas B1</h3>
+              <span class="text-xs text-forest-light" data-i18n="obs.liveSynced">Sinkronisasi lokal aktif 🟢</span>
+            </div>
+            <div class="space-y-3" id="observation-feed"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= PARENT PORTAL VIEW (Parent Exclusive / Teacher Preview) ================= -->
+      <!-- FLOW 6: PARENT CONNECTION HUB / PROGRESS REPORT -->
+      <section id="view-parentHub" class="hidden fade-enter space-y-6">
+
+        <!-- Student Banner (Strictly Kenzo Wijaya for Parent) -->
+        <div
+          class="bg-gradient-to-r from-cream via-sand-50 to-sand-100 rounded-3xl p-6 border border-sand-200 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6 garden-card-hover">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-sage shadow-soft flex-shrink-0">
+              <img src="https://images.unsplash.com/photo-1543332164-6e82f355badc?w=160&auto=format&fit=crop&q=80"
+                alt="Kenzo" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold text-forest">Kenzo Wijaya</h1>
+                <span
+                  class="text-xs bg-sage-50 text-sage-700 font-bold px-2.5 py-0.5 rounded-full border border-sage-100">Usia
+                  4 th 3 bln</span>
+              </div>
+              <p class="text-xs text-forest-light mt-0.5" data-i18n="parent.reportCycle">Laporan Perkembangan STEM
+                Periode: November 2026 · Guru: Bu Rina Kusuma</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="window.print()"
+              class="px-4 py-2 rounded-full bg-forest text-white hover:bg-forest-light text-xs font-semibold shadow-soft garden-interactive-btn flex items-center gap-1.5">
+              <span data-i18n="parent.downloadPdf">Unduh Portofolio (PDF)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Growth Summary Cards & Metaphor -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-6">
+
+            <!-- Teacher Narrative Letter -->
+            <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft garden-card-hover">
+              <div class="flex items-center justify-between pb-3 border-b border-sand-200">
+                <h2 class="font-heading font-bold text-forest text-lg flex items-center gap-2">
+                  <span>💬</span> <span data-i18n="parent.summaryTitle">Rangkuman Refleksi Pendidik</span>
+                </h2>
+                <span class="text-[11px] font-bold text-leaf bg-leaf/10 px-2.5 py-0.5 rounded-full"
+                  data-i18n="parent.approvedBadge">Disetujui Guru</span>
+              </div>
+
+              <p class="text-sm text-forest leading-relaxed mt-4" id="parent-narrative-text">
+                "Bulan ini Kenzo menunjukkan antusiasme luar biasa saat bereksplorasi dengan sensor PLEGO Blocks dan
+                air. Ia mampu merumuskan hipotesis mandiri: memprediksi apakah tutup botol akan mengapung dan
+                menghubungkan sensor tilt untuk mendeteksi kemiringan."
+              </p>
+
+              <div class="mt-4 pt-3 border-t border-sand-100 flex items-center gap-2 text-xs text-forest-light">
+                <span class="font-semibold" data-i18n="parent.interestsTag">Minat yang Menonjol:</span>
+                <span class="px-2 py-0.5 rounded-full bg-sand-200 text-forest font-semibold">🌊 Air & Fluida</span>
+                <span class="px-2 py-0.5 rounded-full bg-sand-200 text-forest font-semibold">🧱 PLEGO Blocks
+                  Sensor</span>
+                <span class="px-2 py-0.5 rounded-full bg-sand-200 text-forest font-semibold">🔢 Pola Berulang</span>
+              </div>
+            </div>
+
+            <!-- STEM Progress Bars -->
+            <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft garden-card-hover">
+              <h2 class="font-heading font-bold text-forest text-lg mb-4 flex items-center justify-between">
+                <span data-i18n="parent.domainProgress">Pertumbuhan Dimensi STEM</span>
+                <span class="text-xs text-forest-light font-normal" data-i18n="parent.masteryScale">Skala: Mulai Muncul
+                  ➔ Menguasai</span>
+              </h2>
+
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between text-xs font-bold mb-1">
+                    <span class="text-sky flex items-center gap-1.5">🔬 Sains / Science</span>
+                    <span class="text-leaf">85% (Menguasai / Mastered)</span>
+                  </div>
+                  <div class="w-full bg-sand-200 rounded-full h-3 overflow-hidden">
+                    <div class="bg-sky h-full rounded-full transition-all duration-500" style="width: 85%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs font-bold mb-1">
+                    <span class="text-violet flex items-center gap-1.5">💻 Teknologi & Precoding</span>
+                    <span class="text-sky-dark">65% (Berkembang / Developing)</span>
+                  </div>
+                  <div class="w-full bg-sand-200 rounded-full h-3 overflow-hidden">
+                    <div class="bg-violet h-full rounded-full transition-all duration-500" style="width: 65%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs font-bold mb-1">
+                    <span class="text-terracotta flex items-center gap-1.5">⚙️ Rekayasa & Aktuator</span>
+                    <span class="text-leaf">90% (Menguasai / Mastered)</span>
+                  </div>
+                  <div class="w-full bg-sand-200 rounded-full h-3 overflow-hidden">
+                    <div class="bg-terracotta h-full rounded-full transition-all duration-500" style="width: 90%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs font-bold mb-1">
+                    <span class="text-sunshine-dark flex items-center gap-1.5">📐 Matematika / Math</span>
+                    <span class="text-sky-dark">70% (Berkembang / Developing)</span>
+                  </div>
+                  <div class="w-full bg-sand-200 rounded-full h-3 overflow-hidden">
+                    <div class="bg-sunshine h-full rounded-full transition-all duration-500" style="width: 70%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documentation Photos -->
+            <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft garden-card-hover">
+              <h2 class="font-heading font-bold text-forest text-lg mb-3" data-i18n="parent.photoStripTitle">Dokumentasi
+                Momen Pembelajaran</h2>
+              <div class="grid grid-cols-3 gap-3">
+                <div class="rounded-2xl overflow-hidden aspect-video bg-sand-200 relative group cursor-pointer"
+                  onclick="openPhotoModal('https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=800&auto=format&fit=crop&q=80')">
+                  <img
+                    src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=300&auto=format&fit=crop&q=80"
+                    alt="Eksplorasi" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                </div>
+                <div class="rounded-2xl overflow-hidden aspect-video bg-sand-200 relative group cursor-pointer"
+                  onclick="openPhotoModal('https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&auto=format&fit=crop&q=80')">
+                  <img
+                    src="https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=300&auto=format&fit=crop&q=80"
+                    alt="Balok" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                </div>
+                <div class="rounded-2xl overflow-hidden aspect-video bg-sand-200 relative group cursor-pointer"
+                  onclick="openPhotoModal('https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=800&auto=format&fit=crop&q=80')">
+                  <img
+                    src="https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=300&auto=format&fit=crop&q=80"
+                    alt="Biji Alam" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Growing Plant, Try At Home & Messages -->
+          <div class="space-y-6">
+            <div
+              class="bg-gradient-to-b from-cream to-sand-100 rounded-3xl p-6 border border-sand-200 shadow-soft text-center garden-card-hover">
+              <h3 class="font-heading font-bold text-forest text-base mb-1" data-i18n="parent.plantTitle">Tanaman
+                Belajar Kenzo</h3>
+              <p class="text-xs text-forest-light mb-4" data-i18n="parent.plantDesc">Setiap pencapaian baru menumbuhkan
+                daun pemahaman</p>
+
+              <div class="w-32 h-32 mx-auto relative flex items-center justify-center">
+                <svg class="w-28 h-28 text-sage" viewBox="0 0 100 100" fill="none">
+                  <path d="M30 85 L70 85 L65 95 L35 95 Z" fill="#D9825B" />
+                  <rect x="28" y="80" width="44" height="6" rx="2" fill="#B8653F" />
+                  <path d="M50 80 Q50 45 50 30" stroke="#4C9A6A" stroke-width="4" stroke-linecap="round" />
+                  <path d="M50 65 Q35 55 32 40 Q45 42 50 65" fill="#6B8F71" />
+                  <path d="M50 50 Q65 40 68 25 Q55 28 50 50" fill="#6B8F71" />
+                  <path d="M50 35 Q40 20 42 10 Q52 14 50 35" fill="#4C9A6A" />
+                  <circle cx="50" cy="14" r="5" fill="#F2C14E" />
+                </svg>
+              </div>
+
+              <div class="mt-2 inline-block px-3 py-1 rounded-full bg-leaf/10 text-leaf text-xs font-bold">
+                🌿 14 Capaian Teramati (Mastered)
+              </div>
+            </div>
+
+            <!-- At-Home Activity Card -->
+            <div class="bg-sunshine-light rounded-3xl p-6 border border-sunshine/40 shadow-soft garden-card-hover">
+              <div class="flex items-center gap-2 mb-2 text-sunshine-dark font-bold text-sm">
+                <span>🏡</span> <span data-i18n="parent.tryHomeTitle">Eksplorasi Akhir Pekan di Rumah</span>
+              </div>
+              <h4 class="font-bold text-forest text-sm mb-1" data-i18n="parent.homeActTitle">Tebak Mengapung di Baskom
+                Dapur</h4>
+              <p class="text-xs text-forest-light leading-relaxed mb-3" data-i18n="parent.homeActDesc">
+                Ajak Kenzo mengumpulkan 4 benda dari dapur. Sebelum dimasukkan ke air, tanyakan: "Kira-kira benda ini
+                tidur di dasar atau menari di atas air?"
+              </p>
+              <span
+                class="inline-block text-[11px] font-bold text-sage bg-white px-3 py-1 rounded-full border border-sand-200">Bahan:
+                Baskom Air & Mainan Rumah</span>
+            </div>
+
+            <!-- Messages Thread -->
+            <div class="bg-cream rounded-3xl p-6 border border-sand-200 shadow-soft garden-card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-base">✉️</span>
+                <h3 class="font-heading font-bold text-forest text-sm" data-i18n="parent.messageTitle">Pesan Singkat
+                  dengan Bu Rina</h3>
+              </div>
+
+              <div class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs mb-3" id="chat-messages-container">
+                <div class="p-2.5 rounded-xl bg-sand-100 text-forest">
+                  <span class="font-bold block text-[11px] text-sage">Bu Rina · Kemarin</span>
+                  <p>Pak Dimas, Kenzo hari ini sangat fokus saat merangkai modul tilt sensor dengan perahu kayu!</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-sage-50 text-forest ml-4 border border-sage-100">
+                  <span class="font-bold block text-[11px] text-forest-light">Pak Dimas (Anda) · 08:30</span>
+                  <p>Terima kasih Bu Rina, kami coba eksplorasi mengapung di dapur bersama Kenzo akhir pekan ini.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <input type="text" id="parent-reply-input" placeholder="Tulis catatan untuk guru..."
+                  class="text-xs flex-1 bg-sand-50 border border-sand-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-sage">
+                <button onclick="sendParentReply()"
+                  class="px-3 py-1.5 rounded-full bg-sage hover:bg-sage-600 text-white text-xs font-bold garden-interactive-btn">Kirim</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- MODAL 1: ADD CURRICULUM ENTRY (Restricted to Teacher/Owner) -->
+  <div id="modal-add-curriculum"
+    class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div
+      class="bg-cream w-full max-w-xl max-h-[92vh] rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
+
+      <div class="p-6 border-b border-sand-200 flex items-center justify-between bg-sand-50">
+        <div>
+          <h2 class="font-heading font-bold text-forest text-lg flex items-center gap-2">
+            <span>✨</span> <span data-i18n="addCurr.modalTitle">Tambah Unit Kurikulum Plego Baru</span>
+          </h2>
+          <p class="text-xs text-forest-light" data-i18n="addCurr.modalSubtitle">Integrasi langsung ke Jalur
+            Pembelajaran & Database Lokal</p>
+        </div>
+        <button onclick="closeModal('modal-add-curriculum')"
+          class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
+      </div>
+
+      <form onsubmit="handleCreateCurriculumSubmit(event)" class="p-6 overflow-y-auto space-y-4 text-xs text-forest">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Level Jenjang:</label>
+            <select id="new-curr-level" class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+              <option value="level-0">Level 0 - Green (Preschool - PLEGO Blocks)</option>
+              <option value="level-1">Level 1 - Yellow (SD 1–3 Precoding)</option>
+              <option value="level-2">Level 2 - Red (SD 4–5 Micro:bit + AI)</option>
+              <option value="level-3">Level 3 - Blue (SMP Text Coding/IoT)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Semester & Pertemuan ke-:</label>
+            <div class="flex gap-2">
+              <select id="new-curr-semester"
+                class="w-1/2 bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+                <option value="Gasal">Gasal</option>
+                <option value="Genap">Genap</option>
+              </select>
+              <input type="number" id="new-curr-week" min="1" max="24" value="9" required
+                class="w-1/2 bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold text-center">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Taksonomi Bloom & Domain:</label>
+          <div class="grid grid-cols-2 gap-3">
+            <select id="new-curr-bloom" class="bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+              <option value="Remembering">Remembering (Mengingat)</option>
+              <option value="Understanding">Understanding (Memahami)</option>
+              <option value="Applying" selected>Applying (Menerapkan)</option>
+              <option value="Analyzing">Analyzing (Menganalisis)</option>
+              <option value="Creating">Creating (Mencipta)</option>
+            </select>
+            <select id="new-curr-domain" class="bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+              <option value="science">Sains / Science</option>
+              <option value="technology">Teknologi / Precoding</option>
+              <option value="engineering" selected>Rekayasa / Engineering</option>
+              <option value="math">Matematika / Math</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Judul Misi / Unit (Bahasa Indonesia):</label>
+          <input type="text" id="new-curr-title-id" placeholder="mis. Misi Raja Ampat: Radar Terumbu Karang" required
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Judul Misi / Unit (English):</label>
+          <input type="text" id="new-curr-title-en" placeholder="e.g. Mission Raja Ampat: Coral Reef Radar" required
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Learning Tools & Materials:</label>
+          <input type="text" id="new-curr-tools" placeholder="mis. Light Sensor, Buzzer, PLEGO Blocks, Baki Kayu"
+            required class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Link Desain Media Canva (URL Slide/Template):</label>
+          <input type="url" id="new-curr-canva" placeholder="https://www.canva.com/design/..."
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">ELO (Enabling Learning Outcome / Tujuan Pembelajaran):</label>
+          <textarea id="new-curr-elo" rows="2"
+            placeholder="Peserta didik mampu memahami keterkaitan input sensor dengan output..." required
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5"></textarea>
+        </div>
+
+        <div class="pt-4 border-t border-sand-200 flex items-center justify-between">
+          <button type="button" onclick="closeModal('modal-add-curriculum')"
+            class="font-bold text-forest-light hover:text-forest" data-i18n="modal.cancel">Batal</button>
+          <button type="submit"
+            class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-bold transition shadow-soft garden-interactive-btn"
+            data-i18n="addCurr.submitBtn">
+            Simpan Kurikulum
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: INTERACTIVE SCHEDULE NEW LESSON (PLANNER) -->
+  <div id="modal-schedule-lesson"
+    class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div
+      class="bg-cream w-full max-w-md rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
+      <div class="p-5 border-b border-sand-200 flex items-center justify-between bg-sand-50">
+        <h3 class="font-heading font-bold text-forest text-base flex items-center gap-2">
+          <span>📅</span> Jadwalkan Aktivitas Pembelajaran
+        </h3>
+        <button onclick="closeModal('modal-schedule-lesson')"
+          class="w-7 h-7 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
+      </div>
+
+      <form onsubmit="handleSaveScheduledLesson(event)" class="p-5 space-y-4 text-xs text-forest">
+        <div>
+          <label class="block font-bold mb-1">Pilih Hari / Slot:</label>
+          <select id="modal-schedule-day"
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+            <option value="mon">Senin (16 Nov)</option>
+            <option value="tue">Selasa (17 Nov)</option>
+            <option value="wed">Rabu (18 Nov)</option>
+            <option value="thu" selected>Kamis (19 Nov)</option>
+            <option value="fri">Jumat (20 Nov)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Pilih Aktivitas Montessori STEM:</label>
+          <select id="modal-schedule-act"
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Waktu Mulai:</label>
+            <input type="time" id="modal-schedule-time" value="09:15" required
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Blok Montessori:</label>
+            <select id="modal-schedule-block"
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
+              <option value="work_cycle">Work Cycle</option>
+              <option value="circle_time">Circle Time</option>
+              <option value="outdoor">Outdoor</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-sand-200 flex items-center justify-between">
+          <button type="button" onclick="closeModal('modal-schedule-lesson')"
+            class="font-bold text-forest-light hover:text-forest">Batal</button>
+          <button type="submit"
+            class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-bold transition shadow-soft garden-interactive-btn">
+            + Tambahkan ke Jadwal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ACTIVITY DETAIL VIEW -->
+  <div id="modal-activity"
+    class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div
+      class="bg-cream w-full max-w-3xl max-h-[90vh] rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
+      <div class="p-6 border-b border-sand-200 flex items-start justify-between bg-sand-50">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span id="act-detail-domain"
+              class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky text-white">Sains</span>
+            <span id="act-detail-age" class="text-xs text-forest-light font-semibold">Usia 4–5 tahun · 25 Menit</span>
+          </div>
+          <h2 id="act-detail-title" class="text-2xl font-bold text-forest">Eksplorasi Tenggelam atau Mengapung</h2>
+        </div>
+        <button onclick="closeModal('modal-activity')"
+          class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 text-sm text-forest" id="act-detail-content"></div>
+
+      <div class="p-4 px-6 border-t border-sand-200 bg-sand-50 flex items-center justify-between">
+        <button onclick="closeModal('modal-activity')" class="text-xs font-bold text-forest-light hover:text-forest"
+          data-i18n="modal.close">Tutup</button>
+        <button onclick="assignActivityToPlannerPrompt()"
+          class="px-5 py-2 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-sm garden-interactive-btn"
+          data-i18n="modal.addToPlan">
+          + Tambahkan ke Planner
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: CHILD OBSERVATION ENTRY (Restricted) -->
+  <div id="modal-observation"
+    class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div
+      class="bg-cream w-full max-w-2xl max-h-[92vh] rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
+      <div class="p-6 border-b border-sand-200 flex items-center justify-between bg-sand-50">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full overflow-hidden bg-sand-200 border-2 border-sage" id="obs-modal-avatar">
+            <img src="" alt="Student" class="w-full h-full object-cover">
+          </div>
+          <div>
+            <h2 class="font-heading font-bold text-forest text-lg" id="obs-modal-student-name">Observasi: Kenzo Wijaya
+            </h2>
+            <p class="text-xs text-forest-light" data-i18n="obsModal.subtitle">Formulir Pencatatan Indikator
+              Perkembangan STEM</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-observation')"
+          class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-5 text-xs text-forest">
+        <div>
+          <label class="block font-bold text-forest mb-1.5" data-i18n="obsModal.indicator">Indikator yang
+            Diamati:</label>
+          <div class="p-3 rounded-2xl bg-sand-50 border border-sand-200 mb-2">
+            <p class="font-bold text-sm text-forest" id="obs-milestone-text">Memprediksi keterkaitan sensor dan aktuator
+              PLEGO Blocks</p>
+            <span class="text-[11px] text-sky font-semibold">Kurikulum Merdeka PAUD: Capaian Dasar Literasi &
+              STEM</span>
+          </div>
+
+          <label class="block font-bold text-forest mb-1" data-i18n="obsModal.levelLabel">Tingkat Capaian (Montessori
+            Mastery Scale):</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="obs-level-selector">
+            <button type="button" onclick="selectObsLevel('not_observed')" data-level="not_observed"
+              class="obs-level-btn p-2 rounded-xl border border-sand-300 bg-sand-100 text-forest font-semibold text-center hover:border-forest transition">
+              <span class="block text-xs" data-i18n="level.none">Belum Muncul</span>
+              <span class="text-[10px] text-forest-light">Not observed</span>
+            </button>
+            <button type="button" onclick="selectObsLevel('emerging')" data-level="emerging"
+              class="obs-level-btn p-2 rounded-xl border border-sunshine/40 bg-sunshine-light text-sunshine-dark font-semibold text-center hover:border-sunshine transition">
+              <span class="block text-xs" data-i18n="level.emerging">Mulai Muncul</span>
+              <span class="text-[10px] opacity-75">Emerging</span>
+            </button>
+            <button type="button" onclick="selectObsLevel('developing')" data-level="developing"
+              class="obs-level-btn p-2 rounded-xl border-2 border-sky bg-sky-light text-sky font-bold text-center transition">
+              <span class="block text-xs" data-i18n="level.developing">Berkembang</span>
+              <span class="text-[10px] opacity-75">Developing</span>
+            </button>
+            <button type="button" onclick="selectObsLevel('mastered')" data-level="mastered"
+              class="obs-level-btn p-2 rounded-xl border border-leaf/40 bg-leaf/10 text-leaf font-semibold text-center hover:border-leaf transition">
+              <span class="block text-xs" data-i18n="level.mastered">Menguasai</span>
+              <span class="text-[10px] opacity-75">Mastered</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-forest mb-1" data-i18n="obsModal.anecdoteLabel">Catatan Anekdot & Kutipan
+            Anak:</label>
+          <textarea id="obs-anecdote-input" rows="3"
+            placeholder="Contoh: 'Bu Rina, lampu menyala saat kututup sensor cahayanya!' Kenzo mencoba mencelupkan dan menguji 3 kali dengan tenang."
+            class="w-full text-xs p-3 rounded-2xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-forest"></textarea>
+        </div>
+
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 rounded-2xl bg-sand-100/60 border border-sand-200">
+          <div class="flex items-center gap-2">
+            <span
+              class="w-8 h-8 rounded-xl bg-cream border border-sand-300 flex items-center justify-center text-sm">📷</span>
+            <div>
+              <span class="font-bold text-forest block" data-i18n="obsModal.attachPhoto">Lampirkan Foto Hasil
+                Karya</span>
+              <span class="text-[10px] text-forest-light">1 foto terunggah otomatis</span>
+            </div>
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="obs-is-highlight" checked class="w-4 h-4 rounded text-sage focus:ring-sage">
+            <span class="text-xs font-bold text-forest" data-i18n="obsModal.markHighlight">Tampilkan di Laporan Orang
+              Tua</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="p-4 px-6 border-t border-sand-200 bg-sand-50 flex items-center justify-between">
+        <button onclick="closeModal('modal-observation')" class="text-xs font-bold text-forest-light hover:text-forest"
+          data-i18n="modal.cancel">Batal</button>
+        <button onclick="saveObservation()"
+          class="px-5 py-2 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-sm garden-interactive-btn"
+          data-i18n="modal.saveObs">
+          Simpan Observasi (Catat)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: PHOTO VIEWER -->
+  <div id="modal-photo" class="fixed inset-0 z-50 bg-forest/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-cream rounded-3xl overflow-hidden shadow-float fade-enter">
+      <div class="relative">
+        <img id="modal-photo-img" src="" alt="Dokumentasi" class="w-full h-80 object-cover">
+        <button onclick="closeModal('modal-photo')"
+          class="absolute top-4 right-4 w-9 h-9 rounded-full bg-cream/90 text-forest font-bold flex items-center justify-center">✕</button>
+      </div>
+      <div class="p-4 text-xs text-forest flex items-center justify-between">
+        <span>📸 Dokumentasi Pembelajaran Sensorial STEM — TK B1</span>
+        <button onclick="closeModal('modal-photo')" class="px-3 py-1 rounded-full bg-sand-200 font-bold">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST NOTIFICATION -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 pointer-events-none transform translate-y-12 opacity-0 transition-all duration-300">
+    <div
+      class="bg-forest text-cream px-5 py-3 rounded-2xl shadow-float flex items-center gap-3 border border-sand-300 text-xs font-bold">
+      <span class="text-base" id="toast-icon">✨</span>
+      <span id="toast-msg">Perubahan tersimpan!</span>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC & STATE ================= -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
