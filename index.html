@@ -220,9 +220,8 @@
             <h1 class="text-2xl md:text-3xl font-bold text-forest">
               <span data-i18n="dash.greeting">Selamat pagi</span>, <span id="dash-greeting-name">Pendidik</span>! 👋
             </h1>
-            <p class="text-forest-light text-sm mt-1 max-w-xl" data-i18n="dash.subtitle">
-              Hari ini ada 3 eksplorasi hands-on STEM yang terjadwal. 2 anak memerlukan pencatatan observasi
-              perkembangan.
+            <p id="dashboard-summary" class="text-forest-light text-sm mt-1 max-w-xl" data-i18n="dash.subtitle">
+              Memuat jadwal dan data observasi dari database...
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-3">
@@ -248,9 +247,9 @@
                 data-i18n="metrics.children">Anak di Kelas</span>
               <div class="w-8 h-8 rounded-xl bg-sky-light text-sky flex items-center justify-center font-bold">👦</div>
             </div>
-            <p class="text-3xl font-heading font-bold text-forest mt-3">18</p>
+            <p id="dashboard-student-count" class="text-3xl font-heading font-bold text-forest mt-3">—</p>
             <p class="text-xs text-forest-light mt-1 flex items-center gap-1">
-              <span class="text-leaf font-bold">100%</span> <span data-i18n="metrics.active">aktif terdaftar</span>
+              <span data-i18n="metrics.databaseRecords">Data dari database</span>
             </p>
           </div>
 
@@ -262,9 +261,10 @@
                 class="w-8 h-8 rounded-xl bg-terracotta-light text-terracotta flex items-center justify-center font-bold">
                 🔬</div>
             </div>
-            <p class="text-3xl font-heading font-bold text-forest mt-3">5</p>
+            <p id="dashboard-weekly-schedule-count" class="text-3xl font-heading font-bold text-forest mt-3">—</p>
             <p class="text-xs text-forest-light mt-1 flex items-center gap-1">
-              <span class="text-terracotta font-bold">3/5</span> <span data-i18n="metrics.delivered">terlaksana</span>
+              <span id="dashboard-weekly-schedule-done" class="text-terracotta font-bold">—</span>
+              <span data-i18n="metrics.delivered">terlaksana</span>
             </p>
           </div>
 
@@ -276,21 +276,22 @@
                 class="w-8 h-8 rounded-xl bg-sunshine-light text-sunshine-dark flex items-center justify-center font-bold">
                 📝</div>
             </div>
-            <p class="text-3xl font-heading font-bold text-forest mt-3">24</p>
+            <p id="dashboard-observation-count" class="text-3xl font-heading font-bold text-forest mt-3">—</p>
             <p class="text-xs text-forest-light mt-1">
-              <span class="text-leaf font-bold">+8</span> <span data-i18n="metrics.fromYesterday">sejak kemarin</span>
+              <span id="dashboard-observation-recent" class="text-leaf font-bold">—</span>
+              <span data-i18n="metrics.fromYesterday">24 jam terakhir</span>
             </p>
           </div>
 
           <div class="bg-cream rounded-2xl p-5 border border-sand-200 shadow-soft garden-card-hover">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-forest-light uppercase tracking-wider"
-                data-i18n="metrics.reports">Laporan Siap Terbit</span>
+                data-i18n="metrics.needsObservation">Perlu Observasi</span>
               <div class="w-8 h-8 rounded-xl bg-violet-light text-violet flex items-center justify-center font-bold">📬
               </div>
             </div>
-            <p class="text-3xl font-heading font-bold text-forest mt-3">4</p>
-            <p class="text-xs text-violet font-semibold mt-1" data-i18n="metrics.needsReview">Perlu verifikasi guru</p>
+            <p id="dashboard-needs-observation-count" class="text-3xl font-heading font-bold text-forest mt-3">—</p>
+            <p class="text-xs text-violet font-semibold mt-1" data-i18n="metrics.observationWindow">Belum diamati 7 hari</p>
           </div>
         </div>
 
@@ -300,8 +301,9 @@
             <div class="flex items-center justify-between mb-4">
               <div>
                 <h2 class="text-lg font-bold text-forest" data-i18n="dash.todayTitle">Jadwal Eksplorasi Hari Ini</h2>
-                <p class="text-xs text-forest-light" data-i18n="dash.todaySubtitle">Kamis, Siklus Kerja Terbimbing
-                  (Plego Blocks)</p>
+                <p id="dashboard-schedule-subtitle" class="text-xs text-forest-light" data-i18n="dash.todaySubtitle">
+                  Jadwal aktivitas dari database
+                </p>
               </div>
               <button onclick="navigateTo('planner')" class="text-xs font-bold text-sage hover:text-sage-600 transition"
                 data-i18n="dash.viewAllPlan">Lihat Semua →</button>
@@ -314,12 +316,11 @@
             <div>
               <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold text-forest" data-i18n="dash.attentionTitle">Perlu Observasi</h2>
-                <span class="text-xs bg-terracotta-light text-terracotta px-2 py-0.5 rounded-full font-bold">2
-                  Anak</span>
+                <span id="dashboard-needs-observation-badge"
+                  class="text-xs bg-terracotta-light text-terracotta px-2 py-0.5 rounded-full font-bold">—</span>
               </div>
               <p class="text-xs text-forest-light mb-4" data-i18n="dash.attentionDesc">
-                Belum ada data observasi dalam 7+ hari terakhir. Disarankan untuk difasilitasi dalam siklus bebas hari
-                ini.
+                Daftar anak yang belum memiliki observasi dalam 7 hari terakhir.
               </p>
               <div class="space-y-3" id="attention-list"></div>
             </div>

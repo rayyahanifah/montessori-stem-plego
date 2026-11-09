@@ -387,7 +387,18 @@
       observationsLog: [
         { studentName: 'Kenzo Wijaya', domain: 'science', milestone: 'Memprediksi daya apung benda alami', level: 'developing', time: 'Hari ini, 09:40', anecdote: 'Kenzo mencoba 4 daun berbeda di baskom dan menemukan daun kering tetap mengapung.' },
         { studentName: 'Bima Pratama', domain: 'engineering', milestone: 'Menyusun struktur pasak yang kokoh', level: 'mastered', time: 'Kemarin, 10:15', anecdote: 'Bima membuat jembatan dengan 6 pasak dan menguji kekuatan dengan balok kayu.' }
-      ]
+      ],
+      scheduleItems: [],
+      databaseStatus: {
+        curriculum: false,
+        students: false,
+        tutors: false,
+        schedule: false,
+        observations: false,
+      },
+      databaseObservations: [],
+      databaseObservationCount: null,
+      databaseRecentObservationCount: null,
     };
 
     /* =====================================================================
@@ -412,7 +423,7 @@
         'nav.logout': 'Keluar (Logout)',
         'dash.cycle': 'Siklus Pembelajaran Montessori 09:00 - 11:30',
         'dash.greeting': 'Selamat pagi',
-        'dash.subtitle': 'Hari ini ada 3 eksplorasi hands-on STEM yang terjadwal. 2 anak memerlukan pencatatan observasi perkembangan.',
+        'dash.subtitle': 'Jadwal dan ringkasan observasi dimuat dari database.',
         'dash.quickLog': 'Catat Observasi',
         'dash.openPlanner': 'Buka Planner',
         'metrics.children': 'Anak di Kelas',
@@ -420,14 +431,16 @@
         'metrics.lessons': 'Aktivitas Minggu Ini',
         'metrics.delivered': 'terlaksana',
         'metrics.observations': 'Observasi Dicatat',
-        'metrics.fromYesterday': 'sejak kemarin',
-        'metrics.reports': 'Laporan Siap Terbit',
+        'metrics.fromYesterday': '24 jam terakhir',
+        'metrics.needsObservation': 'Perlu Observasi',
+        'metrics.observationWindow': 'Belum diamati 7 hari',
+        'metrics.databaseRecords': 'Data dari database',
         'metrics.needsReview': 'Perlu verifikasi guru',
         'dash.todayTitle': 'Jadwal Eksplorasi Hari Ini',
-        'dash.todaySubtitle': 'Kamis, Siklus Kerja Terbimbing (Plego Blocks)',
+        'dash.todaySubtitle': 'Jadwal aktivitas dari database',
         'dash.viewAllPlan': 'Lihat Semua →',
         'dash.attentionTitle': 'Perlu Observasi',
-        'dash.attentionDesc': 'Belum ada data observasi dalam 7+ hari terakhir. Disarankan untuk difasilitasi dalam siklus bebas hari ini.',
+        'dash.attentionDesc': 'Daftar anak yang belum memiliki observasi dalam 7 hari terakhir.',
         'dash.pedagogyTipTitle': 'Prinsip Montessori Hari Ini',
         'dash.pedagogyTipDesc': '"Jangan pernah membantu anak pada tugas yang ia rasa mampu selesaikan sendiri." — Maria Montessori.',
         'curr.title': 'Kurikulum Plego STEM & AI Path',
@@ -503,7 +516,7 @@
         'nav.logout': 'Sign Out (Logout)',
         'dash.cycle': 'Montessori Work Cycle 09:00 - 11:30',
         'dash.greeting': 'Good morning',
-        'dash.subtitle': 'Today has 3 scheduled hands-on STEM explorations. 2 children require developmental observations.',
+        'dash.subtitle': 'Schedules and observation summaries are loaded from the database.',
         'dash.quickLog': 'Log Observation',
         'dash.openPlanner': 'Open Planner',
         'metrics.children': 'Children Enrolled',
@@ -511,14 +524,16 @@
         'metrics.lessons': 'Weekly Lessons',
         'metrics.delivered': 'delivered',
         'metrics.observations': 'Observations Logged',
-        'metrics.fromYesterday': 'since yesterday',
-        'metrics.reports': 'Ready Reports',
+        'metrics.fromYesterday': 'in the last 24 hours',
+        'metrics.needsObservation': 'Needs Observation',
+        'metrics.observationWindow': 'Not observed in 7 days',
+        'metrics.databaseRecords': 'Records from database',
         'metrics.needsReview': 'Awaiting review',
         'dash.todayTitle': 'Today\'s Exploration Schedule',
-        'dash.todaySubtitle': 'Thursday, Guided Work Cycle (Plego Blocks)',
+        'dash.todaySubtitle': 'Activities scheduled in the database',
         'dash.viewAllPlan': 'View Full Week →',
         'dash.attentionTitle': 'Needs Observation',
-        'dash.attentionDesc': 'No recorded observation in the last 7+ days. Recommended for facilitation in today\'s free choice cycle.',
+        'dash.attentionDesc': 'Children with no recorded observation in the last 7 days.',
         'dash.pedagogyTipTitle': 'Montessori Principle Today',
         'dash.pedagogyTipDesc': '"Never help a child with a task at which he feels he can succeed." — Maria Montessori.',
         'curr.title': 'Plego STEM & AI Tooling Path',
@@ -816,48 +831,134 @@
     function renderDashboard() {
       const scheduleContainer = document.getElementById('dashboard-schedule-container');
       const attentionList = document.getElementById('attention-list');
+      const currentDate = new Date();
+      const todayKey = toLocalDateKey(currentDate);
+      document.getElementById('dashboard-schedule-subtitle').textContent =
+        currentDate.toLocaleDateString(state.lang === 'id' ? 'id-ID' : 'en-US', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+      const todayLessons = state.scheduleItems.filter(item => item.date === todayKey);
+      const studentsReady = state.databaseStatus.students;
+      const scheduleReady = state.databaseStatus.schedule;
+      const observationsReady = state.databaseStatus.observations;
+      const needingObs = studentsReady && observationsReady
+        ? state.students.filter(student => student.needsAttention)
+        : [];
 
-      const todayLessons = state.lessonPlanItems.filter(i => i.day === 'thu');
-      scheduleContainer.innerHTML = todayLessons.map(item => {
-        const act = state.curriculumData.find(a => a.id === item.actId) || state.curriculumData[0];
-        const domainColor = getDomainColor(item.domain || act?.domain || 'science');
+      const weekStart = new Date(currentDate);
+      weekStart.setHours(0, 0, 0, 0);
+      weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      const weeklyLessons = state.scheduleItems.filter(item => {
+        const date = new Date(`${item.date}T00:00:00`);
+        return date >= weekStart && date < weekEnd;
+      });
+      const deliveredLessons = weeklyLessons.filter(item =>
+        ['delivered', 'completed', 'done'].includes(String(item.status || '').toLowerCase())
+      );
+      document.getElementById('dashboard-student-count').textContent =
+        studentsReady ? String(state.students.length) : '—';
+      document.getElementById('dashboard-weekly-schedule-count').textContent =
+        scheduleReady ? String(weeklyLessons.length) : '—';
+      document.getElementById('dashboard-weekly-schedule-done').textContent =
+        scheduleReady ? `${deliveredLessons.length}/${weeklyLessons.length}` : '—';
+      document.getElementById('dashboard-observation-count').textContent =
+        observationsReady ? String(state.databaseObservationCount) : '—';
+      document.getElementById('dashboard-observation-recent').textContent =
+        observationsReady ? `+${state.databaseRecentObservationCount}` : '—';
+      document.getElementById('dashboard-needs-observation-count').textContent =
+        studentsReady && observationsReady ? String(needingObs.length) : '—';
+      document.getElementById('dashboard-needs-observation-badge').textContent =
+        studentsReady && observationsReady
+          ? `${needingObs.length} ${state.lang === 'id' ? 'Anak' : 'Children'}`
+          : '—';
+
+      const summary = document.getElementById('dashboard-summary');
+      if (scheduleReady && studentsReady && observationsReady) {
+        summary.textContent = state.lang === 'id'
+          ? `Hari ini ada ${todayLessons.length} aktivitas terjadwal. ${needingObs.length} anak belum diobservasi dalam 7 hari.`
+          : `${todayLessons.length} activities are scheduled today. ${needingObs.length} children have not been observed in 7 days.`;
+      } else {
+        summary.textContent = state.lang === 'id'
+          ? 'Sebagian data dashboard belum tersedia dari database. Periksa koneksi dan izin Supabase.'
+          : 'Some dashboard data is unavailable from the database. Check the Supabase connection and permissions.';
+      }
+
+      scheduleContainer.innerHTML = scheduleReady
+        ? (todayLessons.length ? todayLessons.map(item => {
+        const domainColor = getDomainColor(item.domain || 'science');
         return `
           <div class="flex items-center justify-between p-3.5 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage transition garden-interactive-btn">
             <div class="flex items-center gap-3">
-              <span class="text-xs font-bold font-mono px-2 py-1 rounded-lg bg-cream border border-sand-200 text-forest">${item.time}</span>
+              <span class="text-xs font-bold font-mono px-2 py-1 rounded-lg bg-cream border border-sand-200 text-forest">${escapeHTML(item.time || '—')}</span>
               <div class="w-2.5 h-8 rounded-full ${domainColor.bg}"></div>
               <div>
-                <h4 class="font-bold text-sm text-forest">${bText(act, 'title')}</h4>
-                <p class="text-xs text-forest-light">${act.tools || domainColor.label}</p>
+                <h4 class="font-bold text-sm text-forest">${escapeHTML(item.actTitle || (state.lang === 'id' ? 'Aktivitas STEM' : 'STEM activity'))}</h4>
+                <p class="text-xs text-forest-light">${escapeHTML(item.tutorName || domainColor.label)}</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="openCurriculumGuide('${act.id}')" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-cream hover:bg-white text-forest border border-sand-200 transition">
-                ${state.lang === 'id' ? 'Panduan' : 'Guide'}
-              </button>
-              <button onclick="openObservationModal('${state.students[0].id}')" class="text-xs font-bold px-3 py-1.5 rounded-full bg-sage hover:bg-sage-600 text-white shadow-sm transition">
-                ${state.lang === 'id' ? 'Catat' : 'Observe'}
-              </button>
+              ${item.curriculumUnitId ? `<button data-guide-curriculum="${escapeHTML(item.curriculumUnitId)}" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-cream hover:bg-white text-forest border border-sand-200 transition">${state.lang === 'id' ? 'Panduan' : 'Guide'}</button>` : ''}
+              ${state.students.length ? `<button data-observe-student="${escapeHTML(state.students[0].id)}" class="text-xs font-bold px-3 py-1.5 rounded-full bg-sage hover:bg-sage-600 text-white shadow-sm transition">${state.lang === 'id' ? 'Catat' : 'Observe'}</button>` : ''}
             </div>
           </div>
         `;
-      }).join('');
+      }).join('') : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Tidak ada aktivitas terjadwal hari ini.' : 'No activities scheduled today.'}</p>`)
+        : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Jadwal belum dapat dimuat dari database.' : 'Could not load the schedule from the database.'}</p>`;
+      scheduleContainer.querySelectorAll('[data-guide-curriculum]').forEach(button => {
+        button.addEventListener('click', () => openCurriculumGuide(button.dataset.guideCurriculum));
+      });
+      scheduleContainer.querySelectorAll('[data-observe-student]').forEach(button => {
+        button.addEventListener('click', () => openObservationModal(button.dataset.observeStudent));
+      });
 
-      const needingObs = state.students.filter(s => s.needsAttention);
-      attentionList.innerHTML = needingObs.map(s => `
+      attentionList.innerHTML = studentsReady && observationsReady
+        ? (needingObs.length ? needingObs.map(s => `
         <div class="flex items-center justify-between p-2.5 rounded-2xl bg-sand-50 border border-sand-200">
           <div class="flex items-center gap-2.5">
-            <img src="${s.avatar}" alt="${s.name}" class="w-9 h-9 rounded-full object-cover border border-sand-300">
+            <img src="${escapeHTML(s.avatar)}" alt="${escapeHTML(s.name)}" class="w-9 h-9 rounded-full object-cover border border-sand-300">
             <div>
-              <p class="font-bold text-xs text-forest">${s.name}</p>
+              <p class="font-bold text-xs text-forest">${escapeHTML(s.name)}</p>
               <p class="text-[10px] text-terracotta font-semibold">${s.lastObsDays} ${state.lang === 'id' ? 'hari lalu' : 'days ago'}</p>
             </div>
           </div>
-          <button onclick="openObservationModal('${s.id}')" class="text-xs font-bold px-3 py-1 rounded-full bg-terracotta text-white hover:bg-terracotta-dark transition">
+          <button data-observe-student="${escapeHTML(s.id)}" class="text-xs font-bold px-3 py-1 rounded-full bg-terracotta text-white hover:bg-terracotta-dark transition">
             + ${state.lang === 'id' ? 'Amati' : 'Log'}
           </button>
         </div>
-      `).join('');
+      `).join('') : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Semua anak sudah diobservasi dalam 7 hari terakhir.' : 'All children have been observed in the last 7 days.'}</p>`)
+        : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Data observasi belum dapat dimuat dari database.' : 'Could not load observations from the database.'}</p>`;
+      attentionList.querySelectorAll('[data-observe-student]').forEach(button => {
+        button.addEventListener('click', () => openObservationModal(button.dataset.observeStudent));
+      });
+    }
+
+    function toLocalDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function normalizeDateKey(value) {
+      const dateValue = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return dateValue;
+      const date = new Date(dateValue);
+      return Number.isNaN(date.getTime()) ? '' : toLocalDateKey(date);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[character]);
     }
 
     /* FLOW 2: CURRICULUM BROWSER */
@@ -992,7 +1093,7 @@
       openModal('modal-add-curriculum');
     }
 
-    function handleCreateCurriculumSubmit(e) {
+    async function handleCreateCurriculumSubmit(e) {
       e.preventDefault();
       const level = document.getElementById('new-curr-level').value;
       const semester = document.getElementById('new-curr-semester').value;
@@ -1010,12 +1111,24 @@
         level, semester, week, bloom, domain, title_id, title_en, tools, elo, canva_url
       };
 
+      if (!state.databaseStatus.curriculum) {
+        showToast(state.lang === 'id'
+          ? 'Kurikulum belum disimpan: database belum terhubung.'
+          : 'Curriculum was not saved: the database is not connected.', '⚠️');
+        return;
+      }
+
+      const savedItem = await saveCurriculumToSupabase(newItem);
+      if (!savedItem) return;
+      newItem.id = savedItem.id;
+      newItem._fromDB = true;
       state.curriculumData.unshift(newItem);
-      localStorage.setItem('plego_curriculum', JSON.stringify(state.curriculumData));
 
       closeModal('modal-add-curriculum');
       setCurriculumLevel(level);
-      showToast(state.lang === 'id' ? 'Unit kurikulum baru berhasil disimpan!' : 'New curriculum unit created successfully!', '🎉');
+      showToast(state.lang === 'id'
+        ? 'Unit kurikulum berhasil disimpan ke database.'
+        : 'Curriculum unit saved to the database.', '🎉');
     }
 
     function scheduleCurriculumToPlanner(currId) {
@@ -1429,33 +1542,37 @@
       const grid = document.getElementById('students-grid');
       const feed = document.getElementById('observation-feed');
 
-      grid.innerHTML = state.students.map(s => `
-        <div onclick="openObservationModal('${s.id}')" class="p-3 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage hover:shadow-soft transition text-center cursor-pointer group garden-card-hover">
+      grid.innerHTML = state.databaseStatus.students ? (state.students.length ? state.students.map(s => `
+        <div data-observe-student="${escapeHTML(s.id)}" class="p-3 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage hover:shadow-soft transition text-center cursor-pointer group garden-card-hover">
           <div class="w-14 h-14 mx-auto rounded-full overflow-hidden border-2 ${s.needsAttention ? 'border-terracotta' : 'border-sage'} mb-2 group-hover:scale-105 transition">
-            <img src="${s.avatar}" alt="${s.name}" class="w-full h-full object-cover">
+            <img src="${escapeHTML(s.avatar)}" alt="${escapeHTML(s.name)}" class="w-full h-full object-cover">
           </div>
-          <h4 class="font-bold text-xs text-forest truncate">${s.name}</h4>
-          <span class="text-[10px] text-forest-light">${s.age}</span>
+          <h4 class="font-bold text-xs text-forest truncate">${escapeHTML(s.name)}</h4>
+          <span class="text-[10px] text-forest-light">${escapeHTML(s.age)}</span>
           <div class="mt-1">
             <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${s.needsAttention ? 'bg-terracotta-light text-terracotta' : 'bg-sage-50 text-sage-700'}">
               ${s.needsAttention ? (state.lang === 'id' ? 'Perlu Amati' : 'Needs Obs') : (state.lang === 'id' ? 'Tercatat' : 'Observed')}
             </span>
           </div>
         </div>
-      `).join('');
+      `).join('') : `<p class="col-span-full text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Belum ada data siswa di database.' : 'No students found in the database.'}</p>`)
+        : `<p class="col-span-full text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Data siswa belum dapat dimuat dari database.' : 'Could not load students from the database.'}</p>`;
+      grid.querySelectorAll('[data-observe-student]').forEach(card => {
+        card.addEventListener('click', () => openObservationModal(card.dataset.observeStudent));
+      });
 
-      feed.innerHTML = state.observationsLog.map(obs => {
+      feed.innerHTML = state.databaseStatus.observations ? (state.observationsLog.length ? state.observationsLog.map(obs => {
         const dColor = getDomainColor(obs.domain);
         return `
           <div class="p-4 rounded-2xl bg-sand-50 border border-sand-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 garden-card-hover">
             <div>
               <div class="flex items-center gap-2 mb-1">
-                <span class="font-bold text-sm text-forest">${obs.studentName}</span>
+                <span class="font-bold text-sm text-forest">${escapeHTML(obs.studentName)}</span>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${dColor.bgLight} ${dColor.textColor}">${dColor.label}</span>
-                <span class="text-xs text-forest-light">· ${obs.time}</span>
+                <span class="text-xs text-forest-light">· ${escapeHTML(obs.time)}</span>
               </div>
-              <p class="text-xs font-semibold text-forest mb-1">"${obs.milestone}"</p>
-              <p class="text-xs text-forest-light italic leading-relaxed">Catatan: ${obs.anecdote}</p>
+              <p class="text-xs font-semibold text-forest mb-1">"${escapeHTML(obs.milestone)}"</p>
+              <p class="text-xs text-forest-light italic leading-relaxed">${state.lang === 'id' ? 'Catatan' : 'Note'}: ${escapeHTML(obs.anecdote)}</p>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
               <span class="text-xs font-bold px-3 py-1 rounded-full bg-sky-light text-sky border border-sky/30">
@@ -1464,7 +1581,8 @@
             </div>
           </div>
         `;
-      }).join('');
+      }).join('') : `<p class="text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Belum ada data observasi di database.' : 'No observations found in the database.'}</p>`)
+        : `<p class="text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Data observasi belum dapat dimuat dari database.' : 'Could not load observations from the database.'}</p>`;
     }
 
     function openObservationModal(studentId = 'std-1') {
@@ -1474,6 +1592,10 @@
       }
 
       const student = state.students.find(s => s.id === studentId) || state.students[0];
+      if (!student) {
+        showToast(state.lang === 'id' ? 'Data siswa belum tersedia.' : 'No student data is available.', '⚠️');
+        return;
+      }
       state.selectedStudentForObs = student;
 
       document.getElementById('obs-modal-student-name').textContent = `Observasi: ${student.name}`;
@@ -1495,25 +1617,50 @@
       });
     }
 
-    function saveObservation() {
+    async function saveObservation() {
+      const student = state.selectedStudentForObs;
+      if (!student) {
+        showToast(state.lang === 'id' ? 'Pilih siswa sebelum mencatat observasi.' : 'Select a student before recording an observation.', '⚠️');
+        return;
+      }
+
       const anecdote = document.getElementById('obs-anecdote-input').value.trim() ||
         (state.lang === 'id' ? 'Anak menyelesaikan eksplorasi mandiri dengan fokus tenang.' : 'Child completed exploration independently with focused poise.');
 
-      state.observationsLog.unshift({
-        studentName: state.selectedStudentForObs.name,
+      const observation = {
+        studentId: student.id,
+        studentName: student.name,
         domain: 'science',
         milestone: 'Memprediksi keterkaitan sensor dan aktuator PLEGO Blocks',
         level: state.obsLevel,
         time: state.lang === 'id' ? 'Baru saja' : 'Just now',
         anecdote: anecdote
-      });
+      };
 
-      state.selectedStudentForObs.needsAttention = false;
-      state.selectedStudentForObs.lastObsDays = 0;
+      if (student._fromDB) {
+        const saved = await saveObservationToSupabase(observation);
+        if (!saved) return;
+        state.databaseObservations.unshift(saved);
+        if (state.databaseObservationCount !== null) state.databaseObservationCount += 1;
+        if (state.databaseRecentObservationCount !== null &&
+          saved.created_at && Date.now() - new Date(saved.created_at).getTime() < 24 * 60 * 60 * 1000) {
+          state.databaseRecentObservationCount += 1;
+        }
+        applyDatabaseObservations();
+      } else {
+        state.observationsLog.unshift(observation);
+        student.needsAttention = false;
+        student.lastObsDays = 0;
+      }
 
       closeModal('modal-observation');
       renderView();
-      showToast(state.lang === 'id' ? 'Observasi tersimpan di portofolio!' : 'Observation saved to portfolio!', '✅');
+      showToast(
+        student._fromDB
+          ? (state.lang === 'id' ? 'Observasi berhasil disimpan ke database.' : 'Observation saved to the database.')
+          : (state.lang === 'id' ? 'Observasi hanya tersimpan sementara di mode demo.' : 'Observation is only saved temporarily in demo mode.'),
+        student._fromDB ? '✅' : '⚠️'
+      );
     }
 
     /* FLOW 6: PARENT HUB (Kenzo's Portfolio) */
@@ -1641,11 +1788,10 @@
     async function loadCurriculumFromSupabase() {
       try {
         const { data, error } = await sb.from('curriculum_units').select('*').order('week', { ascending: true });
-        if (error) { console.warn('[Supabase] curriculum_units fetch error:', error.message); return; }
-        if (!data || data.length === 0) return;
+        if (error) throw error;
 
         // Map DB rows to frontend format
-        const dbItems = data.map(row => ({
+        const dbItems = (data || []).map(row => ({
           id: row.id,
           level: dbLevelToCode(row.level),
           semester: row.semester,
@@ -1663,10 +1809,13 @@
         // Keep locally-added items (id starts with 'c-custom-'), replace DB items
         const localCustom = state.curriculumData.filter(c => String(c.id).startsWith('c-custom-'));
         state.curriculumData = [...dbItems, ...localCustom];
-        renderView();
+        state.databaseStatus.curriculum = true;
         console.log(`[Supabase] Loaded ${dbItems.length} curriculum units from DB`);
+        return true;
       } catch (err) {
         console.warn('[Supabase] curriculum load exception:', err);
+        state.databaseStatus.curriculum = false;
+        return false;
       }
     }
 
@@ -1674,8 +1823,7 @@
     async function loadStudentsFromSupabase() {
       try {
         const { data, error } = await sb.from('students').select('*, classes(name, school_id, schools(name))').order('full_name');
-        if (error) { console.warn('[Supabase] students fetch error:', error.message); return; }
-        if (!data || data.length === 0) return;
+        if (error) throw error;
 
         const avatarPool = [
           'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=100&auto=format&fit=crop&q=80',
@@ -1686,7 +1834,7 @@
           'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&auto=format&fit=crop&q=80',
         ];
 
-        state.students = data.map((row, i) => ({
+        state.students = (data || []).map((row, i) => ({
           id: row.id,
           name: row.full_name,
           nickname: row.nickname || row.full_name.split(' ')[0],
@@ -1698,10 +1846,13 @@
           needsAttention: false,
           _fromDB: true,
         }));
-        renderView();
-        console.log(`[Supabase] Loaded ${data.length} students from DB`);
+        state.databaseStatus.students = true;
+        console.log(`[Supabase] Loaded ${state.students.length} students from DB`);
+        return true;
       } catch (err) {
         console.warn('[Supabase] students load exception:', err);
+        state.databaseStatus.students = false;
+        return false;
       }
     }
 
@@ -1709,12 +1860,15 @@
     async function loadTutorsFromSupabase() {
       try {
         const { data, error } = await sb.from('tutors').select('*').order('full_name');
-        if (error) { console.warn('[Supabase] tutors fetch error:', error.message); return; }
-        if (!data || data.length === 0) return;
-        state.tutors = data;
-        console.log(`[Supabase] Loaded ${data.length} tutors from DB`);
+        if (error) throw error;
+        state.tutors = data || [];
+        state.databaseStatus.tutors = true;
+        console.log(`[Supabase] Loaded ${state.tutors.length} tutors from DB`);
+        return true;
       } catch (err) {
         console.warn('[Supabase] tutors load exception:', err);
+        state.databaseStatus.tutors = false;
+        return false;
       }
     }
 
@@ -1725,67 +1879,160 @@
           .from('schedule_assignments')
           .select('*, tutors(full_name), curriculum_units(title_id, level, domain)')
           .order('scheduled_date');
-        if (error) { console.warn('[Supabase] schedule fetch error:', error.message); return; }
-        if (!data || data.length === 0) return;
-        state.scheduleItems = data.map(row => ({
+        if (error) throw error;
+        state.scheduleItems = (data || []).map(row => ({
           id: row.id,
-          date: row.scheduled_date,
+          date: normalizeDateKey(row.scheduled_date),
+          time: row.scheduled_time || row.start_time || row.time || '',
           status: row.status,
           notes: row.notes,
           tutorName: row.tutors?.full_name || '—',
           actTitle: row.curriculum_units?.title_id || '—',
+          domain: row.curriculum_units?.domain || 'science',
+          curriculumUnitId: row.curriculum_unit_id || row.curriculum_units?.id || null,
           actLevel: row.curriculum_units ? dbLevelToCode(row.curriculum_units.level) : null,
           _fromDB: true,
         }));
-        renderView();
-        console.log(`[Supabase] Loaded ${data.length} schedule items from DB`);
+        state.databaseStatus.schedule = true;
+        console.log(`[Supabase] Loaded ${state.scheduleItems.length} schedule items from DB`);
+        return true;
       } catch (err) {
         console.warn('[Supabase] schedule load exception:', err);
+        state.databaseStatus.schedule = false;
+        return false;
       }
+    }
+
+    async function loadObservationsFromSupabase() {
+      try {
+        const since24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const [allResult, recentResult] = await Promise.all([
+          sb.from('observations').select('*', { count: 'exact' }).order('created_at', { ascending: false }),
+          sb.from('observations').select('created_at', { count: 'exact', head: true }).gte('created_at', since24Hours),
+        ]);
+        if (allResult.error) throw allResult.error;
+        if (recentResult.error) throw recentResult.error;
+        state.databaseObservations = allResult.data || [];
+        state.databaseObservationCount = allResult.count ?? state.databaseObservations.length;
+        state.databaseRecentObservationCount = recentResult.count ?? 0;
+        state.databaseStatus.observations = true;
+        applyDatabaseObservations();
+        console.log(`[Supabase] Loaded ${state.databaseObservationCount} observations from DB`);
+        return true;
+      } catch (err) {
+        console.warn('[Supabase] observations load exception:', err);
+        state.databaseStatus.observations = false;
+        return false;
+      }
+    }
+
+    function applyDatabaseObservations() {
+      const latestByStudent = new Map();
+      state.databaseObservations.forEach(obs => {
+        if (!obs.student_id || !obs.created_at) return;
+        const current = latestByStudent.get(obs.student_id);
+        if (!current || new Date(obs.created_at) > new Date(current)) {
+          latestByStudent.set(obs.student_id, obs.created_at);
+        }
+      });
+
+      const now = Date.now();
+      state.students.forEach(student => {
+        const latest = latestByStudent.get(student.id);
+        const elapsed = latest ? now - new Date(latest).getTime() : Infinity;
+        student.lastObsDays = Number.isFinite(elapsed) ? Math.floor(elapsed / 86400000) : null;
+        student.needsAttention = !Number.isFinite(elapsed) || elapsed >= 7 * 86400000;
+      });
+
+      const studentNames = new Map(state.students.map(student => [student.id, student.name]));
+      state.observationsLog = state.databaseObservations.map(obs => ({
+        studentId: obs.student_id,
+        studentName: studentNames.get(obs.student_id) || (state.lang === 'id' ? 'Siswa' : 'Student'),
+        domain: 'science',
+        milestone: obs.milestone || (state.lang === 'id' ? 'Observasi perkembangan' : 'Development observation'),
+        level: obs.mastery_level || 'developing',
+        time: obs.created_at ? new Date(obs.created_at).toLocaleString(state.lang === 'id' ? 'id-ID' : 'en-US') : '—',
+        anecdote: obs.anecdote || '',
+      }));
     }
 
     // Load all Supabase data (runs after login)
     async function loadAllFromSupabase() {
-      await Promise.all([
+      state.databaseStatus = {
+        curriculum: false,
+        students: false,
+        tutors: false,
+        schedule: false,
+        observations: false,
+      };
+      state.students = [];
+      state.tutors = [];
+      state.scheduleItems = [];
+      state.databaseObservations = [];
+      state.databaseObservationCount = null;
+      state.databaseRecentObservationCount = null;
+      state.observationsLog = [];
+
+      const tables = ['curriculum_units', 'students', 'tutors', 'schedule_assignments', 'observations'];
+      const results = await Promise.all([
         loadCurriculumFromSupabase(),
         loadStudentsFromSupabase(),
         loadTutorsFromSupabase(),
         loadScheduleFromSupabase(),
+        loadObservationsFromSupabase(),
       ]);
+      if (state.databaseStatus.students && state.databaseStatus.observations) {
+        applyDatabaseObservations();
+      }
+      renderView();
+      const failedTables = results
+        .map((loaded, index) => loaded ? null : tables[index])
+        .filter(Boolean);
+      if (failedTables.length) {
+        showToast(
+          `${state.lang === 'id' ? 'Data Supabase gagal dimuat' : 'Supabase data could not be loaded'}: ${failedTables.join(', ')}. ${state.lang === 'id' ? 'Periksa koneksi dan izin RLS.' : 'Check the connection and RLS policies.'}`,
+          '⚠️'
+        );
+      }
     }
 
     // INSERT curriculum to Supabase
     async function saveCurriculumToSupabase(item) {
-      const levelText = (() => {
-        const map = {
-          'level-0': 'Level 0 - Green (Preschool – Precoding, PLEGO Blocks)',
-          'level-1': 'Level 1 - Yellow (SD 1–3 Precoding)',
-          'level-2': 'Level 2 - Red (SD 4–5 Micro:bit)',
-          'level-3': 'Level 3 - Blue (SMP Lanjutan)',
-        };
-        return map[item.level] || item.level;
-      })();
+      try {
+        const levelText = (() => {
+          const map = {
+            'level-0': 'Level 0 - Green (Preschool – Precoding, PLEGO Blocks)',
+            'level-1': 'Level 1 - Yellow (SD 1–3 Precoding)',
+            'level-2': 'Level 2 - Red (SD 4–5 Micro:bit)',
+            'level-3': 'Level 3 - Blue (SMP Lanjutan)',
+          };
+          return map[item.level] || item.level;
+        })();
 
-      const { data, error } = await sb.from('curriculum_units').insert([{
-        level: levelText,
-        semester: item.semester,
-        week: item.week,
-        bloom_level: item.bloom,
-        domain: item.domain.charAt(0).toUpperCase() + item.domain.slice(1), // capitalize for DB
-        title_id: item.title_id,
-        title_en: item.title_en || '',
-        tools: item.tools,
-        elo: item.elo,
-        canva_url: item.canva_url || null,
-      }]).select().single();
+        const { data, error } = await sb.from('curriculum_units').insert([{
+          level: levelText,
+          semester: item.semester,
+          week: item.week,
+          bloom_level: item.bloom,
+          domain: item.domain.charAt(0).toUpperCase() + item.domain.slice(1),
+          title_id: item.title_id,
+          title_en: item.title_en || '',
+          tools: item.tools,
+          elo: item.elo,
+          canva_url: item.canva_url || null,
+        }]).select().single();
 
-      if (error) {
-        console.warn('[Supabase] INSERT curriculum error:', error.message);
-        showToast('⚠️ Tersimpan lokal saja (DB error: ' + error.message + ')', '⚠️');
+        if (error) throw error;
+        console.log('[Supabase] curriculum INSERT ok:', data.id);
+        return data;
+      } catch (err) {
+        console.warn('[Supabase] INSERT curriculum error:', err);
+        showToast(
+          `${state.lang === 'id' ? 'Gagal menyimpan kurikulum ke database' : 'Could not save curriculum to the database'}: ${err.message || err}`,
+          '⚠️'
+        );
         return null;
       }
-      console.log('[Supabase] curriculum INSERT ok:', data.id);
-      return data;
     }
 
     // INSERT observation to Supabase
@@ -1797,19 +2044,25 @@
         return null;
       }
 
-      const { data, error } = await sb.from('observations').insert([{
-        student_id: student.id,
-        mastery_level: obs.level || 'developing',
-        milestone: obs.milestone || null,
-        anecdote: obs.anecdote,
-      }]).select().single();
+      try {
+        const { data, error } = await sb.from('observations').insert([{
+          student_id: student.id,
+          mastery_level: obs.level || 'developing',
+          milestone: obs.milestone || null,
+          anecdote: obs.anecdote,
+        }]).select().single();
 
-      if (error) {
-        console.warn('[Supabase] INSERT observation error:', error.message);
+        if (error) throw error;
+        console.log('[Supabase] observation INSERT ok:', data.id);
+        return data;
+      } catch (err) {
+        console.warn('[Supabase] INSERT observation error:', err);
+        showToast(
+          `${state.lang === 'id' ? 'Gagal menyimpan observasi ke database' : 'Could not save observation to the database'}: ${err.message || err}`,
+          '⚠️'
+        );
         return null;
       }
-      console.log('[Supabase] observation INSERT ok:', data.id);
-      return data;
     }
 
     // ============================================================
