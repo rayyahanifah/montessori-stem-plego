@@ -251,147 +251,31 @@
       }
     ];
 
-    // User credentials database for automatic role detection
-    const USER_DIRECTORY = [
-      {
-        email: 'rina.kusuma@plego.id',
-        password: 'plegostem2026',
-        name: 'Bu Rina Kusuma',
-        role: 'teacher',
-        avatar: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=120&auto=format&fit=crop&q=80',
-        classInfo: 'TK B1 — Little Botanists (4–5 th)'
-      },
-      {
-        email: 'hartini@plegoschools.id',
-        password: 'plegostem2026',
-        name: 'Ibu Hartini',
-        role: 'owner',
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80',
-        classInfo: 'Jaringan 3 Cabang PAUD Melati'
-      },
-      {
-        email: 'dimas.wijaya@gmail.com',
-        password: 'plegostem2026',
-        name: 'Pak Dimas Wijaya',
-        role: 'parent',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
-        classInfo: 'Wali Murid dari Kenzo Wijaya'
-      }
-    ];
-
     const state = {
       lang: 'id',
       currentUser: null, // STRICTLY NULL AT STARTUP -> MUST START AT LOGIN
       currentView: 'dashboard',
       plannerLayout: 'week', // 'day' | 'week' | 'month'
+      plannerDate: new Date(),
+      previewStudentId: null,
       selectedCurriculumLevel: 'level-0',
       selectedCurriculumSemester: 'all',
-      curriculumData: (JSON.parse(localStorage.getItem('plego_curriculum')) || initialCurriculumItems).map(item => {
-        if (!item.canva_url) {
-          item.canva_url = `https://www.canva.com/design/DAF8_Plego_${item.id || 'stem'}/view?embed`;
-        }
-        return item;
-      }),
+      curriculumSearch: '',
+      curriculumData: [],
       selectedActivity: null,
       selectedStudentForObs: null,
       obsLevel: 'developing',
-      students: [
-        { id: 'std-1', name: 'Kenzo Wijaya', age: '4th 3bln', avatar: 'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=100&auto=format&fit=crop&q=80', lastObsDays: 1, needsAttention: false },
-        { id: 'std-2', name: 'Siti Aisyah', age: '4th 8bln', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80', lastObsDays: 9, needsAttention: true },
-        { id: 'std-3', name: 'Bima Pratama', age: '4th 5bln', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', lastObsDays: 2, needsAttention: false },
-        { id: 'std-4', name: 'Nadia Utami', age: '4th 1bln', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&auto=format&fit=crop&q=80', lastObsDays: 12, needsAttention: true },
-        { id: 'std-5', name: 'Rehan Al-Fatih', age: '4th 9bln', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', lastObsDays: 3, needsAttention: false },
-        { id: 'std-6', name: 'Zahra Kirana', age: '4th 4bln', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&auto=format&fit=crop&q=80', lastObsDays: 4, needsAttention: false }
-      ],
-      activities: [
-        {
-          id: 'act-1',
-          domain: 'science',
-          duration: 25,
-          title_id: 'Eksplorasi Tenggelam atau Mengapung (Sink or Float)',
-          title_en: 'Sink or Float Sensorial Exploration',
-          summary_id: 'Anak membandingkan densitas benda alami lokal di baskom air kaca transparan.',
-          summary_en: 'Children compare densities of local natural items in a clear glass water basin.',
-          materials_id: ['Baskom kaca transparan berisi air', 'Batu kali halus', 'Daun mangga hijau & daun kering', 'Tutup botol plastik', 'Baki kayu Montessori'],
-          materials_en: ['Clear transparent glass basin with water', 'River pebbles', 'Mango green & dry leaves', 'Plastic bottle caps', 'Montessori work tray'],
-          local_tips_id: 'Gunakan daun kering pekarangan sekolah dan biji saga lokal alih-alih plastik sintetis.',
-          local_tips_en: 'Use schoolyard dried leaves and local saga seeds instead of manufactured plastics.',
-          steps_id: [
-            { phase: '1. Undangan (Invitation)', text: 'Ajak anak ke rak sains: "Kenzo, maukah kita mengamati benda yang menari di atas air?"' },
-            { phase: '2. Demonstrasi (Demonstration)', text: 'Pegang batu kali dengan dua jari, letakkan lembut di atas air hingga tenggelam.' },
-            { phase: '3. Kerja Mandiri (Child Work)', text: 'Beri kebebasan anak memilih benda uji tanpa menginterupsi kesimpulannya.' }
-          ],
-          steps_en: [
-            { phase: '1. Invitation', text: 'Invite child to the shelf: "Shall we see what dances on water?"' },
-            { phase: '2. Demonstration', text: 'Hold river pebble with two fingers, place gently until it sinks.' },
-            { phase: '3. Child Work', text: 'Grant complete freedom for child to experiment without interruption.' }
-          ],
-          montessori_notes_id: 'Control of error terletak pada air: anak melihat sendiri tanpa koreksi lisan guru.',
-          montessori_notes_en: 'Control of error resides in the water: child directly observes without verbal corrections.',
-          cover_img: 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=500&auto=format&fit=crop&q=80'
-        },
-        {
-          id: 'act-2',
-          domain: 'engineering',
-          duration: 30,
-          title_id: 'Rancang Bangun Jembatan Pasak Bambu',
-          title_en: 'Bamboo Peg & Elastic Polygon Bridge',
-          summary_id: 'Membangun rangka struktural dan poligon keseimbangan menggunakan pasak kayu dan gelang karet.',
-          summary_en: 'Building structural truss and balance polygons using wooden pegs and elastic loops.',
-          materials_id: ['Papan pasak kayu (Geoboard)', 'Karet gelang warna-warni', 'Miniatur perahu bambu'],
-          materials_en: ['Wooden peg geoboard', 'Colorful elastic bands', 'Miniature bamboo boat'],
-          local_tips_id: 'Manfaatkan sisa bilah bambu yang dihaluskan oleh perajin lokal.',
-          local_tips_en: 'Utilize smoothed local bamboo dowels from local woodshops.',
-          steps_id: [
-            { phase: '1. Undangan', text: 'Tunjukkan cara meregangkan karet pada pasak dengan aman.' },
-            { phase: '2. Eksplorasi', text: 'Tantang anak membuat jembatan yang dapat dilewati balok kecil.' }
-          ],
-          steps_en: [
-            { phase: '1. Invitation', text: 'Demonstrate stretching elastic loops across pegs safely.' },
-            { phase: '2. Exploration', text: 'Challenge child to span a bridge allowing a small wooden block underneath.' }
-          ],
-          montessori_notes_id: 'Melatih motorik halus pincer-grasp 3 jari dan sensibilitas tegangan gaya.',
-          montessori_notes_en: 'Refines the 3-finger pincer grasp and builds intuitive tension sensation.',
-          cover_img: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500&auto=format&fit=crop&q=80'
-        },
-        {
-          id: 'act-3',
-          domain: 'technology',
-          duration: 20,
-          title_id: 'Penyortiran Biner Manik Tempurung Kelapa',
-          title_en: 'Coconut Shell Unplugged Binary Sorter',
-          summary_id: 'Pengenalan komputasi unplugged: menyortir objek berdasarkan atribut biner 0 dan 1.',
-          summary_en: 'Unplugged computing: sorting objects based on boolean binary states 0 and 1.',
-          materials_id: ['2 mangkuk tempurung kelapa', 'Biji asam jawa & biji jagung', 'Sendok jepit bambu'],
-          materials_en: ['2 coconut shell bowls', 'Tamarind seeds & corn kernels', 'Bamboo tongs'],
-          local_tips_id: 'Tempurung kelapa parut sisa dapur yang diampelas halus.',
-          local_tips_en: 'Smoothed discarded coconut halves from local markets.',
-          steps_id: [
-            { phase: '1. Aturan Logika', text: 'Jika permukaan kasar masukkan ke tempurung A, jika halus ke tempurung B.' }
-          ],
-          steps_en: [
-            { phase: '1. Logic Rule', text: 'If textured place in shell A, if smooth place in shell B.' }
-          ],
-          montessori_notes_id: 'Membangun logika if-then dan klasifikasi sensorial diskret.',
-          montessori_notes_en: 'Fosters if-then conditional thinking and discrete sensorial classification.',
-          cover_img: 'https://images.unsplash.com/photo-1588072432836-e10032774350?w=500&auto=format&fit=crop&q=80'
-        }
-      ],
-      lessonPlanItems: [
-        { id: 'lp-1', day: 'mon', time: '09:00', actId: 'c-0-12', domain: 'math', status: 'delivered', block: 'work_cycle' },
-        { id: 'lp-2', day: 'tue', time: '09:30', actId: 'c-0-5', domain: 'engineering', status: 'delivered', block: 'work_cycle' },
-        { id: 'lp-3', day: 'wed', time: '09:00', actId: 'c-0-1', domain: 'science', status: 'delivered', block: 'circle_time' },
-        { id: 'lp-4', day: 'thu', time: '09:15', actId: 'c-0-1', domain: 'science', status: 'scheduled', block: 'work_cycle' },
-        { id: 'lp-5', day: 'fri', time: '10:00', actId: 'c-0-7', domain: 'technology', status: 'scheduled', block: 'outdoor' }
-      ],
-      observationsLog: [
-        { studentName: 'Kenzo Wijaya', domain: 'science', milestone: 'Memprediksi daya apung benda alami', level: 'developing', time: 'Hari ini, 09:40', anecdote: 'Kenzo mencoba 4 daun berbeda di baskom dan menemukan daun kering tetap mengapung.' },
-        { studentName: 'Bima Pratama', domain: 'engineering', milestone: 'Menyusun struktur pasak yang kokoh', level: 'mastered', time: 'Kemarin, 10:15', anecdote: 'Bima membuat jembatan dengan 6 pasak dan menguji kekuatan dengan balok kayu.' }
-      ],
+      students: [],
+      allStudents: [],
+      classes: [],
+      activeClassId: null,
+      observationsLog: [],
+      observationStudentFilter: 'all',
       scheduleItems: [],
       databaseStatus: {
         curriculum: false,
         students: false,
+        classes: false,
         tutors: false,
         schedule: false,
         observations: false,
@@ -411,7 +295,7 @@
         'login.password': 'Kata Sandi (Password):',
         'login.btn': 'Masuk ke Ruang Kerja',
         'login.quickDemo': 'Akses Demo Cepat 1-Klik (Deteksi Peran Otomatis):',
-        'topbar.currentClass': 'Kelas Aktif:',
+        'topbar.currentClass': 'Tampilan Kelas:',
         'nav.dashboard': 'Beranda Guru',
         'nav.curriculum': 'Kurikulum Plego v3.2',
         'nav.activities': 'Koleksi Aktivitas',
@@ -426,7 +310,8 @@
         'dash.subtitle': 'Jadwal dan ringkasan observasi dimuat dari database.',
         'dash.quickLog': 'Catat Observasi',
         'dash.openPlanner': 'Buka Planner',
-        'metrics.children': 'Anak di Kelas',
+        'dash.addToday': 'Jadwalkan Hari Ini',
+        'metrics.children': 'Semua Anak',
         'metrics.active': 'aktif terdaftar',
         'metrics.lessons': 'Aktivitas Minggu Ini',
         'metrics.delivered': 'terlaksana',
@@ -434,7 +319,7 @@
         'metrics.fromYesterday': '24 jam terakhir',
         'metrics.needsObservation': 'Perlu Observasi',
         'metrics.observationWindow': 'Belum diamati 7 hari',
-        'metrics.databaseRecords': 'Data dari database',
+        'metrics.databaseRecords': 'Di semua kelas',
         'metrics.needsReview': 'Perlu verifikasi guru',
         'dash.todayTitle': 'Jadwal Eksplorasi Hari Ini',
         'dash.todaySubtitle': 'Jadwal aktivitas dari database',
@@ -446,15 +331,25 @@
         'curr.title': 'Kurikulum Plego STEM & AI Path',
         'curr.subtitle': 'Pemetaan berjenjang dari Preschool (Level 0) hingga SMA dengan Taxonomy Bloom & PLEGO Blocks',
         'curr.addBtn': '+ Tambah Kurikulum Baru',
+        'curr.unitsHeading': 'Jalur Pembelajaran',
+        'curr.semesterAll': 'Semua',
+        'curr.semesterOdd': 'Gasal',
+        'curr.semesterEven': 'Genap',
         'act.title': 'Koleksi Aktivitas & Panduan Eksplorasi',
         'act.subtitle': 'Rencana aktivitas siap saji lengkap dengan alternatif material lokal Nusantara & panduan presentasi',
         'planner.weeklyTag': 'Perencana Pembelajaran',
-        'planner.title': 'Jadwal Eksplorasi Kelompok B1',
+        'planner.title': 'Rencana Belajar',
+        'planner.subtitle': 'Atur aktivitas, kelas, dan pendidik dalam satu tampilan.',
+        'planner.today': 'Hari Ini',
+        'planner.hint': 'Pilih hari untuk melihat atau menambahkan aktivitas',
+        'planner.view.day': 'Hari',
+        'planner.view.week': 'Minggu',
+        'planner.view.month': 'Bulan',
         'planner.copyForward': 'Salin Jadwal',
         'planner.print': 'Cetak PDF',
         'planner.todayBadge': 'HARI INI',
-        'planner.materialsTitle': 'Daftar Material & Bahan Nusantara Terjadwal',
-        'planner.autoAggregated': 'Otomatis teragregasi dari slot aktif',
+        'planner.materialsTitle': 'Material Minggu Ini',
+        'planner.autoAggregated': 'Dikumpulkan dari aktivitas terjadwal',
         'days.mon': 'Senin',
         'days.tue': 'Selasa',
         'days.wed': 'Rabu',
@@ -462,11 +357,28 @@
         'days.fri': 'Jumat',
         'obs.title': 'Alat Observasi & Ceklis Capaian STEM',
         'obs.subtitle': 'Format observasi 3-ketukan yang menghormati ritme alami anak saat bereksplorasi',
+        'obs.eyebrow': 'Ruang tumbuh anak',
+        'obs.feedEyebrow': 'Jejak belajar',
         'obs.filterClass': 'Filter:',
         'obs.selectStudent': 'Pilih Anak untuk Dicatat / Dievaluasi:',
         'obs.recentFeedTitle': 'Catatan Observasi Terkini di Kelas B1',
-        'obs.liveSynced': 'Sinkronisasi lokal aktif 🟢',
-        'parent.reportCycle': 'Laporan Perkembangan STEM Periode: November 2026 · Guru: Bu Rina Kusuma',
+        'obs.liveSynced': 'Tersinkron dengan database',
+        'parent.reportCycle': 'Perjalanan belajar dan catatan perkembangan anak',
+        'parent.reportEyebrow': 'Jurnal tumbuh kembang',
+        'parent.previewStudent': 'Pratinjau anak',
+        'parent.statObservations': 'Catatan observasi',
+        'parent.statMastered': 'Capaian dikuasai',
+        'parent.statClass': 'Lingkungan belajar',
+        'parent.reflectionEyebrow': 'Cerita dari pendidik',
+        'parent.databaseBadge': 'Data tersimpan',
+        'parent.progressEyebrow': 'Langkah demi langkah',
+        'parent.momentsEyebrow': 'Momen berharga',
+        'parent.recentObservations': 'Perjalanan belajar terbaru',
+        'parent.journeyEyebrow': 'Catatan pilihan',
+        'parent.gardenEyebrow': 'Tumbuh bersama',
+        'parent.gardenCaption': 'Setiap anak tumbuh dengan ritmenya sendiri.',
+        'parent.homeIdeaEyebrow': 'Ide sederhana di rumah',
+        'parent.connectionEyebrow': 'Tetap terhubung',
         'parent.downloadPdf': 'Unduh Portofolio (PDF)',
         'parent.summaryTitle': 'Rangkuman Refleksi Pendidik',
         'parent.approvedBadge': 'Disetujui Guru',
@@ -474,12 +386,12 @@
         'parent.domainProgress': 'Pertumbuhan Dimensi STEM',
         'parent.masteryScale': 'Skala: Mulai Muncul ➔ Menguasai',
         'parent.photoStripTitle': 'Dokumentasi Momen Pembelajaran',
-        'parent.plantTitle': 'Tanaman Belajar Kenzo',
+        'parent.plantTitle': 'Tanaman Belajar',
         'parent.plantDesc': 'Setiap pencapaian baru menumbuhkan daun pemahaman',
         'parent.tryHomeTitle': 'Eksplorasi Akhir Pekan di Rumah',
-        'parent.homeActTitle': 'Tebak Mengapung di Baskom Dapur',
-        'parent.homeActDesc': 'Ajak Kenzo mengumpulkan 4 benda dari dapur. Sebelum dimasukkan ke air, tanyakan: "Kira-kira benda ini tidur di dasar atau menari di atas air?"',
-        'parent.messageTitle': 'Pesan Singkat dengan Bu Rina',
+        'parent.homeActTitle': 'Ide aktivitas dari kurikulum',
+        'parent.homeActDesc': 'Coba jelajahi aktivitas sederhana bersama anak di rumah.',
+        'parent.messageTitle': 'Pesan Singkat dengan Pendidik',
         'modal.close': 'Tutup',
         'modal.addToPlan': '+ Tambahkan ke Planner',
         'modal.cancel': 'Batal',
@@ -504,7 +416,7 @@
         'login.password': 'Password:',
         'login.btn': 'Sign In to Workspace',
         'login.quickDemo': '1-Click Quick Demo Access (Auto Role Detection):',
-        'topbar.currentClass': 'Active Class:',
+        'topbar.currentClass': 'Class view:',
         'nav.dashboard': 'Teacher Dashboard',
         'nav.curriculum': 'Plego Curriculum v3.2',
         'nav.activities': 'Activity Library',
@@ -519,7 +431,8 @@
         'dash.subtitle': 'Schedules and observation summaries are loaded from the database.',
         'dash.quickLog': 'Log Observation',
         'dash.openPlanner': 'Open Planner',
-        'metrics.children': 'Children Enrolled',
+        'dash.addToday': 'Schedule Today',
+        'metrics.children': 'All Children',
         'metrics.active': 'active registered',
         'metrics.lessons': 'Weekly Lessons',
         'metrics.delivered': 'delivered',
@@ -527,7 +440,7 @@
         'metrics.fromYesterday': 'in the last 24 hours',
         'metrics.needsObservation': 'Needs Observation',
         'metrics.observationWindow': 'Not observed in 7 days',
-        'metrics.databaseRecords': 'Records from database',
+        'metrics.databaseRecords': 'Across all classes',
         'metrics.needsReview': 'Awaiting review',
         'dash.todayTitle': 'Today\'s Exploration Schedule',
         'dash.todaySubtitle': 'Activities scheduled in the database',
@@ -539,15 +452,25 @@
         'curr.title': 'Plego STEM & AI Tooling Path',
         'curr.subtitle': 'Progressive pathway from Preschool (Level 0) to Senior High with Bloom\'s Taxonomy & PLEGO Blocks',
         'curr.addBtn': '+ Add New Curriculum Unit',
+        'curr.unitsHeading': 'Learning Pathway',
+        'curr.semesterAll': 'All',
+        'curr.semesterOdd': 'Odd',
+        'curr.semesterEven': 'Even',
         'act.title': 'Activity Library & Exploration Guides',
         'act.subtitle': 'Ready-to-teach activities complete with local Indonesian materials & presentation sequences',
         'planner.weeklyTag': 'Lesson Planner',
-        'planner.title': 'Exploration Plan: TK B1 Little Botanists',
+        'planner.title': 'Learning Plan',
+        'planner.subtitle': 'Plan activities, classes, and educators in one place.',
+        'planner.today': 'Today',
+        'planner.hint': 'Choose a day to view or add activities',
+        'planner.view.day': 'Day',
+        'planner.view.week': 'Week',
+        'planner.view.month': 'Month',
         'planner.copyForward': 'Copy Schedule',
         'planner.print': 'Print PDF',
         'planner.todayBadge': 'TODAY',
-        'planner.materialsTitle': 'Scheduled Material & Parts Checklist',
-        'planner.autoAggregated': 'Auto-aggregated from active slots',
+        'planner.materialsTitle': 'Materials This Week',
+        'planner.autoAggregated': 'Collected from scheduled activities',
         'days.mon': 'Monday',
         'days.tue': 'Tuesday',
         'days.wed': 'Wednesday',
@@ -555,11 +478,28 @@
         'days.fri': 'Friday',
         'obs.title': 'Observation Tool & STEM Milestones',
         'obs.subtitle': '3-tap observation workflow that honors the child’s spontaneous exploration rhythm',
+        'obs.eyebrow': 'A space to grow',
+        'obs.feedEyebrow': 'Learning journey',
         'obs.filterClass': 'Filter:',
         'obs.selectStudent': 'Select Child to Observe / Evaluate:',
         'obs.recentFeedTitle': 'Recent Observation Entries in Class B1',
-        'obs.liveSynced': 'Offline local-sync active 🟢',
-        'parent.reportCycle': 'STEM Developmental Report: November 2026 · Lead Guide: Bu Rina Kusuma',
+        'obs.liveSynced': 'Synced with database',
+        'parent.reportCycle': 'Your child’s learning journey and progress notes',
+        'parent.reportEyebrow': 'Learning journal',
+        'parent.previewStudent': 'Preview child',
+        'parent.statObservations': 'Observation notes',
+        'parent.statMastered': 'Milestones mastered',
+        'parent.statClass': 'Learning environment',
+        'parent.reflectionEyebrow': 'A note from the educator',
+        'parent.databaseBadge': 'Saved records',
+        'parent.progressEyebrow': 'Step by step',
+        'parent.momentsEyebrow': 'Special moments',
+        'parent.recentObservations': 'Recent learning journey',
+        'parent.journeyEyebrow': 'Selected notes',
+        'parent.gardenEyebrow': 'Growing together',
+        'parent.gardenCaption': 'Every child grows at their own pace.',
+        'parent.homeIdeaEyebrow': 'A simple idea at home',
+        'parent.connectionEyebrow': 'Stay connected',
         'parent.downloadPdf': 'Download Portfolio (PDF)',
         'parent.summaryTitle': 'Educator Reflection Summary',
         'parent.approvedBadge': 'Teacher Approved',
@@ -567,12 +507,12 @@
         'parent.domainProgress': 'Growth Across STEM Domains',
         'parent.masteryScale': 'Scale: Emerging ➔ Mastered',
         'parent.photoStripTitle': 'Learning Moment Highlights',
-        'parent.plantTitle': 'Kenzo\'s Learning Plant',
+        'parent.plantTitle': 'Learning Garden',
         'parent.plantDesc': 'Every mastered milestone nurtures a new leaf of understanding',
         'parent.tryHomeTitle': 'Weekend At-Home Extension',
-        'parent.homeActTitle': 'Kitchen Water Sink or Float',
-        'parent.homeActDesc': 'Gather 4 kitchen items with Kenzo. Before dipping in water, ask: "Will this rest on the bottom or dance on the water?"',
-        'parent.messageTitle': 'Direct Chat with Bu Rina',
+        'parent.homeActTitle': 'An idea from the curriculum',
+        'parent.homeActDesc': 'Explore a simple learning activity together at home.',
+        'parent.messageTitle': 'A note to the educator',
         'modal.close': 'Close',
         'modal.addToPlan': '+ Add to Weekly Planner',
         'modal.cancel': 'Cancel',
@@ -605,73 +545,140 @@
     /* =====================================================================
        3. AUTHENTICATION & AUTOMATIC ROLE DETECTION
        ===================================================================== */
-    function handleLoginSubmit(e) {
+    async function handleLoginSubmit(e) {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
 
-      // Look up credential in user directory
-      const user = USER_DIRECTORY.find(u => u.email === email && u.password === password);
+      if (!email || !password) return;
+      try {
+        const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email, password });
+        if (authError && authError.status !== 400) throw authError;
+        if (authData?.user) {
+          const { data: parentRows, error: parentError } = await sb.from('parents')
+            .select('student_id, parent_name')
+            .eq('auth_id', authData.user.id);
+          if (parentError) {
+            const { error: signOutError } = await sb.auth.signOut();
+            if (signOutError) throw signOutError;
+            throw parentError;
+          }
+          const childStudentIds = [...new Set((parentRows || []).map(parent => parent.student_id).filter(Boolean))];
+          if (childStudentIds.length) {
+            executeLogin({
+              id: authData.user.id,
+              email: authData.user.email,
+              name: parentRows[0].parent_name,
+              role: 'parent',
+              childStudentIds,
+              classInfo: state.lang === 'id' ? 'Orang tua / wali' : 'Parent / guardian',
+            });
+            return;
+          }
+          const { error: signOutError } = await sb.auth.signOut();
+          if (signOutError) throw signOutError;
+        }
 
-      if (!user) {
-        showToast(state.lang === 'id' ? 'Email atau kata sandi tidak cocok. Gunakan tombol demo di bawah.' : 'Invalid email or password. Use demo buttons below.', '⚠️');
-        return;
+        const { data: tutor, error: tutorError } = await sb.from('tutors')
+          .select('id, full_name, email')
+          .eq('email', email)
+          .eq('password', password)
+          .maybeSingle();
+        if (tutorError) throw tutorError;
+        if (tutor) {
+          executeLogin({
+            id: tutor.id,
+            email: tutor.email,
+            name: tutor.full_name,
+            role: 'teacher',
+            classInfo: state.lang === 'id' ? 'Tutor Plego' : 'Plego tutor',
+          });
+          return;
+        }
+        showToast(state.lang === 'id'
+          ? 'Email atau kata sandi tidak cocok, atau akun belum ditautkan.'
+          : 'Email or password does not match, or the account is not linked.', '⚠️');
+      } catch (error) {
+        console.warn('[Supabase] account login failed:', error);
+        showToast(
+          `${state.lang === 'id' ? 'Login database gagal' : 'Database login failed'}: ${error.message || error}`,
+          '⚠️'
+        );
       }
-
-      executeLogin(user);
     }
 
-    function quickFillAndLogin(email, password) {
-      document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = password;
-      const user = USER_DIRECTORY.find(u => u.email === email);
-      if (user) {
-        executeLogin(user);
+    async function loadTutorDemoButtons() {
+      const container = document.getElementById('tutor-demo-buttons');
+      try {
+        const { data, error } = await sb.from('tutors')
+          .select('email, full_name')
+          .order('full_name')
+          .limit(3);
+        if (error) throw error;
+        if (!data?.length) {
+          container.innerHTML = `<p class="col-span-3 text-center text-xs text-forest-light">${state.lang === 'id' ? 'Akun tutor belum tersedia.' : 'No tutor accounts available.'}</p>`;
+          return;
+        }
+        container.innerHTML = data.map(tutor => `
+          <button type="button" onclick="quickFillAndLogin('${escapeHTML(tutor.email)}')"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs group">
+            <span class="block text-base mb-0.5">👩‍🏫</span>
+            <strong class="block text-[11px] group-hover:text-sage">${escapeHTML(tutor.full_name)}</strong>
+            <span class="text-[9px] text-forest-light">${escapeHTML(tutor.email)}</span>
+          </button>
+        `).join('');
+      } catch (error) {
+        console.warn('[Supabase] tutor demo accounts load failed:', error);
+        container.innerHTML = `<p class="col-span-3 text-center text-xs text-forest-light">${state.lang === 'id' ? 'Akun demo tidak dapat dimuat. Masukkan email tutor.' : 'Could not load demo accounts. Enter a tutor email.'}</p>`;
       }
+    }
+
+    async function quickFillAndLogin(email) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = 'plego123';
+      await handleLoginSubmit({ preventDefault() {} });
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('login-password');
+      const toggle = document.querySelector('.password-toggle');
+      const isVisible = input.type === 'text';
+
+      input.type = isVisible ? 'password' : 'text';
+      toggle.setAttribute('aria-pressed', String(!isVisible));
+      toggle.setAttribute('aria-label', isVisible ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi');
+      toggle.querySelector('.password-eye-open').classList.toggle('hidden', !isVisible);
+      toggle.querySelector('.password-eye-closed').classList.toggle('hidden', isVisible);
     }
 
     function executeLogin(user) {
       state.currentUser = user;
-
-      // Update topbar identity
-      document.getElementById('user-avatar').src = user.avatar;
+      state.previewStudentId = null;
+      document.getElementById('user-avatar').classList.add('hidden');
+      document.getElementById('user-avatar-initials').textContent = getInitials(user.name);
       document.getElementById('user-display-name').textContent = user.name;
       document.getElementById('dropdown-full-name').textContent = user.name;
       document.getElementById('dropdown-role-label').textContent = user.classInfo;
-      document.getElementById('dash-greeting-name').textContent = user.name.split(' ')[0] + ' ' + (user.name.split(' ')[1] || '');
+      document.getElementById('dash-greeting-name').textContent = user.name.split(' ')[0];
 
-      // Strict role-based navigation & privacy configuration
       configureRolePrivacy(user.role);
-
-      // Load all database-backed content immediately after login
-      if (window.supabase) {
-        loadAllFromSupabase().catch(err => {
-          console.warn('[Supabase] loadAllFromSupabase failed:', err);
-          showToast(state.lang === 'id' ? 'Koneksi Supabase gagal, data tetap memakai mode lokal.' : 'Supabase connection failed, app is using local fallback data.', '⚠️');
-        });
-      }
-
-      // Transition screen
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('app-wrapper').classList.remove('hidden');
-
       if (user.role === 'parent') {
         navigateTo('parentHub');
-        showToast(state.lang === 'id' ? `Masuk sebagai Orang Tua: ${user.name}` : `Signed in as Parent: ${user.name}`, '👨‍👩‍👦');
+        loadAllFromSupabase().catch(error => {
+          console.warn('[Supabase] parent data load failed:', error);
+          showToast(`${state.lang === 'id' ? 'Gagal memuat data anak' : 'Could not load child data'}: ${error.message || error}`, '⚠️');
+        });
+        showToast(state.lang === 'id' ? `Masuk sebagai orang tua: ${user.name}` : `Signed in as parent: ${user.name}`, '👨‍👩‍👦');
       } else {
         navigateTo('dashboard');
-        showToast(state.lang === 'id' ? `Masuk sebagai ${user.role === 'owner' ? 'Pemilik Sekolah' : 'Pendidik'}: ${user.name}` : `Welcome, ${user.name}!`, '👋');
+        loadAllFromSupabase().catch(error => {
+          console.warn('[Supabase] loadAllFromSupabase failed:', error);
+          showToast(`${state.lang === 'id' ? 'Gagal memuat data' : 'Could not load data'}: ${error.message || error}`, '⚠️');
+        });
+        showToast(state.lang === 'id' ? `Masuk sebagai tutor: ${user.name}` : `Signed in as tutor: ${user.name}`, '👋');
       }
-    }
-
-    function logout() {
-      state.currentUser = null;
-      document.getElementById('profile-dropdown').classList.add('hidden');
-      document.getElementById('app-wrapper').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-      document.getElementById('login-email').value = '';
-      document.getElementById('login-password').value = '';
-      showToast(state.lang === 'id' ? 'Anda telah berhasil keluar.' : 'Signed out successfully.', '🔒');
     }
 
     function toggleProfileDropdown() {
@@ -694,30 +701,50 @@
       const badgeAppMode = document.getElementById('badge-app-mode');
 
       if (role === 'parent') {
-        // STRICT PRIVACY: Parent sees only Parent Portal, zero access to teacher tools
         contextBadge.classList.add('hidden');
+        document.getElementById('parent-preview-picker-wrap').classList.add('hidden');
         badgeAppMode.textContent = 'Parent Portal';
         badgeAppMode.className = 'text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-sunshine-light text-sunshine-dark font-bold';
-
         nav.innerHTML = `
           <button onclick="navigateTo('parentHub')" id="nav-parentHub" class="nav-item active border-b-2 border-sage text-sage px-4 py-3 flex items-center gap-2 whitespace-nowrap">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <span data-i18n="nav.parentPortal">Portofolio Anak (Kenzo)</span>
-          </button>
-          <button onclick="scrollParentSection('try-home')" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap">
-            <span>🏡</span> <span data-i18n="nav.parentActivities">Eksplorasi di Rumah</span>
-          </button>
-          <button onclick="scrollParentSection('chat-teacher')" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap">
-            <span>✉️</span> <span data-i18n="nav.parentChat">Pesan dengan Guru</span>
-          </button>
-        `;
+            <span data-i18n="nav.parentPortal">Portofolio Anak</span>
+          </button>`;
       } else {
-        // Teacher / Owner has full pedagogical suite
         contextBadge.classList.remove('hidden');
-        badgeAppMode.textContent = role === 'owner' ? 'School Network' : 'Early Years';
+        document.getElementById('parent-preview-picker-wrap').classList.remove('hidden');
+        document.getElementById('parent-preview-picker-wrap').classList.add('md:flex');
+        badgeAppMode.textContent = 'Early Years';
         badgeAppMode.className = 'text-xs uppercase tracking-widest px-2 py-0.5 rounded-full bg-sand-200 text-forest font-bold';
 
         nav.innerHTML = `
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item active border-b-2 border-sage text-sage px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.dashboard">Beranda Guru</span></button>
+          <button onclick="navigateTo('curriculum')" id="nav-curriculum" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.curriculum">Kurikulum Plego v3.2</span></button>
+          <button onclick="navigateTo('planner')" id="nav-planner" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.planner">Perencana Pembelajaran</span></button>
+          <button onclick="navigateTo('observations')" id="nav-observations" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.observations">Observasi & Ceklis</span></button>`;
+      }
+    }
+    async function logout() {
+      if (state.currentUser?.role === 'parent') {
+        const { error } = await sb.auth.signOut();
+        if (error) {
+          console.warn('[Supabase] parent logout failed:', error);
+          showToast(`${state.lang === 'id' ? 'Gagal keluar' : 'Could not sign out'}: ${error.message || error}`, '⚠️');
+          return;
+        }
+      }
+      state.currentUser = null;
+      state.previewStudentId = null;
+      document.getElementById('profile-dropdown').classList.add('hidden');
+      document.getElementById('app-wrapper').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('user-avatar').classList.add('hidden');
+      document.getElementById('user-avatar-initials').textContent = 'PL';
+      showToast(state.lang === 'id' ? 'Anda telah berhasil keluar.' : 'Signed out successfully.', '🔒');
+    }
+
+    /*
           <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item active border-b-2 border-sage text-sage px-4 py-3 flex items-center gap-2 whitespace-nowrap">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
             <span data-i18n="nav.dashboard">Beranda Guru</span>
@@ -749,6 +776,7 @@
         window.scrollTo({ top: 800, behavior: 'smooth' });
       }
     }
+    */
 
     /* =====================================================================
        4. LANGUAGE SWITCHER (EN / ID)
@@ -834,18 +862,24 @@
       const currentDate = new Date();
       const todayKey = toLocalDateKey(currentDate);
       document.getElementById('dashboard-schedule-subtitle').textContent =
-        currentDate.toLocaleDateString(state.lang === 'id' ? 'id-ID' : 'en-US', {
+        `${currentDate.toLocaleDateString(state.lang === 'id' ? 'id-ID' : 'en-US', {
           weekday: 'long',
           day: 'numeric',
           month: 'long',
           year: 'numeric',
-        });
+        })} · ${state.activeClassId
+          ? state.classes.find(classItem => classItem.id === state.activeClassId)?.name || ''
+          : (state.lang === 'id' ? 'Semua kelas' : 'All classes')}`;
       const todayLessons = state.scheduleItems.filter(item => item.date === todayKey);
+      todayLessons.sort((left, right) => (left.time || '').localeCompare(right.time || ''));
       const studentsReady = state.databaseStatus.students;
       const scheduleReady = state.databaseStatus.schedule;
       const observationsReady = state.databaseStatus.observations;
+      const dashboardStudents = state.currentUser?.role === 'parent'
+        ? state.students
+        : state.allStudents;
       const needingObs = studentsReady && observationsReady
-        ? state.students.filter(student => student.needsAttention)
+        ? dashboardStudents.filter(student => student.needsAttention)
         : [];
 
       const weekStart = new Date(currentDate);
@@ -861,7 +895,7 @@
         ['delivered', 'completed', 'done'].includes(String(item.status || '').toLowerCase())
       );
       document.getElementById('dashboard-student-count').textContent =
-        studentsReady ? String(state.students.length) : '—';
+        studentsReady ? String(dashboardStudents.length) : '—';
       document.getElementById('dashboard-weekly-schedule-count').textContent =
         scheduleReady ? String(weeklyLessons.length) : '—';
       document.getElementById('dashboard-weekly-schedule-done').textContent =
@@ -889,7 +923,7 @@
       }
 
       scheduleContainer.innerHTML = scheduleReady
-        ? (todayLessons.length ? todayLessons.map(item => {
+        ? (todayLessons.length ? todayLessons.slice(0, 6).map(item => {
         const domainColor = getDomainColor(item.domain || 'science');
         return `
           <div class="flex items-center justify-between p-3.5 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage transition garden-interactive-btn">
@@ -898,7 +932,7 @@
               <div class="w-2.5 h-8 rounded-full ${domainColor.bg}"></div>
               <div>
                 <h4 class="font-bold text-sm text-forest">${escapeHTML(item.actTitle || (state.lang === 'id' ? 'Aktivitas STEM' : 'STEM activity'))}</h4>
-                <p class="text-xs text-forest-light">${escapeHTML(item.tutorName || domainColor.label)}</p>
+                <p class="text-xs text-forest-light">${escapeHTML([item.tutorName, item.assistantTutorName].filter(Boolean).join(' · ') || domainColor.label)}${item.className ? ` · ${escapeHTML(item.className)}` : ''}</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -917,20 +951,22 @@
       });
 
       attentionList.innerHTML = studentsReady && observationsReady
-        ? (needingObs.length ? needingObs.map(s => `
+        ? (needingObs.length ? needingObs.slice(0, 5).map(s => `
         <div class="flex items-center justify-between p-2.5 rounded-2xl bg-sand-50 border border-sand-200">
           <div class="flex items-center gap-2.5">
-            <img src="${escapeHTML(s.avatar)}" alt="${escapeHTML(s.name)}" class="w-9 h-9 rounded-full object-cover border border-sand-300">
+            <span class="w-9 h-9 rounded-full bg-sage-50 text-sage border border-sand-300 grid place-items-center text-[10px] font-bold">${escapeHTML(getInitials(s.name))}</span>
             <div>
               <p class="font-bold text-xs text-forest">${escapeHTML(s.name)}</p>
-              <p class="text-[10px] text-terracotta font-semibold">${s.lastObsDays} ${state.lang === 'id' ? 'hari lalu' : 'days ago'}</p>
+              <p class="text-[10px] text-terracotta font-semibold">${s.lastObsDays === null ? (state.lang === 'id' ? 'Belum pernah diamati' : 'Never observed') : `${s.lastObsDays} ${state.lang === 'id' ? 'hari lalu' : 'days ago'}`}</p>
             </div>
           </div>
           <button data-observe-student="${escapeHTML(s.id)}" class="text-xs font-bold px-3 py-1 rounded-full bg-terracotta text-white hover:bg-terracotta-dark transition">
             + ${state.lang === 'id' ? 'Amati' : 'Log'}
           </button>
         </div>
-      `).join('') : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Semua anak sudah diobservasi dalam 7 hari terakhir.' : 'All children have been observed in the last 7 days.'}</p>`)
+      `).join('') + (needingObs.length > 5
+          ? `<button type="button" onclick="navigateTo('observations')" class="w-full rounded-xl border border-sand-200 bg-white/70 py-2 text-xs font-bold text-sage-700 hover:bg-sage-50">${state.lang === 'id' ? `Lihat ${needingObs.length - 5} anak lainnya` : `View ${needingObs.length - 5} more children`}</button>`
+          : '') : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Semua anak sudah diobservasi dalam 7 hari terakhir.' : 'All children have been observed in the last 7 days.'}</p>`)
         : `<p class="text-xs text-forest-light py-4 text-center">${state.lang === 'id' ? 'Data observasi belum dapat dimuat dari database.' : 'Could not load observations from the database.'}</p>`;
       attentionList.querySelectorAll('[data-observe-student]').forEach(button => {
         button.addEventListener('click', () => openObservationModal(button.dataset.observeStudent));
@@ -944,11 +980,32 @@
       return `${year}-${month}-${day}`;
     }
 
+    function openTodaySchedule() {
+      state.plannerDate = new Date();
+      navigateTo('planner');
+      openScheduleSlotModal(toLocalDateKey(state.plannerDate));
+    }
+
     function normalizeDateKey(value) {
       const dateValue = String(value || '');
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return dateValue;
       const date = new Date(dateValue);
       return Number.isNaN(date.getTime()) ? '' : toLocalDateKey(date);
+    }
+
+    function readScheduleMetadata(notes) {
+      const prefix = 'PLEGO_META:';
+      if (!String(notes || '').startsWith(prefix)) return {};
+      try {
+        const metadata = JSON.parse(String(notes).slice(prefix.length));
+        return {
+          time: typeof metadata.time === 'string' ? metadata.time : '',
+          block: typeof metadata.block === 'string' ? metadata.block : '',
+        };
+      } catch (error) {
+        console.warn('[Supabase] Invalid schedule metadata:', error);
+        return {};
+      }
     }
 
     function escapeHTML(value) {
@@ -961,10 +1018,20 @@
       })[character]);
     }
 
+    function getInitials(name) {
+      return String(name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+    }
+
     /* FLOW 2: CURRICULUM BROWSER */
     function renderCurriculum() {
       const container = document.getElementById('curriculum-units-container');
       const tloBanner = document.getElementById('level-tlo-banner');
+      const searchInput = document.getElementById('curriculum-search');
+      searchInput.placeholder = state.lang === 'id'
+        ? 'Cari aktivitas, perangkat, atau capaian...'
+        : 'Search activities, tools, or learning outcomes...';
+      searchInput.setAttribute('aria-label', state.lang === 'id' ? 'Cari unit kurikulum' : 'Search curriculum units');
+      searchInput.value = state.curriculumSearch;
 
       const tloMap = {
         'level-0': {
@@ -991,25 +1058,38 @@
 
       const currTlo = tloMap[state.selectedCurriculumLevel];
       tloBanner.innerHTML = `
-        <div class="flex items-start gap-2.5">
-          <span class="text-base">🎯</span>
-          <div>
-            <h4 class="font-bold text-forest text-xs mb-0.5">${currTlo.title}</h4>
-            <p class="text-forest-light leading-relaxed">${state.lang === 'id' ? currTlo.tlo_id : currTlo.tlo_en}</p>
-          </div>
+        <div class="curriculum-tlo-icon" aria-hidden="true">✦</div>
+        <div class="min-w-0">
+          <span class="curriculum-eyebrow">${state.lang === 'id' ? 'TUJUAN PEMBELAJARAN LEVEL' : 'LEVEL LEARNING OUTCOME'}</span>
+          <h2 class="font-heading font-bold text-forest text-base md:text-lg mt-1">${escapeHTML(currTlo.title)}</h2>
+          <p class="text-forest-light leading-relaxed mt-2">${escapeHTML(state.lang === 'id' ? currTlo.tlo_id : currTlo.tlo_en)}</p>
         </div>
+        <span class="curriculum-tlo-spark" aria-hidden="true">🌱</span>
       `;
 
+      const searchTerm = state.curriculumSearch.trim().toLocaleLowerCase();
+      document.querySelectorAll('[data-level-count]').forEach(badge => {
+        const count = state.curriculumData.filter(item => item.level === badge.dataset.levelCount).length;
+        badge.textContent = count;
+      });
       const filtered = state.curriculumData.filter(item => {
         const matchLevel = item.level === state.selectedCurriculumLevel;
         const matchSemester = state.selectedCurriculumSemester === 'all' || item.semester === state.selectedCurriculumSemester;
-        return matchLevel && matchSemester;
+        const searchableText = [
+          bText(item, 'title'), item.tools, item.elo, item.domain, item.bloom, item.semester, item.week,
+        ].filter(Boolean).join(' ').toLocaleLowerCase();
+        return matchLevel && matchSemester && (!searchTerm || searchableText.includes(searchTerm));
       });
+
+      const resultCount = document.getElementById('curriculum-result-count');
+      resultCount.textContent = `${filtered.length} ${state.lang === 'id' ? 'unit ditemukan' : 'units found'}`;
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="col-span-3 text-center py-12 text-forest-light text-sm">
-            <p>🌿 ${state.lang === 'id' ? 'Belum ada unit kurikulum untuk filter ini.' : 'No curriculum entries for this filter.'}</p>
+          <div class="curriculum-empty col-span-full">
+            <span class="text-3xl" aria-hidden="true">🌿</span>
+            <h3 class="font-heading font-bold text-forest mt-3">${state.lang === 'id' ? 'Belum ada unit yang cocok' : 'No matching units yet'}</h3>
+            <p class="text-sm text-forest-light mt-1">${state.lang === 'id' ? 'Coba kata kunci atau filter semester yang berbeda.' : 'Try a different search term or semester filter.'}</p>
           </div>
         `;
         return;
@@ -1018,42 +1098,56 @@
       container.innerHTML = filtered.map(item => {
         const dColor = getDomainColor(item.domain || 'engineering');
         const bloomBadge = getBloomBadge(item.bloom);
+        const title = bText(item, 'title') || (state.lang === 'id' ? 'Unit kurikulum' : 'Curriculum unit');
+        const tools = item.tools || (state.lang === 'id' ? 'Belum ada perangkat' : 'No tools listed');
+        const elo = item.elo || (state.lang === 'id' ? 'Capaian pembelajaran belum ditambahkan.' : 'No learning outcome added yet.');
+        const domainIcon = {
+          science: '🔬',
+          technology: '⚙️',
+          engineering: '🧩',
+          mathematics: '🔢',
+          art: '🎨',
+        }[String(item.domain || '').toLowerCase()] || '🌱';
         return `
-          <div class="bg-sand-50 rounded-2xl p-5 border border-sand-200 flex flex-col justify-between garden-card-hover group">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${bloomBadge.bg} ${bloomBadge.text}">
-                  ${item.bloom}
-                </span>
-                <span class="text-[11px] font-mono text-forest-light font-bold">Sem. ${item.semester} · M${item.week}</span>
-              </div>
-
-              <h3 class="font-heading font-bold text-forest text-base mb-2 group-hover:text-sage transition">
-                ${bText(item, 'title')}
-              </h3>
-
-              <div class="p-2.5 rounded-xl bg-cream border border-sand-200/80 mb-3">
-                <span class="text-[10px] font-bold text-forest-light uppercase block mb-1">🛠 Learning Tools / Perangkat:</span>
-                <p class="text-xs font-semibold text-forest">${item.tools}</p>
-              </div>
-
-              <p class="text-xs text-forest-light leading-relaxed">
-                ${item.elo}
-              </p>
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-sand-200 flex items-center justify-between gap-2 text-xs flex-wrap">
-              <span class="text-[11px] font-bold ${dColor.textColor}">${dColor.label}</span>
-              <div class="flex items-center gap-2">
-                <button onclick="openCurriculumGuide('${item.id}')" class="px-3 py-1.5 rounded-full bg-cream hover:bg-sand-200 text-forest font-bold border border-sand-200 transition flex items-center gap-1.5 garden-interactive-btn">
-                  <span>📖</span> <span>${state.lang === 'id' ? 'Buka Panduan' : 'Open Guide'}</span>
-                </button>
-                <button onclick="scheduleCurriculumToPlanner('${item.id}')" class="px-3 py-1.5 rounded-full bg-sage hover:bg-sage-600 text-white font-bold transition flex items-center gap-1 shadow-xs garden-interactive-btn">
-                  + Jadwalkan →
-                </button>
+          <article class="curriculum-unit-card garden-card-hover group">
+            <div class="curriculum-card-top">
+              <span class="curriculum-domain-icon" aria-hidden="true">${domainIcon}</span>
+              <div class="flex flex-wrap items-center justify-end gap-1.5">
+                <span class="curriculum-meta-pill">${state.lang === 'id' ? `Minggu ${escapeHTML(item.week ?? '—')}` : `Week ${escapeHTML(item.week ?? '—')}`}</span>
+                <span class="curriculum-meta-pill">${escapeHTML(item.semester || '—')}</span>
               </div>
             </div>
-          </div>
+
+            <div class="flex flex-wrap items-center gap-2 mt-4">
+              <span class="curriculum-domain-label ${dColor.textColor}">${escapeHTML(dColor.label)}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${bloomBadge.bg} ${bloomBadge.text}">${escapeHTML(item.bloom || '—')}</span>
+            </div>
+
+            <h3 class="font-heading font-bold text-forest text-lg leading-snug mt-3 group-hover:text-sage transition">
+              ${escapeHTML(title)}
+            </h3>
+
+            <div class="curriculum-tools mt-4">
+              <span class="curriculum-eyebrow">${state.lang === 'id' ? 'PERANGKAT EKSPLORASI' : 'EXPLORATION TOOLS'}</span>
+              <p class="text-xs font-semibold text-forest mt-1 leading-relaxed">${escapeHTML(tools)}</p>
+            </div>
+
+            <div class="mt-4">
+              <span class="curriculum-eyebrow">${state.lang === 'id' ? 'CAPAIAN PEMBELAJARAN' : 'LEARNING OUTCOME'}</span>
+              <p class="text-xs text-forest-light leading-relaxed mt-1">${escapeHTML(elo)}</p>
+            </div>
+
+            <div class="mt-auto pt-5">
+              <div class="curriculum-card-actions">
+                <button onclick="openCurriculumGuide('${escapeHTML(item.id)}')" class="curriculum-guide-btn garden-interactive-btn">
+                  <span aria-hidden="true">📖</span> <span>${state.lang === 'id' ? 'Panduan' : 'Guide'}</span>
+                </button>
+                <button onclick="scheduleCurriculumToPlanner('${escapeHTML(item.id)}')" class="curriculum-schedule-btn garden-interactive-btn">
+                  <span>＋</span> <span>${state.lang === 'id' ? 'Jadwalkan' : 'Schedule'}</span>
+                </button>
+              </div>
+            </div>
+          </article>
         `;
       }).join('');
     }
@@ -1062,11 +1156,9 @@
       state.selectedCurriculumLevel = level;
       const pills = document.querySelectorAll('#curriculum-level-pills button');
       pills.forEach(p => {
-        if (p.getAttribute('onclick').includes(level)) {
-          p.className = 'px-3.5 py-1.5 rounded-full bg-sage text-white text-xs font-bold shadow-sm whitespace-nowrap garden-interactive-btn';
-        } else {
-          p.className = 'px-3.5 py-1.5 rounded-full bg-sand-100 hover:bg-sand-200 text-forest-light text-xs font-bold whitespace-nowrap garden-interactive-btn';
-        }
+        const isActive = p.getAttribute('onclick').includes(level);
+        p.classList.toggle('is-active', isActive);
+        p.setAttribute('aria-pressed', String(isActive));
       });
       renderCurriculum();
     }
@@ -1076,12 +1168,18 @@
       ['all', 'gasal', 'genap'].forEach(s => {
         const btn = document.getElementById(`sem-${s}`);
         if (s === sem.toLowerCase()) {
-          btn.className = 'px-3 py-1 rounded-full bg-forest text-cream transition';
+          btn.className = 'px-3.5 py-2 rounded-full bg-forest text-cream transition';
         } else {
-          btn.className = 'px-3 py-1 rounded-full text-forest-light hover:text-forest transition';
+          btn.className = 'px-3.5 py-2 rounded-full text-forest-light hover:text-forest transition';
         }
       });
       renderCurriculum();
+    }
+
+    function clearCurriculumSearch() {
+      state.curriculumSearch = '';
+      renderCurriculum();
+      document.getElementById('curriculum-search').focus();
     }
 
     function openAddCurriculumModal() {
@@ -1134,27 +1232,18 @@
     function scheduleCurriculumToPlanner(currId) {
       const item = state.curriculumData.find(c => c.id === currId);
       if (!item) return;
-
-      state.lessonPlanItems.push({
-        id: 'lp-' + Date.now(),
-        day: 'fri',
-        time: '11:00',
-        actId: item.id,
-        domain: item.domain || 'engineering',
-        status: 'scheduled',
-        block: 'work_cycle'
-      });
-
-      showToast(state.lang === 'id' ? `"${bText(item, 'title')}" dijadwalkan ke hari Jumat!` : `Scheduled to Friday!`, '📅');
       navigateTo('planner');
+      openScheduleSlotModal(toLocalDateKey(state.plannerDate));
+      document.getElementById('modal-schedule-act').value = item.id;
     }
 
     /* UNIFIED CURRICULUM GUIDE & CANVA INTEGRATION */
     function openCurriculumGuide(currId) {
-      const item = state.curriculumData.find(c => c.id === currId) ||
-        (state.activities && state.activities.find(a => a.id === currId)) ||
-        state.curriculumData[0];
-      if (!item) return;
+      const item = state.curriculumData.find(c => c.id === currId);
+      if (!item) {
+        showToast(state.lang === 'id' ? 'Panduan kurikulum tidak ditemukan di database.' : 'Curriculum guide was not found in the database.', '⚠️');
+        return;
+      }
       state.selectedActivity = item;
 
       const dColor = getDomainColor(item.domain || 'engineering');
@@ -1303,18 +1392,10 @@
 
     function assignActivityToPlannerPrompt() {
       if (!state.selectedActivity) return;
-      state.lessonPlanItems.push({
-        id: 'lp-' + Date.now(),
-        day: 'thu',
-        time: '10:30',
-        actId: state.selectedActivity.id,
-        domain: state.selectedActivity.domain || 'science',
-        status: 'scheduled',
-        block: 'work_cycle'
-      });
       closeModal('modal-activity');
       navigateTo('planner');
-      showToast(state.lang === 'id' ? 'Aktivitas berhasil ditambahkan ke jadwal!' : 'Activity added to schedule!', '📅');
+      openScheduleSlotModal(toLocalDateKey(state.plannerDate));
+      document.getElementById('modal-schedule-act').value = state.selectedActivity.id;
     }
 
     /* FLOW 4: OVERHAULED INTERACTIVE LESSON PLANNER (DAY / WEEK / MONTH) */
@@ -1322,11 +1403,8 @@
       state.plannerLayout = layout;
       ['day', 'week', 'month'].forEach(l => {
         const btn = document.getElementById(`planner-btn-${l}`);
-        if (l === layout) {
-          btn.className = 'px-3.5 py-1.5 rounded-full bg-forest text-cream transition shadow-xs';
-        } else {
-          btn.className = 'px-3.5 py-1.5 rounded-full text-forest-light hover:text-forest transition';
-        }
+        btn.classList.toggle('is-active', l === layout);
+        btn.setAttribute('aria-pressed', String(l === layout));
       });
       renderPlanner();
     }
@@ -1334,207 +1412,258 @@
     function renderPlanner() {
       const container = document.getElementById('planner-view-container');
       const periodLabel = document.getElementById('planner-period-label');
+      const activeDate = new Date(state.plannerDate);
+      activeDate.setHours(0, 0, 0, 0);
+      const weekStart = new Date(activeDate);
+      weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+      const weekdays = Array.from({ length: 5 }, (_, index) => {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + index);
+        return date;
+      });
+      const selectedDates = state.plannerLayout === 'day'
+        ? [activeDate]
+        : state.plannerLayout === 'month'
+          ? (() => {
+            const first = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1);
+            first.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+            return Array.from({ length: 42 }, (_, index) => {
+              const date = new Date(first);
+              date.setDate(first.getDate() + index);
+              return date;
+            });
+          })()
+          : weekdays;
+      const locale = state.lang === 'id' ? 'id-ID' : 'en-US';
+      const dayLabel = date => date.toLocaleDateString(locale, { weekday: 'long' });
+      const dateLabel = date => date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+      const monthLabel = activeDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
-      // 1. WEEK VIEW
-      if (state.plannerLayout === 'week') {
-        periodLabel.textContent = '16 – 20 Nov 2026';
-        const days = [
-          { key: 'mon', label_id: 'Senin', label_en: 'Monday', date: '16 Nov' },
-          { key: 'tue', label_id: 'Selasa', label_en: 'Tuesday', date: '17 Nov' },
-          { key: 'wed', label_id: 'Rabu', label_en: 'Wednesday', date: '18 Nov' },
-          { key: 'thu', label_id: 'Kamis', label_en: 'Thursday', date: '19 Nov', today: true },
-          { key: 'fri', label_id: 'Jumat', label_en: 'Friday', date: '20 Nov' }
-        ];
+      periodLabel.textContent = state.plannerLayout === 'month'
+        ? monthLabel
+        : state.plannerLayout === 'day'
+          ? activeDate.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+          : `${dateLabel(weekdays[0])}${weekdays[0].getFullYear() !== weekdays[4].getFullYear() ? ` ${weekdays[0].getFullYear()}` : ''} – ${dateLabel(weekdays[4])} ${weekdays[4].getFullYear()}`;
 
+      const getItemTitle = item => {
+        const activity = state.curriculumData.find(entry => entry.id === item.curriculumUnitId);
+        const title = activity ? bText(activity, 'title') : item.actTitle;
+        return title && !['—', '-'].includes(String(title).trim())
+          ? title
+          : state.lang === 'id' ? 'Aktivitas STEM' : 'STEM activity';
+      };
+
+      const renderItem = item => {
+        const activity = state.curriculumData.find(entry => entry.id === item.curriculumUnitId);
+        const color = getDomainColor(item.domain || activity?.domain || 'science');
+        const title = getItemTitle(item);
+        const isDone = ['delivered', 'completed', 'done'].includes(String(item.status || '').toLowerCase());
+        const tutors = [item.tutorName, item.assistantTutorName].filter(Boolean);
+        return `
+          <article class="planner-lesson-card garden-card-hover">
+            <div class="planner-lesson-topline">
+              <span class="planner-lesson-time">${escapeHTML(item.time || '—')}</span>
+              <span class="planner-domain-dot ${color.bg}" aria-hidden="true"></span>
+            </div>
+            <h4 class="planner-lesson-title">${escapeHTML(title)}</h4>
+            <div class="planner-lesson-meta">
+              <span class="planner-meta-chip">${escapeHTML(item.className || (state.lang === 'id' ? 'Kelas belum dipilih' : 'Class not set'))}</span>
+              ${item.block ? `<span class="planner-meta-chip">${escapeHTML(item.block)}</span>` : ''}
+            </div>
+            ${tutors.length ? `<p class="planner-lesson-tutors"><span aria-hidden="true">◉</span> ${escapeHTML(tutors.join(' · '))}</p>` : ''}
+            <div class="planner-lesson-footer">
+              <span class="planner-status ${isDone ? 'is-complete' : ''}">${isDone ? (state.lang === 'id' ? 'Selesai' : 'Done') : (state.lang === 'id' ? 'Terjadwal' : 'Scheduled')}</span>
+              <div class="planner-lesson-actions">
+                ${activity ? `<button onclick="openCurriculumGuide('${escapeHTML(activity.id)}')" class="planner-action-link">${state.lang === 'id' ? 'Panduan' : 'Guide'}</button>` : ''}
+                ${state.currentUser?.role !== 'parent' ? `<button onclick="deletePlanItem('${escapeHTML(item.id)}')" class="planner-action-link is-delete">${state.lang === 'id' ? 'Hapus' : 'Delete'}</button>` : ''}
+              </div>
+            </div>
+          </article>`;
+      };
+
+      if (!state.databaseStatus.schedule) {
+        container.innerHTML = `<p class="planner-empty-state is-error">${state.lang === 'id' ? 'Jadwal belum terhubung ke database.' : 'The schedule could not be loaded from the database.'}</p>`;
+      } else if (state.plannerLayout === 'month') {
+        const firstMonth = activeDate.getMonth();
         container.innerHTML = `
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-            ${days.map(d => {
-          const items = state.lessonPlanItems.filter(i => i.day === d.key);
-          const isToday = d.today;
-          return `
-                <div class="${isToday ? 'bg-cream border-2 border-sage shadow-soft' : 'bg-sand-50/70 border border-sand-200'} rounded-2xl p-3 flex flex-col justify-between relative transition hover:border-sage">
-                  ${isToday ? `<div class="absolute -top-2.5 right-3 bg-sage text-white text-[9px] font-bold px-2 py-0.5 rounded-full">HARI INI</div>` : ''}
+          <div class="planner-month">
+            <div class="planner-weekday-headings">
+              ${['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((day, index) => `<span>${state.lang === 'id' ? day : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}</span>`).join('')}
+            </div>
+            <div class="planner-month-grid">
+              ${selectedDates.map(date => {
+                const dateKey = toLocalDateKey(date);
+                const items = state.scheduleItems.filter(item => item.date === dateKey);
+                const inMonth = date.getMonth() === firstMonth;
+                const isToday = dateKey === toLocalDateKey(new Date());
+                const shortItems = items.slice(0, 2).map(getItemTitle);
+                return `<button type="button" onclick="state.plannerDate = new Date('${dateKey}T00:00:00'); setPlannerLayout('day')" aria-label="${escapeHTML(date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }))}${items.length ? `, ${items.length} ${state.lang === 'id' ? 'aktivitas' : 'activities'}` : ''}" class="planner-month-day ${isToday ? 'is-today' : ''} ${inMonth ? '' : 'is-outside-month'}">
+                  <span class="planner-month-date">${date.getDate()}</span>
+                  ${shortItems.length ? `<span class="planner-month-events">${shortItems.map(title => `<span class="planner-month-event">${escapeHTML(title)}</span>`).join('')}${items.length > 2 ? `<span class="planner-month-more">+${items.length - 2} ${state.lang === 'id' ? 'lainnya' : 'more'}</span>` : ''}</span>` : ''}
+                </button>`;
+              }).join('')}
+            </div>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="planner-days-grid ${state.plannerLayout === 'week' ? 'is-week' : 'is-day'}">
+            ${selectedDates.map(date => {
+              const dateKey = toLocalDateKey(date);
+              const items = state.scheduleItems.filter(item => item.date === dateKey);
+              const isToday = dateKey === toLocalDateKey(new Date());
+              return `<section class="planner-day-column ${isToday ? 'is-today' : ''}">
+                <div class="planner-day-heading">
                   <div>
-                    <div class="flex items-center justify-between pb-2 border-b border-sand-200">
-                      <span class="font-heading font-bold text-sm ${isToday ? 'text-sage-700' : 'text-forest'}">${state.lang === 'id' ? d.label_id : d.label_en}</span>
-                      <span class="text-xs font-bold text-forest-light">${d.date}</span>
-                    </div>
-
-                    <div class="space-y-2 mt-3">
-                      ${items.map(item => {
-            const act = state.curriculumData.find(a => a.id === item.actId) || (state.activities && state.activities.find(a => a.id === item.actId)) || state.curriculumData[0];
-            const dColor = getDomainColor(item.domain || act?.domain || 'science');
-            const isDone = item.status === 'delivered';
-            return `
-                          <div class="p-3 rounded-xl bg-white border border-sand-200 shadow-xs hover:border-sage transition cursor-pointer garden-card-hover group" onclick="openCurriculumGuide('${act.id}')">
-                            <div class="flex items-center justify-between mb-1">
-                              <span class="text-[10px] font-mono text-forest-light font-bold">${item.time}</span>
-                              <span class="w-2 h-2 rounded-full ${dColor.bg}"></span>
-                            </div>
-                            <h4 class="font-bold text-xs text-forest leading-snug group-hover:text-sage transition">
-                              ${bText(act, 'title')}
-                            </h4>
-                            <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-sand-100 text-[10px]">
-                              <span class="text-forest-light">${act.tools ? act.tools.split(',')[0] : 'Montessori'} · ${item.block}</span>
-                              <span class="px-1.5 py-0.2 rounded font-bold ${isDone ? 'bg-leaf/10 text-leaf' : 'bg-sand-200 text-forest-light'}">
-                                ${isDone ? (state.lang === 'id' ? 'Selesai' : 'Done') : (state.lang === 'id' ? 'Rencana' : 'Plan')}
-                              </span>
-                            </div>
-                          </div>
-                        `;
-          }).join('')}
-                    </div>
+                    <span class="planner-day-name">${escapeHTML(dayLabel(date))}</span>
+                    <span class="planner-day-date">${escapeHTML(dateLabel(date))}</span>
                   </div>
-
-                  <button onclick="openScheduleSlotModal('${d.key}')" class="w-full mt-3 py-2 rounded-xl border border-dashed border-sand-300 hover:border-sage hover:bg-cream text-forest-light hover:text-sage text-[11px] font-bold transition flex items-center justify-center gap-1 garden-interactive-btn">
-                    + ${state.lang === 'id' ? 'Tambah Slot' : 'Add Slot'}
-                  </button>
+                  <span class="planner-day-count">${items.length}</span>
                 </div>
-              `;
-        }).join('')}
-          </div>
-        `;
-      }
-      // 2. DAY VIEW
-      else if (state.plannerLayout === 'day') {
-        periodLabel.textContent = 'Kamis, 19 Nov 2026 (Hari Ini)';
-        const dayItems = state.lessonPlanItems.filter(i => i.day === 'thu');
-
-        container.innerHTML = `
-          <div class="bg-sand-50 rounded-2xl p-5 border border-sand-200">
-            <div class="flex items-center justify-between mb-4 pb-3 border-b border-sand-200">
-              <h3 class="font-heading font-bold text-forest text-base flex items-center gap-2">
-                <span>☀️</span> Agenda Pembelajaran Harian (Work Cycle)
-              </h3>
-              <button onclick="openScheduleSlotModal('thu')" class="text-xs font-bold px-3 py-1.5 rounded-full bg-sage text-white shadow-sm garden-interactive-btn">
-                + Tambah Aktivitas Hari Ini
-              </button>
-            </div>
-
-            <div class="space-y-3">
-              ${dayItems.length === 0 ? '<p class="text-xs text-forest-light text-center py-6">Tidak ada aktivitas yang dijadwalkan untuk hari ini.</p>' : ''}
-              ${dayItems.map(item => {
-          const act = state.curriculumData.find(a => a.id === item.actId) || (state.activities && state.activities.find(a => a.id === item.actId)) || state.curriculumData[0];
-          const dColor = getDomainColor(item.domain || act?.domain || 'science');
-          return `
-                  <div class="p-4 rounded-2xl bg-cream border border-sand-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 garden-card-hover">
-                    <div class="flex items-center gap-4">
-                      <div class="text-center bg-sand-100 p-2.5 rounded-xl border border-sand-200 min-w-16">
-                        <span class="block text-xs font-mono font-bold text-forest">${item.time}</span>
-                        <span class="text-[9px] uppercase font-bold text-forest-light">${item.block}</span>
-                      </div>
-                      <div>
-                        <div class="flex items-center gap-2 mb-1">
-                          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${dColor.bgLight} ${dColor.textColor}">${dColor.label}</span>
-                          <span class="text-xs text-forest-light">${act.tools || 'Plego Blocks'}</span>
-                        </div>
-                        <h4 class="font-bold text-sm text-forest">${bText(act, 'title')}</h4>
-                        <p class="text-xs text-forest-light line-clamp-1">${act.elo || ''}</p>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-2 self-end sm:self-center">
-                      <button onclick="openCurriculumGuide('${act.id}')" class="text-xs px-3 py-1.5 rounded-full bg-sand-100 text-forest border border-sand-200 hover:bg-sand-200 transition">Panduan</button>
-                      <button onclick="deletePlanItem('${item.id}')" class="text-xs px-2.5 py-1.5 rounded-full text-berry hover:bg-berry/10 transition">Hapus</button>
-                    </div>
-                  </div>
-                `;
-        }).join('')}
-            </div>
-          </div>
-        `;
-      }
-      // 3. MONTH VIEW
-      else if (state.plannerLayout === 'month') {
-        periodLabel.textContent = 'November 2026';
-        container.innerHTML = `
-          <div class="bg-sand-50 rounded-2xl p-5 border border-sand-200">
-            <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-forest-light pb-2 mb-2 border-b border-sand-200">
-              <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
-            </div>
-            <div class="grid grid-cols-7 gap-2 text-xs">
-              ${Array.from({ length: 30 }, (_, i) => {
-          const dayNum = i + 1;
-          const hasActivity = dayNum >= 16 && dayNum <= 20;
-          const isToday = dayNum === 19;
-          return `
-                  <div onclick="${hasActivity ? "setPlannerLayout('day')" : "showToast('Klik tanggal 16 - 20 untuk melihat jadwal aktif minggu ini', '📅')"}"
-                       class="h-20 p-1.5 rounded-xl border ${isToday ? 'bg-cream border-2 border-sage font-bold' : (hasActivity ? 'bg-white border-sand-200 hover:border-sage cursor-pointer' : 'bg-sand-100/50 border-transparent text-forest-light/60')} flex flex-col justify-between transition">
-                    <span class="text-[11px]">${dayNum}</span>
-                    ${hasActivity ? `
-                      <div class="space-y-0.5">
-                        <span class="block text-[9px] truncate px-1 py-0.5 rounded bg-sage/10 text-sage-700 font-semibold">STEM Eksplorasi</span>
-                      </div>
-                    ` : ''}
-                  </div>
-                `;
-        }).join('')}
-            </div>
-          </div>
-        `;
+                <div class="planner-day-items">
+                  ${items.length ? items.map(renderItem).join('') : `<p class="planner-empty-day">${state.lang === 'id' ? 'Belum ada jadwal' : 'No lessons scheduled'}</p>`}
+                </div>
+                ${state.currentUser?.role !== 'parent' ? `<button onclick="openScheduleSlotModal('${dateKey}')" class="planner-add-slot">${state.lang === 'id' ? '+ Tambah aktivitas' : '+ Add activity'}</button>` : ''}
+              </section>`;
+            }).join('')}
+          </div>`;
       }
 
-      // Materials checklist aggregation
       const materialsContainer = document.getElementById('planner-materials-list');
-      const materials = [
-        'Modul Sensor Cahaya & LED Plego (4 set)',
-        'Baskom kaca transparan & air jernih (4 buah)',
-        'Batu kerikil kali & ranting bambu halus (2 baki)',
-        'Papan pasak kayu & karet warna-warni (3 set)',
-        'Mangkuk tempurung kelapa parut (6 buah)',
-        'Motor DC & Modul Saklar Plego Blocks (2 set)'
-      ];
-      materialsContainer.innerHTML = materials.map(m => `
-        <label class="flex items-center gap-2 p-2 rounded-xl bg-cream border border-sand-200 cursor-pointer hover:bg-white transition">
-          <input type="checkbox" checked class="w-3.5 h-3.5 rounded text-sage focus:ring-sage">
-          <span class="text-forest">${m}</span>
+      const materials = [...new Set(state.scheduleItems
+        .filter(item => item.date >= toLocalDateKey(weekdays[0]) && item.date <= toLocalDateKey(weekdays[4]))
+        .map(item => state.curriculumData.find(activity => activity.id === item.curriculumUnitId)?.tools)
+        .filter(Boolean)
+        .flatMap(value => value.split(',').map(material => material.trim())))];
+      materialsContainer.innerHTML = materials.length ? materials.map(material => `
+        <label class="planner-material-item">
+          <input type="checkbox">
+          <span>${escapeHTML(material)}</span>
         </label>
-      `).join('');
+      `).join('') : `<p class="planner-material-empty">${state.lang === 'id' ? 'Material akan muncul dari aktivitas terjadwal minggu ini.' : 'Materials will appear from this week’s scheduled activities.'}</p>`;
     }
 
-    function openScheduleSlotModal(day = 'thu') {
+    function openScheduleSlotModal(date = toLocalDateKey(state.plannerDate)) {
+      if (!state.databaseStatus.schedule || !state.databaseStatus.curriculum || !state.databaseStatus.tutors) {
+        showToast(state.lang === 'id'
+          ? 'Database jadwal, kurikulum, atau pendidik belum siap.'
+          : 'The schedule, curriculum, or tutor database is not ready.', '⚠️');
+        return;
+      }
+      if (!state.classes.length) {
+        showToast(state.lang === 'id' ? 'Belum ada kelas yang tersedia untuk dijadwalkan.' : 'No classes are available for scheduling.', '⚠️');
+        return;
+      }
+      if (!state.curriculumData.some(item => item._fromDB)) {
+        showToast(state.lang === 'id' ? 'Belum ada aktivitas kurikulum dari database.' : 'No database curriculum units are available.', '⚠️');
+        return;
+      }
       const selectAct = document.getElementById('modal-schedule-act');
-      selectAct.innerHTML = state.curriculumData.map(a => `
-        <option value="${a.id}">${bText(a, 'title')}</option>
+      selectAct.innerHTML = state.curriculumData.filter(item => item._fromDB).map(a => `
+        <option value="${escapeHTML(a.id)}">${escapeHTML(bText(a, 'title'))}</option>
       `).join('');
-
-      document.getElementById('modal-schedule-day').value = day;
+      const tutorSelect = document.getElementById('modal-schedule-tutor');
+      tutorSelect.innerHTML = state.tutors.map(tutor => `
+        <option value="${escapeHTML(tutor.id)}">${escapeHTML(tutor.full_name)}</option>
+      `).join('');
+      const assistantSelect = document.getElementById('modal-schedule-assistant');
+      assistantSelect.innerHTML = `<option value="">${state.lang === 'id' ? 'Tidak ada tutor pendamping' : 'No co-tutor'}</option>` +
+        state.tutors.map(tutor => `
+          <option value="${escapeHTML(tutor.id)}">${escapeHTML(tutor.full_name)}</option>
+        `).join('');
+      const classSelect = document.getElementById('modal-schedule-class');
+      classSelect.innerHTML = state.classes.map(classItem => `
+        <option value="${escapeHTML(classItem.id)}">${escapeHTML(classItem.name)}</option>
+      `).join('');
+      classSelect.value = state.activeClassId || state.classes[0]?.id || '';
+      const currentTutor = state.tutors.find(tutor =>
+        tutor.email?.toLowerCase() === state.currentUser?.email?.toLowerCase()
+      );
+      if (currentTutor) tutorSelect.value = currentTutor.id;
+      document.getElementById('modal-schedule-day').value = date;
+      const selectedClass = state.classes.find(classItem => classItem.id === classSelect.value);
+      if (selectedClass?.start_time) {
+        document.getElementById('modal-schedule-time').value = selectedClass.start_time.slice(0, 5);
+      }
       openModal('modal-schedule-lesson');
     }
 
-    function handleSaveScheduledLesson(e) {
+    async function handleSaveScheduledLesson(e) {
       e.preventDefault();
-      const day = document.getElementById('modal-schedule-day').value;
+      const date = document.getElementById('modal-schedule-day').value;
       const actId = document.getElementById('modal-schedule-act').value;
       const time = document.getElementById('modal-schedule-time').value;
       const block = document.getElementById('modal-schedule-block').value;
+      const tutorId = document.getElementById('modal-schedule-tutor').value;
+      const assistantTutorId = document.getElementById('modal-schedule-assistant').value || null;
+      const classId = document.getElementById('modal-schedule-class').value;
+      if (!date || !actId || !tutorId || !classId) {
+        showToast(state.lang === 'id' ? 'Lengkapi tanggal, aktivitas, kelas, dan pendidik.' : 'Choose a date, activity, class, and tutor.', '⚠️');
+        return;
+      }
+      if (assistantTutorId === tutorId) {
+        showToast(state.lang === 'id' ? 'Pilih tutor pendamping yang berbeda.' : 'Choose a different co-tutor.', '⚠️');
+        return;
+      }
 
-      const act = state.curriculumData.find(a => a.id === actId) || state.curriculumData[0];
-
-      state.lessonPlanItems.push({
-        id: 'lp-' + Date.now(),
-        day, time, actId,
-        domain: act ? (act.domain || 'science') : 'science',
+      const { error } = await sb.from('schedule_assignments').insert([{
+        class_id: classId,
+        activity_id: actId,
+        tutor_id: tutorId,
+        assistant_tutor_id: assistantTutorId,
+        scheduled_date: date,
         status: 'scheduled',
-        block
-      });
-
+        notes: `PLEGO_META:${JSON.stringify({ time, block })}`,
+      }]);
+      if (error) {
+        console.warn('[Supabase] schedule INSERT error:', error);
+        showToast(`${state.lang === 'id' ? 'Gagal menyimpan jadwal' : 'Could not save schedule'}: ${error.message}`, '⚠️');
+        return;
+      }
+      await loadScheduleFromSupabase();
       closeModal('modal-schedule-lesson');
       renderPlanner();
       showToast(state.lang === 'id' ? 'Slot pembelajaran berhasil ditambahkan!' : 'Lesson slot added!', '📅');
     }
 
-    function deletePlanItem(id) {
-      state.lessonPlanItems = state.lessonPlanItems.filter(i => i.id !== id);
+    async function deletePlanItem(id) {
+      const { data, error } = await sb.from('schedule_assignments')
+        .delete()
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
+      if (error || !data) {
+        console.warn('[Supabase] schedule DELETE error:', error || 'No row deleted');
+        showToast(state.lang === 'id'
+          ? `Jadwal tidak terhapus di database${error?.message ? `: ${error.message}` : '.'}`
+          : `The schedule was not deleted from the database${error?.message ? `: ${error.message}` : '.'}`, '⚠️');
+        return;
+      }
+      state.scheduleItems = state.scheduleItems.filter(item => item.id !== id);
       renderPlanner();
-      showToast(state.lang === 'id' ? 'Jadwal dihapus.' : 'Item removed.', '🗑️');
+      showToast(state.lang === 'id' ? 'Jadwal dihapus dari database.' : 'Schedule deleted from the database.', '🗑️');
     }
 
     function changePlannerWeek(delta) {
-      showToast(delta > 0 ? 'Maju ke minggu berikutnya' : 'Mundur ke minggu sebelumnya', '🗓️');
+      if (state.plannerLayout === 'month') {
+        const dayOfMonth = state.plannerDate.getDate();
+        state.plannerDate.setDate(1);
+        state.plannerDate.setMonth(state.plannerDate.getMonth() + delta);
+        const lastDayOfMonth = new Date(
+          state.plannerDate.getFullYear(),
+          state.plannerDate.getMonth() + 1,
+          0
+        ).getDate();
+        state.plannerDate.setDate(Math.min(dayOfMonth, lastDayOfMonth));
+      } else {
+        const amount = state.plannerLayout === 'day' ? 1 : 7;
+        state.plannerDate.setDate(state.plannerDate.getDate() + delta * amount);
+      }
+      renderPlanner();
     }
 
     function resetPlannerWeek() {
-      setPlannerLayout('day');
+      state.plannerDate = new Date();
+      renderPlanner();
     }
 
     /* FLOW 5: OBSERVATION CHECKLIST */
@@ -1542,56 +1671,285 @@
       const grid = document.getElementById('students-grid');
       const feed = document.getElementById('observation-feed');
 
-      grid.innerHTML = state.databaseStatus.students ? (state.students.length ? state.students.map(s => `
-        <div data-observe-student="${escapeHTML(s.id)}" class="p-3 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage hover:shadow-soft transition text-center cursor-pointer group garden-card-hover">
-          <div class="w-14 h-14 mx-auto rounded-full overflow-hidden border-2 ${s.needsAttention ? 'border-terracotta' : 'border-sage'} mb-2 group-hover:scale-105 transition">
-            <img src="${escapeHTML(s.avatar)}" alt="${escapeHTML(s.name)}" class="w-full h-full object-cover">
-          </div>
-          <h4 class="font-bold text-xs text-forest truncate">${escapeHTML(s.name)}</h4>
-          <span class="text-[10px] text-forest-light">${escapeHTML(s.age)}</span>
-          <div class="mt-1">
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${s.needsAttention ? 'bg-terracotta-light text-terracotta' : 'bg-sage-50 text-sage-700'}">
-              ${s.needsAttention ? (state.lang === 'id' ? 'Perlu Amati' : 'Needs Obs') : (state.lang === 'id' ? 'Tercatat' : 'Observed')}
+      const roster = state.currentUser?.role === 'parent' ? state.students : state.allStudents;
+      const feedObservations = state.observationsLog.filter(observation => {
+        const student = state.allStudents.find(item => item.id === observation.studentId);
+        return !state.activeClassId || student?.classId === state.activeClassId;
+      });
+      const rosterCount = document.getElementById('observation-student-count');
+      rosterCount.textContent = state.databaseStatus.students
+        ? `${roster.length} ${state.lang === 'id' ? 'anak' : 'children'}`
+        : (state.lang === 'id' ? 'Data siswa belum tersedia' : 'Student data unavailable');
+      document.getElementById('obs-summary-total-label').textContent =
+        state.lang === 'id' ? 'Anak terdaftar' : 'Children listed';
+      document.getElementById('obs-summary-needs-label').textContent =
+        state.lang === 'id' ? 'Perlu diamati' : 'Need observation';
+      document.getElementById('obs-summary-recent-label').textContent =
+        state.lang === 'id' ? 'Observasi tercatat' : 'Notes logged';
+      document.getElementById('obs-summary-total').textContent =
+        state.databaseStatus.students ? String(roster.length) : '—';
+      document.getElementById('obs-summary-needs').textContent =
+        state.databaseStatus.students ? String(roster.filter(student => student.needsAttention).length) : '—';
+      document.getElementById('obs-summary-recent').textContent =
+        state.databaseStatus.observations ? String(feedObservations.length) : '—';
+      document.getElementById('obs-roster-hint').textContent = state.lang === 'id'
+        ? 'Pilih anak untuk menambahkan catatan perkembangan.'
+        : 'Choose a child to add a developmental observation.';
+      document.getElementById('add-observation-student-label').textContent =
+        state.lang === 'id' ? 'Tambah Anak' : 'Add Child';
+      document.getElementById('add-observation-student-button').classList.toggle(
+        'hidden',
+        state.currentUser?.role === 'parent'
+      );
+      const searchInput = document.getElementById('observation-student-search');
+      searchInput.placeholder = state.lang === 'id' ? 'Cari nama anak...' : 'Search children...';
+      searchInput.setAttribute('aria-label', searchInput.placeholder);
+      document.querySelector('[data-i18n="obs.recentFeedTitle"]').textContent =
+        `${state.lang === 'id' ? 'Catatan Observasi Terkini' : 'Recent Observations'}${state.activeClassId ? ` · ${state.classes.find(item => item.id === state.activeClassId)?.name || ''}` : ''}`;
+      const needsObservationCount = roster.filter(student => student.needsAttention).length;
+      const observationFilterOptions = [
+        { id: 'all', icon: '🌈', label: state.lang === 'id' ? 'Semua anak' : 'All children', count: roster.length },
+        { id: 'needs', icon: '🌱', label: state.lang === 'id' ? 'Perlu diamati' : 'Need a check-in', count: needsObservationCount },
+        { id: 'observed', icon: '✨', label: state.lang === 'id' ? 'Terpantau' : 'On track', count: roster.length - needsObservationCount },
+      ];
+      const filterGroup = document.getElementById('observation-student-filters');
+      filterGroup.setAttribute('aria-label', state.lang === 'id' ? 'Filter status anak' : 'Filter children by status');
+      filterGroup.innerHTML = observationFilterOptions.map(option => `
+        <button type="button" class="observation-filter-chip ${state.observationStudentFilter === option.id ? 'is-active' : ''}"
+          data-observation-filter="${option.id}" aria-pressed="${state.observationStudentFilter === option.id}">
+          <span aria-hidden="true">${option.icon}</span>${option.label}<span class="observation-filter-count">${option.count}</span>
+        </button>
+      `).join('');
+      filterGroup.querySelectorAll('[data-observation-filter]').forEach(button => {
+        button.addEventListener('click', () => {
+          state.observationStudentFilter = button.dataset.observationFilter;
+          filterGroup.querySelectorAll('[data-observation-filter]').forEach(filterButton => {
+            const isActive = filterButton === button;
+            filterButton.classList.toggle('is-active', isActive);
+            filterButton.setAttribute('aria-pressed', String(isActive));
+          });
+          filterObservationStudents(searchInput.value);
+        });
+      });
+      const cardDoodles = ['🌼', '🦋', '☀️', '🍀', '🌷', '✨'];
+      grid.innerHTML = state.databaseStatus.students ? (roster.length ? roster.map((s, index) => {
+        const noteCount = state.observationsLog.filter(observation => observation.studentId === s.id).length;
+        const needsAttention = s.needsAttention;
+        return `
+        <article data-observe-student="${escapeHTML(s.id)}" data-student-name="${escapeHTML(s.name.toLocaleLowerCase())}"
+          data-student-status="${needsAttention ? 'needs' : 'observed'}"
+          class="observation-student-card ${needsAttention ? 'needs-attention' : 'has-observation'}"
+          tabindex="0" aria-label="${escapeHTML(`${state.lang === 'id' ? 'Catat observasi untuk' : 'Record observation for'} ${s.name}`)}">
+          <div class="observation-student-card-top">
+            <span class="observation-student-avatar ${needsAttention ? 'is-attention' : ''}">
+              ${escapeHTML(getInitials(s.name))}
+              <span class="observation-student-doodle" aria-hidden="true">${cardDoodles[index % cardDoodles.length]}</span>
+            </span>
+            <span class="observation-student-status ${needsAttention ? 'is-attention' : 'is-observed'}">
+              <span aria-hidden="true">${needsAttention ? '•' : '✓'}</span>
+              ${needsAttention ? (state.lang === 'id' ? 'Perlu diamati' : 'Needs attention') : (state.lang === 'id' ? 'Terpantau' : 'On track')}
             </span>
           </div>
-        </div>
-      `).join('') : `<p class="col-span-full text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Belum ada data siswa di database.' : 'No students found in the database.'}</p>`)
-        : `<p class="col-span-full text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Data siswa belum dapat dimuat dari database.' : 'Could not load students from the database.'}</p>`;
+          <h3 class="observation-student-name">${escapeHTML(s.name)}</h3>
+          <p class="observation-student-meta">${escapeHTML(s.className || '')}${s.age && s.age !== '—' ? ` · ${escapeHTML(s.age)}` : ''}</p>
+          <span class="observation-student-note-count">🌿 ${noteCount} ${state.lang === 'id' ? 'catatan' : 'notes'}</span>
+          <div class="observation-student-actions">
+            <button type="button" data-record-student="${escapeHTML(s.id)}" class="observation-record-action">
+              ${state.lang === 'id' ? 'Yuk, amati' : 'Let’s observe'} <span aria-hidden="true">✦</span>
+            </button>
+            ${state.currentUser?.role === 'parent' ? '' : `<button type="button" data-preview-student="${escapeHTML(s.id)}" class="observation-preview-action">${state.lang === 'id' ? 'Pratinjau' : 'Preview'}</button>`}
+          </div>
+        </article>
+      `;
+      }).join('') : `<p class="observation-grid-empty">${state.lang === 'id' ? 'Belum ada data siswa di database.' : 'No students found in the database.'}</p>`)
+        : `<p class="observation-grid-empty">${state.lang === 'id' ? 'Data siswa belum dapat dimuat dari database.' : 'Could not load students from the database.'}</p>`;
       grid.querySelectorAll('[data-observe-student]').forEach(card => {
-        card.addEventListener('click', () => openObservationModal(card.dataset.observeStudent));
+        const openCard = () => openObservationModal(card.dataset.observeStudent);
+        card.addEventListener('click', openCard);
+        card.addEventListener('keydown', event => {
+          if (event.target !== card) return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openCard();
+          }
+        });
       });
+      grid.querySelectorAll('[data-preview-student]').forEach(button => {
+        button.addEventListener('click', event => {
+          event.stopPropagation();
+          openStudentParentPreview(button.dataset.previewStudent);
+        });
+      });
+      grid.querySelectorAll('[data-record-student]').forEach(button => {
+        button.addEventListener('click', event => {
+          event.stopPropagation();
+          openObservationModal(button.dataset.recordStudent);
+        });
+      });
+      filterObservationStudents(searchInput.value);
 
-      feed.innerHTML = state.databaseStatus.observations ? (state.observationsLog.length ? state.observationsLog.map(obs => {
+      feed.innerHTML = state.databaseStatus.observations ? (feedObservations.length ? feedObservations.map(obs => {
         const dColor = getDomainColor(obs.domain);
         return `
-          <div class="p-4 rounded-2xl bg-sand-50 border border-sand-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 garden-card-hover">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="font-bold text-sm text-forest">${escapeHTML(obs.studentName)}</span>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${dColor.bgLight} ${dColor.textColor}">${dColor.label}</span>
-                <span class="text-xs text-forest-light">· ${escapeHTML(obs.time)}</span>
+          <article class="observation-feed-item">
+            <div class="observation-feed-avatar">${escapeHTML(getInitials(obs.studentName))}</div>
+            <div class="observation-feed-content">
+              <div class="observation-feed-meta">
+                <span class="observation-feed-student">${escapeHTML(obs.studentName)}</span>
+                <span class="observation-domain-pill ${dColor.bgLight} ${dColor.textColor}">${dColor.label}</span>
+                <span class="observation-feed-time">${escapeHTML(obs.time)}</span>
               </div>
-              <p class="text-xs font-semibold text-forest mb-1">"${escapeHTML(obs.milestone)}"</p>
-              <p class="text-xs text-forest-light italic leading-relaxed">${state.lang === 'id' ? 'Catatan' : 'Note'}: ${escapeHTML(obs.anecdote)}</p>
+              <p class="observation-feed-milestone">${escapeHTML(obs.milestone)}</p>
+              <p class="observation-feed-note">${escapeHTML(obs.anecdote)}</p>
             </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="text-xs font-bold px-3 py-1 rounded-full bg-sky-light text-sky border border-sky/30">
-                ${getMasteryLabel(obs.level)}
-              </span>
-            </div>
-          </div>
+            <span class="observation-mastery-pill">${getMasteryLabel(obs.level)}</span>
+          </article>
         `;
-      }).join('') : `<p class="text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Belum ada data observasi di database.' : 'No observations found in the database.'}</p>`)
-        : `<p class="text-xs text-forest-light text-center py-6">${state.lang === 'id' ? 'Data observasi belum dapat dimuat dari database.' : 'Could not load observations from the database.'}</p>`;
+      }).join('') : `<p class="observation-feed-empty">${state.lang === 'id' ? 'Belum ada catatan observasi. Mulai dengan memilih anak di atas.' : 'No observations yet. Start by selecting a child above.'}</p>`)
+        : `<p class="observation-feed-empty is-error">${state.lang === 'id' ? 'Data observasi belum dapat dimuat dari database.' : 'Could not load observations from the database.'}</p>`;
     }
 
-    function openObservationModal(studentId = 'std-1') {
+    function filterObservationStudents(query = '') {
+      const grid = document.getElementById('students-grid');
+      const cards = [...grid.querySelectorAll('[data-observe-student]')];
+      const normalizedQuery = query.trim().toLocaleLowerCase();
+      let visibleCount = 0;
+      cards.forEach(card => {
+        const matches = card.dataset.studentName.includes(normalizedQuery) &&
+          (state.observationStudentFilter === 'all' || card.dataset.studentStatus === state.observationStudentFilter);
+        card.classList.toggle('is-filtered', !matches);
+        if (matches) visibleCount += 1;
+      });
+      const result = document.getElementById('observation-search-result');
+      const isFiltering = normalizedQuery || state.observationStudentFilter !== 'all';
+      result.textContent = isFiltering
+        ? `${visibleCount} ${state.lang === 'id' ? 'dari' : 'of'} ${cards.length} ${state.lang === 'id' ? 'anak' : 'children'}`
+        : '';
+      const noResults = document.getElementById('observation-no-results');
+      noResults.textContent = state.lang === 'id'
+        ? (state.observationStudentFilter !== 'all' && !normalizedQuery
+          ? 'Belum ada anak pada status ini. Coba filter lainnya.'
+          : 'Tidak ada anak yang cocok dengan pencarian atau filter.')
+        : (state.observationStudentFilter !== 'all' && !normalizedQuery
+          ? 'No children in this status yet. Try another filter.'
+          : 'No children match this search or filter.');
+      noResults.classList.toggle('hidden', !cards.length || visibleCount > 0);
+    }
+
+    function openAddStudentModal() {
+      if (state.currentUser?.role === 'parent') {
+        showToast(state.lang === 'id' ? 'Orang tua tidak memiliki izin menambahkan anak.' : 'Parents cannot add children.', '⚠️');
+        return;
+      }
+      if (!state.databaseStatus.students || !state.databaseStatus.classes) {
+        showToast(state.lang === 'id'
+          ? 'Data kelas atau siswa belum tersedia. Muat ulang halaman dan coba lagi.'
+          : 'Student or class data is unavailable. Reload the page and try again.', '⚠️');
+        return;
+      }
+      if (!state.classes.length) {
+        showToast(state.lang === 'id' ? 'Belum ada kelas untuk dipilih.' : 'There are no classes to choose from.', '⚠️');
+        return;
+      }
+
+      const labels = state.lang === 'id'
+        ? {
+          eyebrow: 'Ruang tumbuh anak',
+          title: 'Tambah Anak',
+          subtitle: 'Daftarkan anak ke kelas agar dapat dicatat perkembangannya.',
+          name: 'Nama lengkap anak',
+          class: 'Kelas',
+          note: '✨ Anak baru akan langsung muncul di daftar observasi setelah berhasil disimpan.',
+          cancel: 'Batal',
+          submit: 'Simpan Anak',
+          chooseClass: 'Pilih kelas',
+        }
+        : {
+          eyebrow: 'A space to grow',
+          title: 'Add Child',
+          subtitle: 'Add a child to a class so their learning progress can be recorded.',
+          name: 'Child’s full name',
+          class: 'Class',
+          note: '✨ The new child will appear in the observation list after saving.',
+          cancel: 'Cancel',
+          submit: 'Save Child',
+          chooseClass: 'Choose a class',
+        };
+      document.getElementById('add-student-eyebrow').textContent = labels.eyebrow;
+      document.getElementById('add-student-title').textContent = labels.title;
+      document.getElementById('add-student-subtitle').textContent = labels.subtitle;
+      document.getElementById('new-student-name-label').textContent = labels.name;
+      document.getElementById('new-student-class-label').textContent = labels.class;
+      document.getElementById('add-student-note').textContent = labels.note;
+      document.getElementById('add-student-cancel').textContent = labels.cancel;
+      document.getElementById('add-student-submit').textContent = labels.submit;
+
+      const classSelect = document.getElementById('new-student-class');
+      classSelect.innerHTML = `<option value="">${labels.chooseClass}</option>` + state.classes.map(classItem =>
+        `<option value="${escapeHTML(classItem.id)}">${escapeHTML(classItem.name)}</option>`
+      ).join('');
+      document.getElementById('add-student-form').reset();
+      if (state.activeClassId && state.classes.some(classItem => classItem.id === state.activeClassId)) {
+        classSelect.value = state.activeClassId;
+      }
+      openModal('modal-add-student');
+      document.getElementById('new-student-name').focus();
+    }
+
+    async function saveNewStudent(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById('new-student-name');
+      const classSelect = document.getElementById('new-student-class');
+      const fullName = nameInput.value.trim();
+      const classId = classSelect.value;
+      if (!fullName || !classId) {
+        showToast(state.lang === 'id' ? 'Isi nama anak dan pilih kelas terlebih dahulu.' : 'Enter the child’s name and choose a class.', '⚠️');
+        return;
+      }
+
+      const submitButton = document.getElementById('add-student-submit');
+      submitButton.disabled = true;
+      submitButton.textContent = state.lang === 'id' ? 'Menyimpan...' : 'Saving...';
+      try {
+        const { error } = await sb.from('students').insert([{
+          full_name: fullName,
+          class_id: classId,
+        }]);
+        if (error) throw error;
+
+        closeModal('modal-add-student');
+        document.getElementById('add-student-form').reset();
+        const studentsLoaded = await loadStudentsFromSupabase();
+        if (!studentsLoaded) {
+          renderView();
+          showToast(state.lang === 'id'
+            ? 'Anak tersimpan, tetapi daftar gagal diperbarui. Muat ulang halaman.'
+            : 'Child saved, but the list could not refresh. Reload the page.', '⚠️');
+          return;
+        }
+        await loadObservationsFromSupabase();
+        renderView();
+        showToast(state.lang === 'id' ? `${fullName} berhasil ditambahkan!` : `${fullName} was added!`, '🌱');
+      } catch (error) {
+        console.warn('[Supabase] student insert failed:', error);
+        const reason = error?.message || String(error);
+        showToast(state.lang === 'id'
+          ? `Anak gagal ditambahkan: ${reason}`
+          : `Could not add child: ${reason}`, '⚠️');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = state.lang === 'id' ? 'Simpan Anak' : 'Save Child';
+      }
+    }
+
+    function openObservationModal(studentId = state.students[0]?.id) {
       if (state.currentUser?.role === 'parent') {
         showToast('Orang tua tidak memiliki izin mencatat observasi', '⚠️');
         return;
       }
 
-      const student = state.students.find(s => s.id === studentId) || state.students[0];
+      const roster = state.currentUser?.role === 'parent' ? state.students : state.allStudents;
+      const student = roster.find(s => s.id === studentId) || roster[0];
       if (!student) {
         showToast(state.lang === 'id' ? 'Data siswa belum tersedia.' : 'No student data is available.', '⚠️');
         return;
@@ -1599,8 +1957,20 @@
       state.selectedStudentForObs = student;
 
       document.getElementById('obs-modal-student-name').textContent = `Observasi: ${student.name}`;
-      document.getElementById('obs-modal-avatar').querySelector('img').src = student.avatar;
+      document.getElementById('obs-modal-avatar-initials').textContent = getInitials(student.name);
       document.getElementById('obs-anecdote-input').value = '';
+      document.getElementById('obs-photo-url').value = '';
+      const milestoneSelect = document.getElementById('obs-milestone-select');
+      const milestones = state.curriculumData.filter(item => item._fromDB);
+      if (!milestones.length) {
+        showToast(state.lang === 'id'
+          ? 'Indikator belum tersedia dari kurikulum database.'
+          : 'No observation indicators are available from the database.', '⚠️');
+        return;
+      }
+      milestoneSelect.innerHTML = milestones.map(item => `
+        <option value="${escapeHTML(bText(item, 'title'))}">${escapeHTML(bText(item, 'title'))}</option>
+      `).join('');
 
       selectObsLevel('developing');
       openModal('modal-observation');
@@ -1626,15 +1996,18 @@
 
       const anecdote = document.getElementById('obs-anecdote-input').value.trim() ||
         (state.lang === 'id' ? 'Anak menyelesaikan eksplorasi mandiri dengan fokus tenang.' : 'Child completed exploration independently with focused poise.');
+      const milestone = document.getElementById('obs-milestone-select').value;
+      const photoUrl = document.getElementById('obs-photo-url').value.trim();
 
       const observation = {
         studentId: student.id,
         studentName: student.name,
         domain: 'science',
-        milestone: 'Memprediksi keterkaitan sensor dan aktuator PLEGO Blocks',
+        milestone,
         level: state.obsLevel,
         time: state.lang === 'id' ? 'Baru saja' : 'Just now',
-        anecdote: anecdote
+        anecdote,
+        photoUrl,
       };
 
       if (student._fromDB) {
@@ -1648,41 +2021,190 @@
         }
         applyDatabaseObservations();
       } else {
-        state.observationsLog.unshift(observation);
-        student.needsAttention = false;
-        student.lastObsDays = 0;
+        showToast(state.lang === 'id'
+          ? 'Observasi tidak disimpan: siswa belum terhubung ke database.'
+          : 'Observation was not saved: the student is not connected to the database.', '⚠️');
+        return;
       }
 
       closeModal('modal-observation');
       renderView();
       showToast(
-        student._fromDB
-          ? (state.lang === 'id' ? 'Observasi berhasil disimpan ke database.' : 'Observation saved to the database.')
-          : (state.lang === 'id' ? 'Observasi hanya tersimpan sementara di mode demo.' : 'Observation is only saved temporarily in demo mode.'),
-        student._fromDB ? '✅' : '⚠️'
+        state.lang === 'id' ? 'Observasi berhasil disimpan ke database.' : 'Observation saved to the database.',
+        '✅'
       );
     }
 
-    /* FLOW 6: PARENT HUB (Kenzo's Portfolio) */
-    function renderParentHub() { }
+    /* FLOW 6: PARENT HUB */
+    function openStudentParentPreview(studentId) {
+      if (state.currentUser?.role === 'parent') {
+        const linkedStudent = state.students.find(item => item.id === studentId);
+        if (linkedStudent) state.previewStudentId = linkedStudent.id;
+        if (state.currentView !== 'parentHub') navigateTo('parentHub');
+        else renderParentHub();
+        return;
+      }
+
+      const student = state.allStudents.find(item => item.id === studentId);
+      if (!student) {
+        showToast(state.lang === 'id' ? 'Siswa tidak termasuk dalam kelas yang ditugaskan kepada Anda.' : 'Student is not in your assigned classes.', '⚠️');
+        return;
+      }
+      state.previewStudentId = student.id;
+      if (state.currentView !== 'parentHub') navigateTo('parentHub');
+      else renderParentHub();
+    }
+
+    function renderParentHub() {
+      const parentUser = state.currentUser?.role === 'parent';
+      const students = parentUser ? state.students : state.allStudents;
+      const student = students.find(item => item.id === state.previewStudentId) || students[0];
+      if (student) state.previewStudentId = student.id;
+      const picker = document.getElementById('parent-preview-student');
+      picker.innerHTML = students.map(item =>
+        `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name)}</option>`
+      ).join('');
+      picker.value = student?.id || '';
+      const pickerWrap = document.getElementById('parent-preview-picker-wrap');
+      const showPicker = !parentUser || students.length > 1;
+      pickerWrap.classList.toggle('hidden', !showPicker);
+      pickerWrap.classList.toggle('md:flex', showPicker);
+      const observations = state.databaseObservations
+        .filter(observation => student && observation.student_id === student.id)
+        .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0));
+      const title = document.getElementById('parent-student-name');
+      const avatar = document.getElementById('parent-student-avatar');
+      const classLabel = document.getElementById('parent-class-label');
+      const portfolioBadge = document.getElementById('parent-student-badge');
+      const narrative = document.getElementById('parent-narrative-text');
+      const count = document.getElementById('parent-observation-count');
+      const masteryCount = document.getElementById('parent-mastery-count');
+
+      title.textContent = student?.name || (state.lang === 'id' ? 'Profil anak belum ditemukan' : 'Student profile not found');
+      avatar.textContent = student
+        ? student.name.split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()
+        : '—';
+      classLabel.textContent = student
+        ? `${student.className} · ${student.schoolName}`
+        : (state.lang === 'id' ? 'Anak belum terhubung ke akun orang tua di database.' : 'No child is linked to this parent account in the database.');
+      portfolioBadge.textContent = state.lang === 'id' ? 'Portofolio anak' : 'Child portfolio';
+      const classStat = document.getElementById('parent-stat-class');
+      classStat.textContent = student?.className || '—';
+      classStat.title = student ? `${student.className} · ${student.schoolName}` : '';
+
+      const latestObservation = observations[0];
+      narrative.textContent = latestObservation?.anecdote
+        ? `“${latestObservation.anecdote}”`
+        : (state.lang === 'id'
+          ? 'Belum ada catatan observasi yang tersimpan untuk anak ini.'
+          : 'No observation has been recorded for this student yet.');
+      count.textContent = String(observations.length);
+
+      const mastered = observations.filter(observation => observation.mastery_level === 'mastered').length;
+      document.getElementById('parent-stat-mastered').textContent = String(mastered);
+      masteryCount.textContent = `${mastered} ${state.lang === 'id' ? 'capaian dikuasai' : 'mastered observations'}`;
+      document.getElementById('parent-plant-title').textContent =
+        `${state.lang === 'id' ? 'Tanaman Belajar' : 'Learning Garden'}${student ? ` · ${student.name}` : ''}`;
+
+      const observationFeed = document.getElementById('parent-observation-feed');
+      observationFeed.innerHTML = observations.length
+        ? observations.slice(0, 5).map(observation => {
+          const createdAt = observation.created_at ? new Date(observation.created_at) : null;
+          const timestamp = createdAt && !Number.isNaN(createdAt.getTime())
+            ? createdAt.toLocaleDateString(state.lang === 'id' ? 'id-ID' : 'en-US', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+            : observation.time || (state.lang === 'id' ? 'Waktu tidak tersedia' : 'Date unavailable');
+          const domain = getDomainColor(observation.domain);
+          return `<article class="parent-observation-entry">
+            <span class="parent-observation-marker" aria-hidden="true"></span>
+            <div class="parent-observation-entry-content">
+              <div class="parent-observation-entry-meta">
+                <span>${escapeHTML(timestamp)}</span>
+                <span class="parent-observation-domain ${domain.bgLight} ${domain.textColor}">${domain.label}</span>
+              </div>
+              <h3>${escapeHTML(observation.milestone || (state.lang === 'id' ? 'Catatan perkembangan' : 'Progress note'))}</h3>
+              <p>${escapeHTML(observation.anecdote || '')}</p>
+            </div>
+            <span class="parent-observation-level">${getMasteryLabel(observation.mastery_level)}</span>
+          </article>`;
+        }).join('')
+        : `<p class="parent-observation-empty">${state.lang === 'id'
+          ? 'Catatan perjalanan belajar akan tampil di sini setelah pendidik menyimpan observasi.'
+          : 'Learning journey notes will appear here after an educator saves an observation.'}</p>`;
+
+      const progressContent = document.getElementById('parent-progress-content');
+      const masteryLevels = ['not_observed', 'emerging', 'developing', 'mastered'];
+      const masteryColors = ['bg-sand-300', 'bg-sunshine', 'bg-sky', 'bg-leaf'];
+      const masteryLabels = {
+        not_observed: t('level.none'),
+        emerging: t('level.emerging'),
+        developing: t('level.developing'),
+        mastered: t('level.mastered'),
+      };
+      progressContent.innerHTML = observations.length
+        ? masteryLevels.map((level, index) => {
+          const value = observations.filter(observation => observation.mastery_level === level).length;
+          const percent = Math.round(value / observations.length * 100);
+          return `<div>
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span class="text-forest">${escapeHTML(masteryLabels[level])}</span>
+              <span class="text-forest-light">${value} / ${observations.length}</span>
+            </div>
+            <div class="w-full bg-sand-200 rounded-full h-3 overflow-hidden" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
+              <div class="${masteryColors[index]} h-full rounded-full transition-all duration-500" style="width:${percent}%"></div>
+            </div>
+          </div>`;
+        }).join('')
+        : `<p class="text-xs text-forest-light">${state.lang === 'id'
+          ? 'Ringkasan capaian muncul setelah observasi tersimpan di database.'
+          : 'Progress appears after observations are saved to the database.'}</p>`;
+
+      const photos = observations.filter(observation => observation.photo_url).slice(0, 3);
+      document.getElementById('parent-photo-feed').innerHTML = photos.length
+        ? photos.map(observation => `<button type="button" data-parent-photo="${escapeHTML(observation.photo_url)}" class="rounded-2xl overflow-hidden aspect-video bg-sand-200">
+            <img src="${escapeHTML(observation.photo_url)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" class="w-full h-full object-cover">
+          </button>`).join('')
+        : `<p class="parent-photo-empty">${state.lang === 'id'
+          ? 'Foto akan tampil setelah URL foto disimpan pada catatan observasi.'
+          : 'Photos appear when a photo URL is saved with an observation.'}</p>`;
+      document.querySelectorAll('[data-parent-photo]').forEach(button => {
+        button.addEventListener('click', () => openPhotoModal(button.dataset.parentPhoto));
+      });
+
+      const activity = state.curriculumData.find(item => state.scheduleItems.some(schedule =>
+        schedule.curriculumUnitId === item.id
+      )) || state.curriculumData[0];
+      document.getElementById('parent-home-activity-title').textContent = activity
+        ? bText(activity, 'title')
+        : (state.lang === 'id' ? 'Belum ada aktivitas dari kurikulum database' : 'No database curriculum activity available');
+      document.getElementById('parent-home-activity-desc').textContent = activity?.elo || '';
+      document.getElementById('parent-home-activity-materials').textContent = activity?.tools || '';
+
+      const chat = document.getElementById('chat-messages-container');
+      chat.textContent = state.lang === 'id'
+        ? 'Percakapan belum terhubung: database belum menyediakan tabel pesan orang tua.'
+        : 'Messaging is not connected: the database has no parent messages table.';
+      document.getElementById('parent-reply-input').disabled = true;
+      document.querySelector('#view-parentHub button[onclick="sendParentReply()"]').disabled = true;
+
+      const progressTitle = document.querySelector('#view-parentHub [data-i18n="parent.domainProgress"]');
+      progressTitle.textContent = state.lang === 'id' ? 'Ringkasan Tingkat Observasi' : 'Observation Mastery Summary';
+      const masteryScale = document.querySelector('#view-parentHub [data-i18n="parent.masteryScale"]');
+      masteryScale.textContent = state.lang === 'id'
+        ? 'Berdasarkan catatan yang tersimpan'
+        : 'Based on saved observation records';
+    }
 
     function sendParentReply() {
       const input = document.getElementById('parent-reply-input');
       const text = input.value.trim();
       if (!text) return;
-
-      const sender = state.currentUser?.name || 'Pak Dimas (Anda)';
-      const container = document.getElementById('chat-messages-container');
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'p-2.5 rounded-xl bg-sage-50 text-forest ml-4 border border-sage-100 fade-enter';
-      msgDiv.innerHTML = `
-        <span class="font-bold block text-[11px] text-forest-light">${sender} · Baru saja</span>
-        <p>${text}</p>
-      `;
-      container.appendChild(msgDiv);
-      input.value = '';
-      container.scrollTop = container.scrollHeight;
-      showToast(state.lang === 'id' ? 'Pesan terkirim ke guru' : 'Message sent to educator', '✉️');
+      showToast(state.lang === 'id'
+        ? 'Pesan belum dikirim: tabel percakapan orang tua belum tersedia di database.'
+        : 'Message not sent: the parent conversation table is not available in the database.', '⚠️');
     }
 
     function openPhotoModal(imgUrl) {
@@ -1750,7 +2272,7 @@
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        ['modal-activity', 'modal-observation', 'modal-photo', 'modal-add-curriculum', 'modal-schedule-lesson'].forEach(closeModal);
+        ['modal-activity', 'modal-observation', 'modal-photo', 'modal-add-curriculum', 'modal-schedule-lesson', 'modal-add-student'].forEach(closeModal);
         document.getElementById('profile-dropdown')?.classList.add('hidden');
       }
     });
@@ -1776,6 +2298,65 @@
       }
       return lvl.toLowerCase().replace(/\s+/g, '-');
     }
+
+    function renderClassSelector() {
+      const select = document.getElementById('active-class-select');
+      if (!select) return;
+
+      const availableClasses = state.classes.filter(classItem =>
+        state.currentUser?.role !== 'parent' ||
+        state.students.some(student => student.classId === classItem.id)
+      );
+      const allClassesOption = state.currentUser?.role === 'parent'
+        ? ''
+        : `<option value="">${state.lang === 'id' ? 'Semua kelas' : 'All classes'}</option>`;
+      select.innerHTML = allClassesOption + availableClasses.map(classItem => `
+        <option value="${escapeHTML(classItem.id)}">${escapeHTML(classItem.name)}</option>
+      `).join('');
+      select.disabled = availableClasses.length < 2;
+      select.value = state.activeClassId || '';
+      if (!availableClasses.length) {
+        select.innerHTML = `<option value="">${state.lang === 'id' ? 'Kelas tidak tersedia' : 'No classes available'}</option>`;
+      }
+    }
+
+    async function setActiveClass(classId) {
+      if (state.currentUser?.role === 'parent' &&
+        !state.students.some(student => student.classId === classId)) {
+        showToast(state.lang === 'id' ? 'Kelas ini tidak terhubung ke akun orang tua.' : 'This class is not linked to the parent account.', '⚠️');
+        return;
+      }
+      state.activeClassId = classId || null;
+      state.students = state.allStudents.filter(student =>
+        !state.activeClassId || student.classId === state.activeClassId
+      );
+      renderClassSelector();
+      applyDatabaseObservations();
+      await Promise.all([loadScheduleFromSupabase(), loadObservationsFromSupabase()]);
+      renderView();
+    }
+
+    async function loadClassesFromSupabase() {
+      try {
+        const { data, error } = await sb.from('classes')
+          .select('id, name, school_id, day_of_week, start_time, end_time')
+          .order('name');
+        if (error) throw error;
+
+        if (state.currentUser?.role === 'parent') {
+          const parentClassIds = new Set(state.students.map(student => student.classId));
+          state.classes = (data || []).filter(classItem => parentClassIds.has(classItem.id));
+        } else {
+          state.classes = data || [];
+        }
+        state.databaseStatus.classes = true;
+        return true;
+      } catch (err) {
+        console.warn('[Supabase] classes load exception:', err);
+        state.databaseStatus.classes = false;
+        return false;
+      }
+    }
     // Map frontend short code → DB level prefix for filtering
     const CODE_TO_DB_PREFIX = {
       'level-0': 'Level 0',
@@ -1785,9 +2366,16 @@
     };
 
     // Load curriculum from Supabase, merge with any local additions
-    async function loadCurriculumFromSupabase() {
+    async function loadCurriculumFromSupabase(unitIds = null) {
       try {
-        const { data, error } = await sb.from('curriculum_units').select('*').order('week', { ascending: true });
+        if (unitIds && !unitIds.length) {
+          state.curriculumData = [];
+          state.databaseStatus.curriculum = true;
+          return true;
+        }
+        let query = sb.from('curriculum_units').select('*');
+        if (unitIds) query = query.in('id', unitIds);
+        const { data, error } = await query.order('week', { ascending: true });
         if (error) throw error;
 
         // Map DB rows to frontend format
@@ -1806,9 +2394,7 @@
           _fromDB: true,
         }));
 
-        // Keep locally-added items (id starts with 'c-custom-'), replace DB items
-        const localCustom = state.curriculumData.filter(c => String(c.id).startsWith('c-custom-'));
-        state.curriculumData = [...dbItems, ...localCustom];
+        state.curriculumData = dbItems;
         state.databaseStatus.curriculum = true;
         console.log(`[Supabase] Loaded ${dbItems.length} curriculum units from DB`);
         return true;
@@ -1822,30 +2408,37 @@
     // Load students from Supabase
     async function loadStudentsFromSupabase() {
       try {
-        const { data, error } = await sb.from('students').select('*, classes(name, school_id, schools(name))').order('full_name');
+        let query = sb.from('students')
+          .select('*, classes(id, name, school_id, schools(name))')
+          .order('full_name');
+        if (state.currentUser?.role === 'parent') {
+          const studentIds = state.currentUser.childStudentIds || [];
+          query = studentIds.length
+            ? query.in('id', studentIds)
+            : query.eq('id', '00000000-0000-0000-0000-000000000000');
+        }
+        const { data, error } = await query;
         if (error) throw error;
 
-        const avatarPool = [
-          'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=100&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&auto=format&fit=crop&q=80',
-        ];
-
-        state.students = (data || []).map((row, i) => ({
+        state.allStudents = (data || []).map(row => ({
           id: row.id,
           name: row.full_name,
           nickname: row.nickname || row.full_name.split(' ')[0],
           age: '—',
+          classId: row.class_id,
           className: row.classes?.name || '—',
           schoolName: row.classes?.schools?.name || '—',
-          avatar: avatarPool[i % avatarPool.length],
           lastObsDays: 0,
           needsAttention: false,
           _fromDB: true,
         }));
+        if (state.activeClassId && !state.allStudents.some(student => student.classId === state.activeClassId)) {
+          state.activeClassId = null;
+        }
+        state.students = state.allStudents.filter(student =>
+          !state.activeClassId || student.classId === state.activeClassId
+        );
+        renderClassSelector();
         state.databaseStatus.students = true;
         console.log(`[Supabase] Loaded ${state.students.length} students from DB`);
         return true;
@@ -1859,7 +2452,9 @@
     // Load tutors from Supabase into state
     async function loadTutorsFromSupabase() {
       try {
-        const { data, error } = await sb.from('tutors').select('*').order('full_name');
+        const { data, error } = await sb.from('tutors')
+          .select('id, full_name, email')
+          .order('full_name');
         if (error) throw error;
         state.tutors = data || [];
         state.databaseStatus.tutors = true;
@@ -1875,22 +2470,33 @@
     // Load schedule_assignments from Supabase
     async function loadScheduleFromSupabase() {
       try {
-        const { data, error } = await sb
-          .from('schedule_assignments')
-          .select('*, tutors(full_name), curriculum_units(title_id, level, domain)')
-          .order('scheduled_date');
+        let query = sb.from('schedule_assignments')
+            .select('*, tutors!schedule_assignments_tutor_id_fkey(full_name), curriculum_units!schedule_assignments_activity_id_fkey(id, title_id, level, domain), classes(name, start_time)');
+        if (state.currentUser?.role === 'parent') {
+          const classIds = [...new Set(state.students.map(student => student.classId).filter(Boolean))];
+          query = classIds.length
+            ? query.in('class_id', classIds)
+            : query.eq('class_id', '00000000-0000-0000-0000-000000000000');
+        } else if (state.activeClassId) query = query.eq('class_id', state.activeClassId);
+        const { data, error } = await query.order('scheduled_date');
         if (error) throw error;
         state.scheduleItems = (data || []).map(row => ({
           id: row.id,
           date: normalizeDateKey(row.scheduled_date),
-          time: row.scheduled_time || row.start_time || row.time || '',
+          time: readScheduleMetadata(row.notes).time || row.classes?.start_time || '',
+          block: readScheduleMetadata(row.notes).block || 'work_cycle',
           status: row.status,
           notes: row.notes,
           tutorName: row.tutors?.full_name || '—',
+          tutorId: row.tutor_id || null,
+          assistantTutorName: state.tutors.find(tutor => tutor.id === row.assistant_tutor_id)?.full_name || '',
+          assistantTutorId: row.assistant_tutor_id || null,
           actTitle: row.curriculum_units?.title_id || '—',
           domain: row.curriculum_units?.domain || 'science',
-          curriculumUnitId: row.curriculum_unit_id || row.curriculum_units?.id || null,
+          curriculumUnitId: row.activity_id || row.curriculum_units?.id || null,
           actLevel: row.curriculum_units ? dbLevelToCode(row.curriculum_units.level) : null,
+          classId: row.class_id,
+          className: row.classes?.name || '—',
           _fromDB: true,
         }));
         state.databaseStatus.schedule = true;
@@ -1906,9 +2512,31 @@
     async function loadObservationsFromSupabase() {
       try {
         const since24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        let allQuery = sb.from('observations').select('*', { count: 'exact' });
+        let recentQuery = sb.from('observations').select('created_at', { count: 'exact', head: true })
+          .gte('created_at', since24Hours);
+        if (state.currentUser?.role === 'parent') {
+          const studentIds = state.currentUser.childStudentIds || [];
+          if (studentIds.length) {
+            allQuery = allQuery.in('student_id', studentIds);
+            recentQuery = recentQuery.in('student_id', studentIds);
+          } else {
+            allQuery = allQuery.eq('student_id', '00000000-0000-0000-0000-000000000000');
+            recentQuery = recentQuery.eq('student_id', '00000000-0000-0000-0000-000000000000');
+          }
+        } else {
+          const studentIds = state.allStudents.map(student => student.id);
+          if (studentIds.length) {
+            allQuery = allQuery.in('student_id', studentIds);
+            recentQuery = recentQuery.in('student_id', studentIds);
+          } else {
+            allQuery = allQuery.eq('student_id', '00000000-0000-0000-0000-000000000000');
+            recentQuery = recentQuery.eq('student_id', '00000000-0000-0000-0000-000000000000');
+          }
+        }
         const [allResult, recentResult] = await Promise.all([
-          sb.from('observations').select('*', { count: 'exact' }).order('created_at', { ascending: false }),
-          sb.from('observations').select('created_at', { count: 'exact', head: true }).gte('created_at', since24Hours),
+          allQuery.order('created_at', { ascending: false }),
+          recentQuery,
         ]);
         if (allResult.error) throw allResult.error;
         if (recentResult.error) throw recentResult.error;
@@ -1937,15 +2565,16 @@
       });
 
       const now = Date.now();
-      state.students.forEach(student => {
+      state.allStudents.forEach(student => {
         const latest = latestByStudent.get(student.id);
         const elapsed = latest ? now - new Date(latest).getTime() : Infinity;
         student.lastObsDays = Number.isFinite(elapsed) ? Math.floor(elapsed / 86400000) : null;
         student.needsAttention = !Number.isFinite(elapsed) || elapsed >= 7 * 86400000;
       });
 
-      const studentNames = new Map(state.students.map(student => [student.id, student.name]));
+      const studentNames = new Map(state.allStudents.map(student => [student.id, student.name]));
       state.observationsLog = state.databaseObservations.map(obs => ({
+        id: obs.id,
         studentId: obs.student_id,
         studentName: studentNames.get(obs.student_id) || (state.lang === 'id' ? 'Siswa' : 'Student'),
         domain: 'science',
@@ -1953,6 +2582,8 @@
         level: obs.mastery_level || 'developing',
         time: obs.created_at ? new Date(obs.created_at).toLocaleString(state.lang === 'id' ? 'id-ID' : 'en-US') : '—',
         anecdote: obs.anecdote || '',
+        photoUrl: obs.photo_url || '',
+        createdAt: obs.created_at,
       }));
     }
 
@@ -1961,11 +2592,15 @@
       state.databaseStatus = {
         curriculum: false,
         students: false,
+        classes: false,
         tutors: false,
         schedule: false,
         observations: false,
       };
       state.students = [];
+      state.allStudents = [];
+      state.classes = [];
+      state.activeClassId = null;
       state.tutors = [];
       state.scheduleItems = [];
       state.databaseObservations = [];
@@ -1973,20 +2608,29 @@
       state.databaseRecentObservationCount = null;
       state.observationsLog = [];
 
-      const tables = ['curriculum_units', 'students', 'tutors', 'schedule_assignments', 'observations'];
-      const results = await Promise.all([
-        loadCurriculumFromSupabase(),
-        loadStudentsFromSupabase(),
-        loadTutorsFromSupabase(),
-        loadScheduleFromSupabase(),
-        loadObservationsFromSupabase(),
-      ]);
+      const isParent = state.currentUser?.role === 'parent';
+      const studentsLoaded = await loadStudentsFromSupabase();
+      const classesLoaded = await loadClassesFromSupabase();
+      const tutorsLoaded = isParent ? null : await loadTutorsFromSupabase();
+      renderClassSelector();
+      const scheduleLoaded = await loadScheduleFromSupabase();
+      const curriculumLoaded = await loadCurriculumFromSupabase(
+        isParent
+          ? state.scheduleItems.map(item => item.curriculumUnitId).filter(Boolean)
+          : null
+      );
+      const observationsLoaded = await loadObservationsFromSupabase();
+      const results = isParent
+        ? [studentsLoaded, classesLoaded, scheduleLoaded, curriculumLoaded, observationsLoaded]
+        : [studentsLoaded, classesLoaded, tutorsLoaded, scheduleLoaded, curriculumLoaded, observationsLoaded];
       if (state.databaseStatus.students && state.databaseStatus.observations) {
         applyDatabaseObservations();
       }
       renderView();
       const failedTables = results
-        .map((loaded, index) => loaded ? null : tables[index])
+        .map((loaded, index) => loaded ? null : (isParent
+          ? ['students', 'classes', 'schedule_assignments', 'curriculum_units', 'observations'][index]
+          : ['students', 'classes', 'tutors', 'schedule_assignments', 'curriculum_units', 'observations'][index]))
         .filter(Boolean);
       if (failedTables.length) {
         showToast(
@@ -2038,19 +2682,24 @@
     // INSERT observation to Supabase
     async function saveObservationToSupabase(obs) {
       // Find student UUID (if loaded from DB)
-      const student = state.students.find(s => s.name === obs.studentName || s.id === obs.studentId);
+      const student = state.allStudents.find(s => s.name === obs.studentName || s.id === obs.studentId);
       if (!student || !student._fromDB) {
         console.warn('[Supabase] Student not from DB, skipping observation INSERT');
         return null;
       }
 
       try {
-        const { data, error } = await sb.from('observations').insert([{
+        const payload = {
           student_id: student.id,
           mastery_level: obs.level || 'developing',
           milestone: obs.milestone || null,
           anecdote: obs.anecdote,
-        }]).select().single();
+        };
+        if (obs.photoUrl) payload.photo_url = obs.photoUrl;
+        const assignedTutor = state.currentUser?.id ||
+          state.scheduleItems.find(item => item.classId === student.classId)?.tutorId;
+        if (typeof assignedTutor === 'string') payload.tutor_id = assignedTutor;
+        const { data, error } = await sb.from('observations').insert([payload]).select().single();
 
         if (error) throw error;
         console.log('[Supabase] observation INSERT ok:', data.id);
@@ -2071,4 +2720,5 @@
       // Must start at login screen
       document.getElementById('auth-screen').classList.remove('hidden');
       document.getElementById('app-wrapper').classList.add('hidden');
+      loadTutorDemoButtons();
     });
