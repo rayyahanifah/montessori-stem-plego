@@ -285,6 +285,53 @@
       databaseRecentObservationCount: null,
     };
 
+    const ADMIN_IDENTITIES = {
+      'rayya@plego.com': 'Rayya',
+      'bu.sabil@plego.com': 'Bu Sabil',
+      'mbaghina@plego.com': 'Mba Ghina',
+    };
+    // Demo credentials are public in this client; replace or disable before production.
+    const DEMO_ACCOUNTS = {
+      admin: { email: 'mbaghina@plego.com', password: 'plego123' },
+      tutor: { email: 'syifa@plego.com', password: 'plego123' },
+      parent: { email: 'ortu.bilal@plego.com', password: 'plego123' },
+    };
+    const SCHEDULABLE_TUTOR_EMAILS = new Set([
+      'tata@plego.com',
+      'karin@plego.com',
+      'rina@plego.com',
+      'nadhiyaa@plego.com',
+      'aca@plego.com',
+      'syifa@plego.com',
+      'alyana@plego.com',
+      'devina@plego.com',
+      'ai@plego.com',
+      'oliv@plego.com',
+      'rara@plego.com',
+      'desti@plego.com',
+      'astria@plego.com',
+      'rayya@plego.com',
+    ]);
+
+    function isAdminEmail(email) {
+      return Object.prototype.hasOwnProperty.call(ADMIN_IDENTITIES, String(email || '').toLowerCase());
+    }
+
+    function isAdminUser() {
+      return state.currentUser?.role === 'admin';
+    }
+
+    function getSelectableTutors() {
+      const tutorsByEmail = new Map();
+      state.tutors.forEach(tutor => {
+        const email = String(tutor.email || '').trim().toLowerCase();
+        if (SCHEDULABLE_TUTOR_EMAILS.has(email) && !tutorsByEmail.has(email)) {
+          tutorsByEmail.set(email, tutor);
+        }
+      });
+      return [...tutorsByEmail.values()].sort((a, b) => a.full_name.localeCompare(b.full_name));
+    }
+
     /* =====================================================================
        2. BILINGUAL DICTIONARY
        ===================================================================== */
@@ -293,15 +340,19 @@
         'login.subtitle': 'Montessori STEM Platform · Masuk Akun Anda',
         'login.email': 'Email Akun Terdaftar:',
         'login.password': 'Kata Sandi (Password):',
+        'login.reset': 'Lupa Sandi?',
         'login.btn': 'Masuk ke Ruang Kerja',
         'login.quickDemo': 'Akses Demo Cepat 1-Klik (Deteksi Peran Otomatis):',
+        'login.demoAdmin': 'Admin',
+        'login.demoTutor': 'Tutor',
+        'login.demoParent': 'Ortu',
         'topbar.currentClass': 'Tampilan Kelas:',
         'nav.dashboard': 'Beranda Guru',
         'nav.curriculum': 'Kurikulum Plego v3.2',
         'nav.activities': 'Koleksi Aktivitas',
         'nav.planner': 'Perencana Pembelajaran',
         'nav.observations': 'Observasi & Ceklis',
-        'nav.parentPortal': 'Portofolio Anak (Kenzo)',
+        'nav.parentPortal': 'Portofolio Anak',
         'nav.parentActivities': 'Eksplorasi di Rumah',
         'nav.parentChat': 'Pesan dengan Guru',
         'nav.logout': 'Keluar (Logout)',
@@ -345,11 +396,10 @@
         'planner.view.day': 'Hari',
         'planner.view.week': 'Minggu',
         'planner.view.month': 'Bulan',
-        'planner.copyForward': 'Salin Jadwal',
         'planner.print': 'Cetak PDF',
         'planner.todayBadge': 'HARI INI',
         'planner.materialsTitle': 'Material Minggu Ini',
-        'planner.autoAggregated': 'Dikumpulkan dari aktivitas terjadwal',
+        'planner.autoAggregated': 'Dikumpulkan dari jadwal · tersimpan otomatis',
         'days.mon': 'Senin',
         'days.tue': 'Selasa',
         'days.wed': 'Rabu',
@@ -391,7 +441,21 @@
         'parent.tryHomeTitle': 'Eksplorasi Akhir Pekan di Rumah',
         'parent.homeActTitle': 'Ide aktivitas dari kurikulum',
         'parent.homeActDesc': 'Coba jelajahi aktivitas sederhana bersama anak di rumah.',
-        'parent.messageTitle': 'Pesan Singkat dengan Pendidik',
+        'parent.messageTitle': 'Pesan Singkat dengan Admin',
+        'parent.messageRecipient': 'Pesan akan langsung dikirim ke admin.',
+        'parent.messagePlaceholder': 'Tulis pesan untuk admin...',
+        'parent.messageSend': 'Kirim pesan',
+        'message.refresh': 'Muat ulang pesan',
+        'teacher.messageEyebrow': 'Terhubung dengan keluarga',
+        'teacher.messageTitle': 'Pesan Masuk dari Orang Tua',
+        'teacher.messageInbox': 'Pesan terbaru dari orang tua',
+        'teacher.messageInboxSearch': 'Cari nama orang tua atau anak...',
+        'teacher.messageBackToInbox': 'Kembali ke kotak masuk',
+        'teacher.messageReplyHint': 'Pesan orang tua bisa dibaca di sini. Balasan ditangani oleh admin.',
+        'teacher.messageStudent': 'Pilih anak',
+        'teacher.messageContact': 'Orang tua/wali',
+        'teacher.messagePlaceholder': 'Tulis pesan untuk orang tua...',
+        'teacher.messageSend': 'Kirim pesan',
         'modal.close': 'Tutup',
         'modal.addToPlan': '+ Tambahkan ke Planner',
         'modal.cancel': 'Batal',
@@ -401,10 +465,22 @@
         'obsModal.levelLabel': 'Tingkat Capaian (Montessori Mastery Scale):',
         'obsModal.anecdoteLabel': 'Catatan Anekdot & Kutipan Anak:',
         'obsModal.attachPhoto': 'Lampirkan Foto Hasil Karya',
+        'obsModal.photoHelp': 'JPG, PNG, atau WebP, maksimal 8 MB. Foto disimpan privat.',
         'obsModal.markHighlight': 'Tampilkan di Laporan Orang Tua',
         'addCurr.modalTitle': 'Tambah Unit Kurikulum Plego Baru',
         'addCurr.modalSubtitle': 'Integrasi langsung ke Jalur Pembelajaran & Database Lokal',
         'addCurr.submitBtn': 'Simpan Kurikulum',
+        'addCurr.level': 'Level Jenjang:',
+        'addCurr.semesterWeek': 'Semester & Pertemuan ke-:',
+        'addCurr.bloomDomain': 'Taksonomi Bloom & Domain:',
+        'addCurr.titleId': 'Judul Misi / Unit (Bahasa Indonesia):',
+        'addCurr.titleEn': 'Judul Misi / Unit (Bahasa Inggris):',
+        'addCurr.toolsId': 'Perangkat & Material:',
+        'addCurr.canvaId': 'Link Canva Bahasa Indonesia:',
+        'addCurr.canvaEn': 'Link Canva Bahasa Inggris:',
+        'addCurr.eloId': 'Capaian Pembelajaran (Indonesia):',
+        'addCurr.cancel': 'Batal',
+        'addCurr.save': 'Simpan Kurikulum',
         'level.none': 'Belum Muncul',
         'level.emerging': 'Mulai Muncul',
         'level.developing': 'Berkembang',
@@ -414,15 +490,19 @@
         'login.subtitle': 'Montessori STEM Platform · Sign In to Your Account',
         'login.email': 'Registered Email Address:',
         'login.password': 'Password:',
+        'login.reset': 'Forgot password?',
         'login.btn': 'Sign In to Workspace',
         'login.quickDemo': '1-Click Quick Demo Access (Auto Role Detection):',
+        'login.demoAdmin': 'Admin',
+        'login.demoTutor': 'Tutor',
+        'login.demoParent': 'Parent',
         'topbar.currentClass': 'Class view:',
         'nav.dashboard': 'Teacher Dashboard',
         'nav.curriculum': 'Plego Curriculum v3.2',
         'nav.activities': 'Activity Library',
         'nav.planner': 'Lesson Planner',
         'nav.observations': 'Observation & Checklist',
-        'nav.parentPortal': 'Child Portfolio (Kenzo)',
+        'nav.parentPortal': 'Child Portfolio',
         'nav.parentActivities': 'Home Explorations',
         'nav.parentChat': 'Teacher Messages',
         'nav.logout': 'Sign Out (Logout)',
@@ -466,11 +546,10 @@
         'planner.view.day': 'Day',
         'planner.view.week': 'Week',
         'planner.view.month': 'Month',
-        'planner.copyForward': 'Copy Schedule',
         'planner.print': 'Print PDF',
         'planner.todayBadge': 'TODAY',
         'planner.materialsTitle': 'Materials This Week',
-        'planner.autoAggregated': 'Collected from scheduled activities',
+        'planner.autoAggregated': 'From scheduled activities · saved automatically',
         'days.mon': 'Monday',
         'days.tue': 'Tuesday',
         'days.wed': 'Wednesday',
@@ -512,7 +591,21 @@
         'parent.tryHomeTitle': 'Weekend At-Home Extension',
         'parent.homeActTitle': 'An idea from the curriculum',
         'parent.homeActDesc': 'Explore a simple learning activity together at home.',
-        'parent.messageTitle': 'A note to the educator',
+        'parent.messageTitle': 'Message the Admin Team',
+        'parent.messageRecipient': 'Your message will be sent directly to an administrator.',
+        'parent.messagePlaceholder': 'Write a message to the admin team...',
+        'parent.messageSend': 'Send message',
+        'message.refresh': 'Refresh messages',
+        'teacher.messageEyebrow': 'Stay connected with families',
+        'teacher.messageTitle': 'Messages from Parents',
+        'teacher.messageInbox': 'Recent messages from parents',
+        'teacher.messageInboxSearch': 'Search parent or child name...',
+        'teacher.messageBackToInbox': 'Back to inbox',
+        'teacher.messageReplyHint': 'You can read parent messages here. Replies are handled by the admin team.',
+        'teacher.messageStudent': 'Choose a child',
+        'teacher.messageContact': 'Parent/guardian',
+        'teacher.messagePlaceholder': 'Write a message to the parent...',
+        'teacher.messageSend': 'Send message',
         'modal.close': 'Close',
         'modal.addToPlan': '+ Add to Weekly Planner',
         'modal.cancel': 'Cancel',
@@ -522,10 +615,22 @@
         'obsModal.levelLabel': 'Mastery Level (Montessori Scale):',
         'obsModal.anecdoteLabel': 'Anecdotal Observation & Child Quote:',
         'obsModal.attachPhoto': 'Attach Child Work Photo',
+        'obsModal.photoHelp': 'JPG, PNG, or WebP, up to 8 MB. Photos are stored privately.',
         'obsModal.markHighlight': 'Show in Parent Progress Report',
         'addCurr.modalTitle': 'Add New Plego Curriculum Unit',
         'addCurr.modalSubtitle': 'Direct integration into Learning Pathway & Local DB',
         'addCurr.submitBtn': 'Save Curriculum Unit',
+        'addCurr.level': 'Level:',
+        'addCurr.semesterWeek': 'Semester & Week:',
+        'addCurr.bloomDomain': 'Bloom Taxonomy & Domain:',
+        'addCurr.titleId': 'Unit Title (Indonesian):',
+        'addCurr.titleEn': 'Unit Title (English):',
+        'addCurr.toolsId': 'Tools & Materials:',
+        'addCurr.canvaId': 'Canva Link (Indonesian):',
+        'addCurr.canvaEn': 'Canva Link (English):',
+        'addCurr.eloId': 'Learning Outcome (Indonesian):',
+        'addCurr.cancel': 'Cancel',
+        'addCurr.save': 'Save Curriculum',
         'level.none': 'Not Observed',
         'level.emerging': 'Emerging',
         'level.developing': 'Developing',
@@ -535,7 +640,13 @@
 
     function bText(obj, field) {
       if (!obj) return '';
-      return obj[`${field}_${state.lang}`] || obj[`${field}_id`] || obj[`${field}_en`] || '';
+      const fieldNames = {
+        tools: { id: 'tools', en: 'tools' },
+        elo: { id: 'elo', en: 'elo' },
+        title: { id: 'title_id', en: 'title_en' },
+      };
+      const key = fieldNames[field]?.[state.lang] || `${field}_${state.lang}`;
+      return obj[key] || (state.lang === 'en' ? obj[fieldNames[field]?.id || `${field}_id`] : '') || '';
     }
 
     function t(key) {
@@ -553,53 +664,70 @@
       if (!email || !password) return;
       try {
         const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email, password });
-        if (authError && authError.status !== 400) throw authError;
-        if (authData?.user) {
-          const { data: parentRows, error: parentError } = await sb.from('parents')
-            .select('student_id, parent_name')
-            .eq('auth_id', authData.user.id);
-          if (parentError) {
-            const { error: signOutError } = await sb.auth.signOut();
-            if (signOutError) throw signOutError;
-            throw parentError;
-          }
-          const childStudentIds = [...new Set((parentRows || []).map(parent => parent.student_id).filter(Boolean))];
-          if (childStudentIds.length) {
-            executeLogin({
-              id: authData.user.id,
-              email: authData.user.email,
-              name: parentRows[0].parent_name,
-              role: 'parent',
-              childStudentIds,
-              classInfo: state.lang === 'id' ? 'Orang tua / wali' : 'Parent / guardian',
-            });
-            return;
-          }
-          const { error: signOutError } = await sb.auth.signOut();
-          if (signOutError) throw signOutError;
+        if (authError) throw authError;
+        if (!authData?.user) throw new Error('Supabase Auth returned no user.');
+
+        const userEmail = String(authData.user.email || email).toLowerCase();
+        if (isAdminEmail(userEmail)) {
+          const { data: adminTutor, error: adminTutorError } = await sb.from('tutors')
+            .select('id')
+            .eq('email', userEmail)
+            .maybeSingle();
+          if (adminTutorError) throw adminTutorError;
+          executeLogin({
+            id: authData.user.id,
+            email: userEmail,
+            name: ADMIN_IDENTITIES[userEmail],
+            role: 'admin',
+            tutorId: adminTutor?.id || null,
+            classInfo: state.lang === 'id' ? 'Administrator' : 'Administrator',
+          });
+          return;
+        }
+
+        const { data: parentRows, error: parentError } = await sb.from('parents')
+          .select('student_id, parent_name')
+          .eq('auth_id', authData.user.id);
+        if (parentError) throw parentError;
+        const childStudentIds = [...new Set((parentRows || []).map(parent => parent.student_id).filter(Boolean))];
+        if (childStudentIds.length) {
+          executeLogin({
+            id: authData.user.id,
+            email: userEmail,
+            name: parentRows[0].parent_name || authData.user.user_metadata?.full_name || userEmail,
+            role: 'parent',
+            childStudentIds,
+            classInfo: state.lang === 'id' ? 'Orang tua / wali' : 'Parent / guardian',
+          });
+          return;
         }
 
         const { data: tutor, error: tutorError } = await sb.from('tutors')
           .select('id, full_name, email')
-          .eq('email', email)
-          .eq('password', password)
+          .eq('email', userEmail)
           .maybeSingle();
         if (tutorError) throw tutorError;
         if (tutor) {
           executeLogin({
-            id: tutor.id,
-            email: tutor.email,
+            id: authData.user.id,
+            email: userEmail,
             name: tutor.full_name,
             role: 'teacher',
+            tutorId: tutor.id,
             classInfo: state.lang === 'id' ? 'Tutor Plego' : 'Plego tutor',
           });
           return;
         }
+
+        const { error: signOutError } = await sb.auth.signOut();
+        if (signOutError) throw signOutError;
         showToast(state.lang === 'id'
-          ? 'Email atau kata sandi tidak cocok, atau akun belum ditautkan.'
-          : 'Email or password does not match, or the account is not linked.', '⚠️');
+          ? 'Akun ini belum terhubung ke profil orang tua, tutor, atau administrator.'
+          : 'This account is not linked to a parent, tutor, or administrator profile.', '⚠️');
       } catch (error) {
         console.warn('[Supabase] account login failed:', error);
+        const { error: signOutError } = await sb.auth.signOut();
+        if (signOutError) console.warn('[Supabase] sign-out after failed login failed:', signOutError);
         showToast(
           `${state.lang === 'id' ? 'Login database gagal' : 'Database login failed'}: ${error.message || error}`,
           '⚠️'
@@ -607,36 +735,23 @@
       }
     }
 
-    async function loadTutorDemoButtons() {
-      const container = document.getElementById('tutor-demo-buttons');
-      try {
-        const { data, error } = await sb.from('tutors')
-          .select('email, full_name')
-          .order('full_name')
-          .limit(3);
-        if (error) throw error;
-        if (!data?.length) {
-          container.innerHTML = `<p class="col-span-3 text-center text-xs text-forest-light">${state.lang === 'id' ? 'Akun tutor belum tersedia.' : 'No tutor accounts available.'}</p>`;
-          return;
-        }
-        container.innerHTML = data.map(tutor => `
-          <button type="button" onclick="quickFillAndLogin('${escapeHTML(tutor.email)}')"
-            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs group">
-            <span class="block text-base mb-0.5">👩‍🏫</span>
-            <strong class="block text-[11px] group-hover:text-sage">${escapeHTML(tutor.full_name)}</strong>
-            <span class="text-[9px] text-forest-light">${escapeHTML(tutor.email)}</span>
-          </button>
-        `).join('');
-      } catch (error) {
-        console.warn('[Supabase] tutor demo accounts load failed:', error);
-        container.innerHTML = `<p class="col-span-3 text-center text-xs text-forest-light">${state.lang === 'id' ? 'Akun demo tidak dapat dimuat. Masukkan email tutor.' : 'Could not load demo accounts. Enter a tutor email.'}</p>`;
+    async function quickLoginDemo(role) {
+      const account = Object.prototype.hasOwnProperty.call(DEMO_ACCOUNTS, role)
+        ? DEMO_ACCOUNTS[role]
+        : null;
+      if (!account) {
+        showToast(state.lang === 'id' ? 'Peran demo tidak dikenal.' : 'Unknown demo role.', '⚠️');
+        return;
       }
+      document.getElementById('login-email').value = account.email;
+      document.getElementById('login-password').value = account.password;
+      await handleLoginSubmit({ preventDefault() {} });
     }
 
-    async function quickFillAndLogin(email) {
-      document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = 'plego123';
-      await handleLoginSubmit({ preventDefault() {} });
+    function showResetPasswordHelp() {
+      showToast(state.lang === 'id'
+        ? 'Hubungi administrator untuk mengatur ulang kata sandi.'
+        : 'Contact an administrator to reset your password.', '🔑');
     }
 
     function togglePasswordVisibility() {
@@ -677,7 +792,9 @@
           console.warn('[Supabase] loadAllFromSupabase failed:', error);
           showToast(`${state.lang === 'id' ? 'Gagal memuat data' : 'Could not load data'}: ${error.message || error}`, '⚠️');
         });
-        showToast(state.lang === 'id' ? `Masuk sebagai tutor: ${user.name}` : `Signed in as tutor: ${user.name}`, '👋');
+        showToast(state.lang === 'id'
+          ? `${user.role === 'admin' ? 'Masuk sebagai administrator' : 'Masuk sebagai tutor'}: ${user.name}`
+          : `Signed in as ${user.role === 'admin' ? 'administrator' : 'tutor'}: ${user.name}`, '👋');
       }
     }
 
@@ -703,34 +820,35 @@
       if (role === 'parent') {
         contextBadge.classList.add('hidden');
         document.getElementById('parent-preview-picker-wrap').classList.add('hidden');
-        badgeAppMode.textContent = 'Parent Portal';
+        badgeAppMode.textContent = state.lang === 'id' ? 'Portal Orang Tua' : 'Parent Portal';
         badgeAppMode.className = 'text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-sunshine-light text-sunshine-dark font-bold';
         nav.innerHTML = `
           <button onclick="navigateTo('parentHub')" id="nav-parentHub" class="nav-item active border-b-2 border-sage text-sage px-4 py-3 flex items-center gap-2 whitespace-nowrap">
-            <span data-i18n="nav.parentPortal">Portofolio Anak</span>
+            <span>${t('nav.parentPortal')}</span>
           </button>`;
       } else {
         contextBadge.classList.remove('hidden');
         document.getElementById('parent-preview-picker-wrap').classList.remove('hidden');
         document.getElementById('parent-preview-picker-wrap').classList.add('md:flex');
-        badgeAppMode.textContent = 'Early Years';
-        badgeAppMode.className = 'text-xs uppercase tracking-widest px-2 py-0.5 rounded-full bg-sand-200 text-forest font-bold';
-
+        badgeAppMode.textContent = role === 'admin'
+          ? (state.lang === 'id' ? 'Administrator' : 'Administrator')
+          : (state.lang === 'id' ? 'Ruang Tutor' : 'Tutor Workspace');
+        badgeAppMode.className = `text-xs uppercase tracking-widest px-2 py-0.5 rounded-full ${role === 'admin' ? 'bg-sage/15 text-sage-700' : 'bg-sand-200 text-forest'} font-bold`;
         nav.innerHTML = `
-          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item active border-b-2 border-sage text-sage px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.dashboard">Beranda Guru</span></button>
-          <button onclick="navigateTo('curriculum')" id="nav-curriculum" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.curriculum">Kurikulum Plego v3.2</span></button>
-          <button onclick="navigateTo('planner')" id="nav-planner" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.planner">Perencana Pembelajaran</span></button>
-          <button onclick="navigateTo('observations')" id="nav-observations" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span data-i18n="nav.observations">Observasi & Ceklis</span></button>`;
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item active border-b-2 border-sage text-sage px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span>${t('nav.dashboard')}</span></button>
+          <button onclick="navigateTo('curriculum')" id="nav-curriculum" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span>${t('nav.curriculum')}</span></button>
+          <button onclick="navigateTo('planner')" id="nav-planner" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span>${t('nav.planner')}</span></button>
+          <button onclick="navigateTo('observations')" id="nav-observations" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap"><span>${t('nav.observations')}</span></button>`;
+        document.querySelector('#view-curriculum [onclick="openAddCurriculumModal()"]')
+          ?.classList.toggle('hidden', role !== 'admin');
       }
     }
     async function logout() {
-      if (state.currentUser?.role === 'parent') {
-        const { error } = await sb.auth.signOut();
-        if (error) {
-          console.warn('[Supabase] parent logout failed:', error);
-          showToast(`${state.lang === 'id' ? 'Gagal keluar' : 'Could not sign out'}: ${error.message || error}`, '⚠️');
-          return;
-        }
+      const { error } = await sb.auth.signOut();
+      if (error) {
+        console.warn('[Supabase] sign out failed:', error);
+        showToast(`${state.lang === 'id' ? 'Gagal keluar' : 'Could not sign out'}: ${error.message || error}`, '⚠️');
+        return;
       }
       state.currentUser = null;
       state.previewStudentId = null;
@@ -763,7 +881,7 @@
           </button>
           <button onclick="navigateTo('parentHub')" id="nav-parentHub" class="nav-item border-b-2 border-transparent text-forest-light hover:text-forest px-4 py-3 flex items-center gap-2 whitespace-nowrap">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <span>Pratinjau Ortu (Kenzo)</span>
+            <span data-i18n="nav.parentPortal">Portofolio Anak</span>
           </button>
         `;
       }
@@ -800,9 +918,84 @@
           el.textContent = i18n[lang][key];
         }
       });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.dataset.i18nPlaceholder;
+        if (i18n[lang][key]) el.setAttribute('placeholder', i18n[lang][key]);
+      });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        const key = el.dataset.i18nAriaLabel;
+        if (i18n[lang][key]) el.setAttribute('aria-label', i18n[lang][key]);
+      });
 
+      updateCurriculumFormLanguage();
       renderView();
+      if (state.selectedActivity && !document.getElementById('modal-activity').classList.contains('hidden')) {
+        openCurriculumGuide(state.selectedActivity.id);
+      }
+      if (!document.getElementById('modal-observation').classList.contains('hidden')) {
+        const selectedMilestone = document.querySelector('#obs-milestone-select option:checked')?.dataset.unitId;
+        renderObservationMilestones(selectedMilestone);
+        document.getElementById('obs-modal-student-name').textContent =
+          `${lang === 'id' ? 'Observasi' : 'Observation'}: ${state.selectedStudentForObs?.name || ''}`;
+      }
       showToast(lang === 'id' ? 'Bahasa beralih ke Bahasa Indonesia' : 'Language switched to English', '🌐');
+    }
+
+    function updateCurriculumFormLanguage() {
+      const translations = {
+        level: {
+          'level-0': ['Level 0 - Green (Preschool - PLEGO Blocks)', 'Level 0 - Hijau (PAUD - PLEGO Blocks)'],
+          'level-1': ['Level 1 - Yellow (Grades 1–3 Precoding)', 'Level 1 - Kuning (SD 1–3 Precoding)'],
+          'level-2': ['Level 2 - Red (Grades 4–5 Micro:bit + AI)', 'Level 2 - Merah (SD 4–5 Micro:bit + AI)'],
+          'level-3': ['Level 3 - Blue (Middle School Text Coding/IoT)', 'Level 3 - Biru (SMP Text Coding/IoT)'],
+        },
+        bloom: {
+          Remembering: ['Remembering', 'Mengingat'],
+          Understanding: ['Understanding', 'Memahami'],
+          Applying: ['Applying', 'Menerapkan'],
+          Analyzing: ['Analyzing', 'Menganalisis'],
+          Creating: ['Creating', 'Mencipta'],
+        },
+        domain: {
+          science: ['Science', 'Sains'],
+          technology: ['Technology / Precoding', 'Teknologi / Precoding'],
+          engineering: ['Engineering', 'Rekayasa'],
+          math: ['Math', 'Matematika'],
+        },
+      };
+      ['level', 'bloom', 'domain'].forEach(group => {
+        const select = document.getElementById(`new-curr-${group}`);
+        if (!select) return;
+        [...select.options].forEach(option => {
+          const label = translations[group][option.value];
+          if (label) option.textContent = label[state.lang === 'en' ? 0 : 1];
+        });
+      });
+      const semester = document.getElementById('new-curr-semester');
+      if (semester) {
+        semester.options[0].textContent = state.lang === 'id' ? 'Gasal' : 'Odd';
+        semester.options[1].textContent = state.lang === 'id' ? 'Genap' : 'Even';
+      }
+    }
+
+    function renderObservationMilestones(selectedUnitId) {
+      const milestoneSelect = document.getElementById('obs-milestone-select');
+      const milestones = state.curriculumData.filter(item => item._fromDB);
+      const placeholder = `<option value="" disabled selected>${state.lang === 'id' ? 'Pilih indikator yang diamati...' : 'Choose an observation indicator...'}</option>`;
+      milestoneSelect.innerHTML = placeholder + milestones.map(item => {
+        const title = bText(item, 'title');
+        return title
+          ? `<option value="${escapeHTML(title)}" data-unit-id="${escapeHTML(item.id)}">${escapeHTML(title)}</option>`
+          : '';
+      }).join('');
+      if (selectedUnitId) {
+        const selectedOption = [...milestoneSelect.options].find(option => option.dataset.unitId === selectedUnitId);
+        if (selectedOption) milestoneSelect.value = selectedOption.value;
+      }
+      if (!milestones.some(item => bText(item, 'title'))) {
+        milestoneSelect.innerHTML = `<option value="" disabled selected>${state.lang === 'id' ? 'Indikator belum tersedia dalam bahasa ini' : 'No indicators are available in this language'}</option>`;
+      }
+      enhanceSearchableSelect(milestoneSelect);
     }
 
     /* =====================================================================
@@ -875,9 +1068,7 @@
       const studentsReady = state.databaseStatus.students;
       const scheduleReady = state.databaseStatus.schedule;
       const observationsReady = state.databaseStatus.observations;
-      const dashboardStudents = state.currentUser?.role === 'parent'
-        ? state.students
-        : state.allStudents;
+      const dashboardStudents = state.students;
       const needingObs = studentsReady && observationsReady
         ? dashboardStudents.filter(student => student.needsAttention)
         : [];
@@ -891,11 +1082,15 @@
         const date = new Date(`${item.date}T00:00:00`);
         return date >= weekStart && date < weekEnd;
       });
-      const deliveredLessons = weeklyLessons.filter(item =>
-        ['delivered', 'completed', 'done'].includes(String(item.status || '').toLowerCase())
-      );
+      const deliveredLessons = weeklyLessons.filter(item => isScheduleCompleted(item, todayKey));
       document.getElementById('dashboard-student-count').textContent =
         studentsReady ? String(dashboardStudents.length) : '—';
+      document.querySelector('[data-i18n="metrics.children"]').textContent = state.activeClassId
+        ? (state.lang === 'id' ? 'Anak di Kelas' : 'Children in Class')
+        : i18n[state.lang]['metrics.children'];
+      document.querySelector('[data-i18n="metrics.databaseRecords"]').textContent = state.activeClassId
+        ? (state.lang === 'id' ? 'Di kelas terpilih' : 'In selected class')
+        : i18n[state.lang]['metrics.databaseRecords'];
       document.getElementById('dashboard-weekly-schedule-count').textContent =
         scheduleReady ? String(weeklyLessons.length) : '—';
       document.getElementById('dashboard-weekly-schedule-done').textContent =
@@ -931,7 +1126,10 @@
               <span class="text-xs font-bold font-mono px-2 py-1 rounded-lg bg-cream border border-sand-200 text-forest">${escapeHTML(item.time || '—')}</span>
               <div class="w-2.5 h-8 rounded-full ${domainColor.bg}"></div>
               <div>
-                <h4 class="font-bold text-sm text-forest">${escapeHTML(item.actTitle || (state.lang === 'id' ? 'Aktivitas STEM' : 'STEM activity'))}</h4>
+                <h4 class="font-bold text-sm text-forest">${escapeHTML(
+                  bText(state.curriculumData.find(activity => activity.id === item.curriculumUnitId), 'title') ||
+                  (state.lang === 'id' ? 'Aktivitas STEM' : 'Title not provided')
+                )}</h4>
                 <p class="text-xs text-forest-light">${escapeHTML([item.tutorName, item.assistantTutorName].filter(Boolean).join(' · ') || domainColor.label)}${item.className ? ` · ${escapeHTML(item.className)}` : ''}</p>
               </div>
             </div>
@@ -971,6 +1169,7 @@
       attentionList.querySelectorAll('[data-observe-student]').forEach(button => {
         button.addEventListener('click', () => openObservationModal(button.dataset.observeStudent));
       });
+      renderTeacherMessageWidget();
     }
 
     function toLocalDateKey(date) {
@@ -978,6 +1177,12 @@
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    function isScheduleCompleted(item, todayKey = toLocalDateKey(new Date())) {
+      const status = String(item.status || '').toLowerCase();
+      return ['delivered', 'completed', 'done'].includes(status) ||
+        Boolean(item.date && item.date < todayKey);
     }
 
     function openTodaySchedule() {
@@ -1018,6 +1223,15 @@
       })[character]);
     }
 
+    function safeHttpsUrl(value) {
+      try {
+        const url = new URL(String(value || ''));
+        return url.protocol === 'https:' ? url.href : '';
+      } catch {
+        return '';
+      }
+    }
+
     function getInitials(name) {
       return String(name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
     }
@@ -1035,22 +1249,30 @@
 
       const tloMap = {
         'level-0': {
-          title: 'Level 0 - Green (Preschool – Precoding, PLEGO Blocks)',
+          title: state.lang === 'id'
+            ? 'Level 0 - Green (Preschool – Precoding, PLEGO Blocks)'
+            : 'Level 0 - Green (Preschool – Precoding, PLEGO Blocks)',
           tlo_id: 'Di akhir level, peserta didik mampu memahami konsep sebab-akibat dari hubungan input–output menggunakan sensor dan aktuator PLEGO Blocks, serta membangun prototipe sederhana yang menumbuhkan problem solving dan kolaborasi dasar.',
           tlo_en: 'Learners understand cause-and-effect relationships of input-output using PLEGO Blocks sensors and actuators, constructing prototypes that foster early problem-solving.'
         },
         'level-1': {
-          title: 'Level 1 - Yellow (SD kelas 1–3 – Precoding + Block Coding)',
+          title: state.lang === 'id'
+            ? 'Level 1 - Yellow (SD kelas 1–3 – Precoding + Block Coding)'
+            : 'Level 1 - Yellow (Elementary Grades 1–3 – Precoding + Block Coding)',
           tlo_id: 'Mampu merancang alur logika sederhana dengan block coding untuk mengendalikan sensor dan aktuator PLEGO Blocks, serta menghasilkan robot mini yang merespons perintah dasar.',
           tlo_en: 'Able to design simple logic flows with block coding to command PLEGO Blocks sensors and actuators, creating mini robot projects that respond to basic instructions.'
         },
         'level-2': {
-          title: 'Level 2 - Red (SD kelas 4–5 – Block Coding + AI Integration, Micro:bit)',
+          title: state.lang === 'id'
+            ? 'Level 2 - Red (SD kelas 4–5 – Block Coding + Integrasi AI, Micro:bit)'
+            : 'Level 2 - Red (Elementary Grades 4–5 – Block Coding + AI Integration, Micro:bit)',
           tlo_id: 'Mampu memprogram robot berbasis Micro:bit dengan sensor kompleks dan mengintegrasikan model AI sederhana (Teachable Machine) ke dalam sistem.',
           tlo_en: 'Able to program Micro:bit robots with complex sensors and integrate simple AI classification models (Teachable Machine) into the hardware system.'
         },
         'level-3': {
-          title: 'Level 3 - Blue (SMP – Text-based Coding + AI Tooling, ESP32)',
+          title: state.lang === 'id'
+            ? 'Level 3 - Blue (SMP – Text-based Coding + AI Tooling, ESP32)'
+            : 'Level 3 - Blue (Middle School – Text-based Coding + AI Tools, ESP32)',
           tlo_id: 'Mampu memprogram perangkat keras menggunakan Python/C++, menghubungkannya dengan API AI sederhana, serta merancang sistem robot/IoT yang mengambil keputusan berbasis data.',
           tlo_en: 'Able to program hardware using Python/C++, connect to AI APIs, and design IoT systems making data-driven decisions.'
         }
@@ -1076,7 +1298,7 @@
         const matchLevel = item.level === state.selectedCurriculumLevel;
         const matchSemester = state.selectedCurriculumSemester === 'all' || item.semester === state.selectedCurriculumSemester;
         const searchableText = [
-          bText(item, 'title'), item.tools, item.elo, item.domain, item.bloom, item.semester, item.week,
+          bText(item, 'title'), bText(item, 'tools'), bText(item, 'elo'), item.domain, item.bloom, item.semester, item.week,
         ].filter(Boolean).join(' ').toLocaleLowerCase();
         return matchLevel && matchSemester && (!searchTerm || searchableText.includes(searchTerm));
       });
@@ -1098,9 +1320,14 @@
       container.innerHTML = filtered.map(item => {
         const dColor = getDomainColor(item.domain || 'engineering');
         const bloomBadge = getBloomBadge(item.bloom);
-        const title = bText(item, 'title') || (state.lang === 'id' ? 'Unit kurikulum' : 'Curriculum unit');
-        const tools = item.tools || (state.lang === 'id' ? 'Belum ada perangkat' : 'No tools listed');
-        const elo = item.elo || (state.lang === 'id' ? 'Capaian pembelajaran belum ditambahkan.' : 'No learning outcome added yet.');
+        const title = bText(item, 'title') || (state.lang === 'id' ? 'Judul belum tersedia' : 'Title not provided');
+        const tools = bText(item, 'tools') || (state.lang === 'id' ? 'Belum ada perangkat' : 'No materials listed');
+        const elo = bText(item, 'elo') || (state.lang === 'id' ? 'Capaian pembelajaran belum ditambahkan.' : 'No learning outcome listed.');
+        const semester = item.semester === 'Gasal'
+          ? (state.lang === 'id' ? 'Gasal' : 'Odd semester')
+          : item.semester === 'Genap'
+            ? (state.lang === 'id' ? 'Genap' : 'Even semester')
+            : item.semester;
         const domainIcon = {
           science: '🔬',
           technology: '⚙️',
@@ -1114,13 +1341,13 @@
               <span class="curriculum-domain-icon" aria-hidden="true">${domainIcon}</span>
               <div class="flex flex-wrap items-center justify-end gap-1.5">
                 <span class="curriculum-meta-pill">${state.lang === 'id' ? `Minggu ${escapeHTML(item.week ?? '—')}` : `Week ${escapeHTML(item.week ?? '—')}`}</span>
-                <span class="curriculum-meta-pill">${escapeHTML(item.semester || '—')}</span>
+                <span class="curriculum-meta-pill">${escapeHTML(semester || '—')}</span>
               </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 mt-4">
               <span class="curriculum-domain-label ${dColor.textColor}">${escapeHTML(dColor.label)}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${bloomBadge.bg} ${bloomBadge.text}">${escapeHTML(item.bloom || '—')}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${bloomBadge.bg} ${bloomBadge.text}">${escapeHTML(getBloomLabel(item.bloom) || '—')}</span>
             </div>
 
             <h3 class="font-heading font-bold text-forest text-lg leading-snug mt-3 group-hover:text-sage transition">
@@ -1139,10 +1366,10 @@
 
             <div class="mt-auto pt-5">
               <div class="curriculum-card-actions">
-                <button onclick="openCurriculumGuide('${escapeHTML(item.id)}')" class="curriculum-guide-btn garden-interactive-btn">
+                <button type="button" data-guide-curriculum="${escapeHTML(item.id)}" class="curriculum-guide-btn garden-interactive-btn">
                   <span aria-hidden="true">📖</span> <span>${state.lang === 'id' ? 'Panduan' : 'Guide'}</span>
                 </button>
-                <button onclick="scheduleCurriculumToPlanner('${escapeHTML(item.id)}')" class="curriculum-schedule-btn garden-interactive-btn">
+                <button type="button" data-schedule-curriculum="${escapeHTML(item.id)}" class="curriculum-schedule-btn garden-interactive-btn">
                   <span>＋</span> <span>${state.lang === 'id' ? 'Jadwalkan' : 'Schedule'}</span>
                 </button>
               </div>
@@ -1150,6 +1377,12 @@
           </article>
         `;
       }).join('');
+      container.querySelectorAll('[data-guide-curriculum]').forEach(button => {
+        button.addEventListener('click', () => openCurriculumGuide(button.dataset.guideCurriculum));
+      });
+      container.querySelectorAll('[data-schedule-curriculum]').forEach(button => {
+        button.addEventListener('click', () => scheduleCurriculumToPlanner(button.dataset.scheduleCurriculum));
+      });
     }
 
     function setCurriculumLevel(level) {
@@ -1183,9 +1416,10 @@
     }
 
     function openAddCurriculumModal() {
-      // Restricted to Teacher/Owner
-      if (state.currentUser?.role === 'parent') {
-        showToast('Orang tua tidak memiliki izin menambah kurikulum', '⚠️');
+      if (!isAdminUser()) {
+        showToast(state.lang === 'id'
+          ? 'Hanya administrator yang dapat mengubah kurikulum inti.'
+          : 'Only administrators can change the core curriculum.', '⚠️');
         return;
       }
       openModal('modal-add-curriculum');
@@ -1193,6 +1427,12 @@
 
     async function handleCreateCurriculumSubmit(e) {
       e.preventDefault();
+      if (!isAdminUser()) {
+        showToast(state.lang === 'id'
+          ? 'Hanya administrator yang dapat mengubah kurikulum inti.'
+          : 'Only administrators can change the core curriculum.', '⚠️');
+        return;
+      }
       const level = document.getElementById('new-curr-level').value;
       const semester = document.getElementById('new-curr-semester').value;
       const week = parseInt(document.getElementById('new-curr-week').value) || 1;
@@ -1202,11 +1442,13 @@
       const title_en = document.getElementById('new-curr-title-en').value;
       const tools = document.getElementById('new-curr-tools').value;
       const elo = document.getElementById('new-curr-elo').value;
-      const canva_url = document.getElementById('new-curr-canva')?.value.trim() || 'https://www.canva.com/templates/?query=montessori+stem';
+      const canva_url_id = document.getElementById('new-curr-canva-id').value.trim();
+      const canva_url_eng = document.getElementById('new-curr-canva-en').value.trim();
 
       const newItem = {
         id: 'c-custom-' + Date.now(),
-        level, semester, week, bloom, domain, title_id, title_en, tools, elo, canva_url
+        level, semester, week, bloom, domain, title_id, title_en, tools, elo,
+        canva_url: canva_url_id, canva_url_eng,
       };
 
       if (!state.databaseStatus.curriculum) {
@@ -1234,7 +1476,6 @@
       if (!item) return;
       navigateTo('planner');
       openScheduleSlotModal(toLocalDateKey(state.plannerDate));
-      document.getElementById('modal-schedule-act').value = item.id;
     }
 
     /* UNIFIED CURRICULUM GUIDE & CANVA INTEGRATION */
@@ -1251,25 +1492,60 @@
       domainBadge.className = `text-xs font-bold px-2.5 py-0.5 rounded-full ${dColor.bgLight} ${dColor.textColor}`;
       domainBadge.textContent = dColor.label;
 
-      const ageText = item.level === 'level-0' ? 'Preschool / PAUD (3–6 th)' :
-        item.level === 'level-1' ? 'SD Kelas 1–3 (7–9 th)' :
-          item.level === 'level-2' ? 'SD Kelas 4–5 AI (10–11 th)' : 'SMP (12–15 th)';
-      document.getElementById('act-detail-age').textContent = `${ageText} · Sem. ${item.semester || 'Gasal'} · M${item.week || 1}`;
-      document.getElementById('act-detail-title').textContent = bText(item, 'title');
+      const ageText = item.level === 'level-0'
+        ? (state.lang === 'id' ? 'Preschool / PAUD (3–6 tahun)' : 'Preschool (ages 3–6)')
+        : item.level === 'level-1'
+          ? (state.lang === 'id' ? 'SD Kelas 1–3 (7–9 tahun)' : 'Elementary, Grades 1–3 (ages 7–9)')
+          : item.level === 'level-2'
+            ? (state.lang === 'id' ? 'SD Kelas 4–5 AI (10–11 tahun)' : 'Elementary, Grades 4–5 · AI (ages 10–11)')
+            : (state.lang === 'id' ? 'SMP (12–15 tahun)' : 'Middle school (ages 12–15)');
+      const semesterLabel = item.semester === 'Gasal'
+        ? (state.lang === 'id' ? 'Gasal' : 'Odd semester')
+        : item.semester === 'Genap'
+          ? (state.lang === 'id' ? 'Genap' : 'Even semester')
+          : item.semester || '';
+      document.getElementById('act-detail-age').textContent =
+        `${ageText} · ${state.lang === 'id' ? 'Semester' : 'Semester'} ${semesterLabel} · ${state.lang === 'id' ? 'Minggu' : 'Week'} ${item.week || 1}`;
+      document.getElementById('act-detail-title').textContent = bText(item, 'title') ||
+        (state.lang === 'id' ? 'Judul belum tersedia' : 'Title not provided');
 
       const content = document.getElementById('act-detail-content');
-      const canvaUrl = item.canva_url || `https://www.canva.com/design/DAF8_Plego_${item.id || 'stem'}/view?embed`;
+      const toolsText = bText(item, 'tools');
+      const eloText = bText(item, 'elo') ||
+        (state.lang === 'id' ? 'Capaian pembelajaran belum ditambahkan.' : 'No learning outcome listed.');
+      const canvaLinks = [
+        {
+          label: state.lang === 'id' ? 'Buka Canva (Indonesia)' : 'Open Canva (Indonesian)',
+          url: item.canva_url,
+        },
+        {
+          label: state.lang === 'id' ? 'Buka Canva (English)' : 'Open Canva (English)',
+          url: item.canva_url_eng,
+        },
+      ].map(link => {
+        try {
+          const parsedUrl = link.url ? new URL(link.url) : null;
+          return {
+            ...link,
+            url: parsedUrl?.protocol === 'https:' ? parsedUrl.href : null,
+          };
+        } catch {
+          return { ...link, url: null };
+        }
+      });
 
       // Determine materials list
       let materials = [];
       if (item.materials_id && state.lang === 'id') materials = item.materials_id;
       else if (item.materials_en && state.lang === 'en') materials = item.materials_en;
-      else if (item.tools) {
-        materials = item.tools.split(',').map(s => s.trim());
-        materials.push('Baki Kayu Kerja Montessori');
-        materials.push('Alas Kerja Katun');
+      else if (toolsText) {
+        materials = toolsText.split(',').map(s => s.trim());
+        materials.push(state.lang === 'id' ? 'Baki Kayu Kerja Montessori' : 'Montessori work tray');
+        materials.push(state.lang === 'id' ? 'Alas Kerja Katun' : 'Cotton work mat');
       } else {
-        materials = ['Perangkat PLEGO Blocks', 'Baki Kayu Montessori'];
+        materials = state.lang === 'id'
+          ? ['Perangkat PLEGO Blocks', 'Baki Kayu Montessori']
+          : ['PLEGO Blocks components', 'Montessori wooden tray'];
       }
 
       // Determine steps
@@ -1281,13 +1557,13 @@
           {
             phase: state.lang === 'id' ? '1. Undangan (Invitation)' : '1. Invitation',
             text: state.lang === 'id'
-              ? `Ajak anak dengan tenang ke rak eksplorasi STEM: "Mari kita amati bagaimana ${item.tools || 'komponen ini'} dapat bekerja bersama. Maukah kamu merangkainya di atas baki?"`
-              : `Calmly invite child to the STEM shelf: "Shall we explore how ${item.tools || 'these modules'} work together on our work tray?"`
+              ? `Ajak anak dengan tenang ke rak eksplorasi STEM: "Mari kita amati bagaimana ${toolsText || 'komponen ini'} dapat bekerja bersama. Maukah kamu merangkainya di atas baki?"`
+              : `Calmly invite the child to the STEM shelf: "Shall we explore how ${toolsText || 'these modules'} work together on our work tray?"`
           },
           {
             phase: state.lang === 'id' ? '2. Demonstrasi (Demonstration)' : '2. Demonstration',
             text: state.lang === 'id'
-              ? `Tunjukkan cara menghubungkan modul ${item.tools || 'komponen'} secara perlahan dengan gerakan tangan terisolasi (Three-Period Lesson). Beri jeda agar anak memperhatikan alur input memicu output.`
+              ? `Tunjukkan cara menghubungkan modul ${toolsText || 'komponen'} secara perlahan dengan gerakan tangan terisolasi (Three-Period Lesson). Beri jeda agar anak memperhatikan alur input memicu output.`
               : `Demonstrate connecting modules with deliberate, isolated hand movements (Three-Period Lesson). Pause so the child observes input triggering output.`
           },
           {
@@ -1309,32 +1585,42 @@
 
       content.innerHTML = `
         <!-- CANVA INTEGRATION CARD -->
-        <div class="p-5 rounded-3xl bg-gradient-to-r from-sky-light/80 via-cream to-violet-light/80 border-2 border-violet/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-soft">
-          <div class="flex items-center gap-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00C4CC] to-[#7D2AE8] text-white flex items-center justify-center font-bold text-xl shadow-md flex-shrink-0">
+        <div class="canva-resource-card">
+          <div class="canva-resource-info">
+            <div class="canva-resource-icon" aria-hidden="true">
               🎨
             </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-heading font-bold text-forest text-sm sm:text-base">Materi Ajar & Slide Visual Canva</h4>
-                <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-violet/10 text-violet border border-violet/20">Template Siap Pakai</span>
+            <div class="canva-resource-copy">
+              <div class="canva-resource-title">
+                <h4 class="font-heading font-bold text-forest text-sm sm:text-base">${state.lang === 'id' ? 'Materi Ajar & Slide Visual Canva' : 'Teaching Materials & Visual Slides'}</h4>
+                <span class="canva-resource-badge">${state.lang === 'id' ? 'Template Siap Pakai' : 'Ready-to-use templates'}</span>
               </div>
-              <p class="text-xs text-forest-light mt-0.5 leading-relaxed">
-                Slide presentasi interaktif, lembar observasi anak, dan kartu visual langkah eksplorasi tersedia di Canva.
+              <p class="text-xs text-forest-light leading-relaxed">
+                ${state.lang === 'id'
+                  ? 'Slide presentasi interaktif, lembar observasi anak, dan kartu visual langkah eksplorasi tersedia di Canva.'
+                  : 'Interactive presentation slides, child observation sheets, and visual exploration-step cards are available on Canva.'}
               </p>
             </div>
           </div>
-          <a href="${canvaUrl}" target="_blank" rel="noopener noreferrer"
-             class="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#00C4CC] to-[#7D2AE8] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-soft transition garden-interactive-btn flex-shrink-0">
-            <span>Buka Slide di Canva</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-          </a>
+          <div class="canva-resource-links">
+            ${canvaLinks.map(link => link.url ? `
+              <a href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer"
+                 class="canva-resource-link garden-interactive-btn">
+                <span>${escapeHTML(link.label)}</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </a>
+            ` : `
+              <span class="canva-resource-link is-unavailable" aria-disabled="true">
+                ${escapeHTML(link.label)} · ${state.lang === 'id' ? 'Link belum diisi' : 'Link not added'}
+              </span>
+            `).join('')}
+          </div>
         </div>
 
         <!-- ELO & Summary -->
         <div class="bg-sand-50 p-4 rounded-2xl border border-sand-200">
-          <span class="text-[10px] font-bold text-forest-light uppercase block mb-1">🎯 ELO / Capaian Pembelajaran:</span>
-          <p class="text-xs text-forest font-semibold leading-relaxed">${item.elo}</p>
+          <span class="text-[10px] font-bold text-forest-light uppercase block mb-1">🎯 ${state.lang === 'id' ? 'ELO / Capaian Pembelajaran:' : 'Learning Outcome:'}</span>
+          <p class="text-xs text-forest font-semibold leading-relaxed">${escapeHTML(eloText)}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1343,7 +1629,7 @@
               <span>🧺</span> ${state.lang === 'id' ? 'Material & Komponen' : 'Materials Needed'}
             </h4>
             <ul class="space-y-1.5 text-xs text-forest">
-              ${materials.map(m => `<li class="flex items-center gap-1.5"><span class="text-sage font-bold">✔</span> ${m}</li>`).join('')}
+              ${materials.map(m => `<li class="flex items-center gap-1.5"><span class="text-sage font-bold">✔</span> ${escapeHTML(m)}</li>`).join('')}
             </ul>
           </div>
 
@@ -1352,7 +1638,7 @@
               <span>🇮🇩</span> ${state.lang === 'id' ? 'Alternatif Lokal Nusantara' : 'Local Indonesian Alternative'}
             </h4>
             <p class="text-xs text-forest leading-relaxed">
-              ${localTips}
+              ${escapeHTML(localTips)}
             </p>
           </div>
         </div>
@@ -1365,8 +1651,8 @@
           <div class="space-y-2.5">
             ${steps.map(s => `
               <div class="p-3.5 rounded-2xl bg-cream border border-sand-200">
-                <span class="font-bold text-xs text-sage block mb-1">${s.phase}</span>
-                <p class="text-xs text-forest leading-relaxed">${s.text}</p>
+                <span class="font-bold text-xs text-sage block mb-1">${escapeHTML(s.phase)}</span>
+                <p class="text-xs text-forest leading-relaxed">${escapeHTML(s.text)}</p>
               </div>
             `).join('')}
           </div>
@@ -1378,7 +1664,7 @@
             <span>🌿</span> ${state.lang === 'id' ? 'Catatan Pedagogi & Kontrol Kesalahan (Control of Error)' : 'Montessori Pedagogy Notes'}
           </h4>
           <p class="text-xs text-forest-light leading-relaxed">
-            ${montessoriNotes}
+            ${escapeHTML(montessoriNotes)}
           </p>
         </div>
       `;
@@ -1395,7 +1681,6 @@
       closeModal('modal-activity');
       navigateTo('planner');
       openScheduleSlotModal(toLocalDateKey(state.plannerDate));
-      document.getElementById('modal-schedule-act').value = state.selectedActivity.id;
     }
 
     /* FLOW 4: OVERHAULED INTERACTIVE LESSON PLANNER (DAY / WEEK / MONTH) */
@@ -1407,6 +1692,14 @@
         btn.setAttribute('aria-pressed', String(l === layout));
       });
       renderPlanner();
+    }
+
+    function printPlanner() {
+      document.body.classList.add('printing-planner');
+      window.addEventListener('afterprint', () => {
+        document.body.classList.remove('printing-planner');
+      }, { once: true });
+      window.print();
     }
 
     function renderPlanner() {
@@ -1447,18 +1740,25 @@
 
       const getItemTitle = item => {
         const activity = state.curriculumData.find(entry => entry.id === item.curriculumUnitId);
-        const title = activity ? bText(activity, 'title') : item.actTitle;
+        const title = activity
+          ? bText(activity, 'title')
+          : (state.lang === 'id' ? item.actTitle : item.actTitleEn);
         return title && !['—', '-'].includes(String(title).trim())
           ? title
-          : state.lang === 'id' ? 'Aktivitas STEM' : 'STEM activity';
+          : state.lang === 'id' ? 'Aktivitas STEM' : 'Title not provided';
       };
 
       const renderItem = item => {
         const activity = state.curriculumData.find(entry => entry.id === item.curriculumUnitId);
         const color = getDomainColor(item.domain || activity?.domain || 'science');
         const title = getItemTitle(item);
-        const isDone = ['delivered', 'completed', 'done'].includes(String(item.status || '').toLowerCase());
+        const isDone = isScheduleCompleted(item);
         const tutors = [item.tutorName, item.assistantTutorName].filter(Boolean);
+        const sessionType = {
+          work_cycle: state.lang === 'id' ? 'Siklus kerja' : 'Work Cycle',
+          circle_time: state.lang === 'id' ? 'Waktu lingkaran' : 'Circle Time',
+          outdoor: state.lang === 'id' ? 'Kegiatan luar ruang' : 'Outdoor',
+        }[item.block] || item.block;
         return `
           <article class="planner-lesson-card garden-card-hover">
             <div class="planner-lesson-topline">
@@ -1468,14 +1768,14 @@
             <h4 class="planner-lesson-title">${escapeHTML(title)}</h4>
             <div class="planner-lesson-meta">
               <span class="planner-meta-chip">${escapeHTML(item.className || (state.lang === 'id' ? 'Kelas belum dipilih' : 'Class not set'))}</span>
-              ${item.block ? `<span class="planner-meta-chip">${escapeHTML(item.block)}</span>` : ''}
+              ${item.block ? `<span class="planner-meta-chip">${escapeHTML(sessionType)}</span>` : ''}
             </div>
             ${tutors.length ? `<p class="planner-lesson-tutors"><span aria-hidden="true">◉</span> ${escapeHTML(tutors.join(' · '))}</p>` : ''}
             <div class="planner-lesson-footer">
               <span class="planner-status ${isDone ? 'is-complete' : ''}">${isDone ? (state.lang === 'id' ? 'Selesai' : 'Done') : (state.lang === 'id' ? 'Terjadwal' : 'Scheduled')}</span>
               <div class="planner-lesson-actions">
-                ${activity ? `<button onclick="openCurriculumGuide('${escapeHTML(activity.id)}')" class="planner-action-link">${state.lang === 'id' ? 'Panduan' : 'Guide'}</button>` : ''}
-                ${state.currentUser?.role !== 'parent' ? `<button onclick="deletePlanItem('${escapeHTML(item.id)}')" class="planner-action-link is-delete">${state.lang === 'id' ? 'Hapus' : 'Delete'}</button>` : ''}
+                ${activity ? `<button type="button" data-guide-curriculum="${escapeHTML(activity.id)}" class="planner-action-link">${state.lang === 'id' ? 'Panduan' : 'Guide'}</button>` : ''}
+                ${state.currentUser?.role !== 'parent' ? `<button type="button" data-delete-schedule="${escapeHTML(item.id)}" class="planner-action-link is-delete">${state.lang === 'id' ? 'Hapus' : 'Delete'}</button>` : ''}
               </div>
             </div>
           </article>`;
@@ -1497,7 +1797,7 @@
                 const inMonth = date.getMonth() === firstMonth;
                 const isToday = dateKey === toLocalDateKey(new Date());
                 const shortItems = items.slice(0, 2).map(getItemTitle);
-                return `<button type="button" onclick="state.plannerDate = new Date('${dateKey}T00:00:00'); setPlannerLayout('day')" aria-label="${escapeHTML(date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }))}${items.length ? `, ${items.length} ${state.lang === 'id' ? 'aktivitas' : 'activities'}` : ''}" class="planner-month-day ${isToday ? 'is-today' : ''} ${inMonth ? '' : 'is-outside-month'}">
+                return `<button type="button" data-planner-date="${dateKey}" aria-label="${escapeHTML(date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }))}${items.length ? `, ${items.length} ${state.lang === 'id' ? 'aktivitas' : 'activities'}` : ''}" class="planner-month-day ${isToday ? 'is-today' : ''} ${inMonth ? '' : 'is-outside-month'}">
                   <span class="planner-month-date">${date.getDate()}</span>
                   ${shortItems.length ? `<span class="planner-month-events">${shortItems.map(title => `<span class="planner-month-event">${escapeHTML(title)}</span>`).join('')}${items.length > 2 ? `<span class="planner-month-more">+${items.length - 2} ${state.lang === 'id' ? 'lainnya' : 'more'}</span>` : ''}</span>` : ''}
                 </button>`;
@@ -1522,27 +1822,248 @@
                 <div class="planner-day-items">
                   ${items.length ? items.map(renderItem).join('') : `<p class="planner-empty-day">${state.lang === 'id' ? 'Belum ada jadwal' : 'No lessons scheduled'}</p>`}
                 </div>
-                ${state.currentUser?.role !== 'parent' ? `<button onclick="openScheduleSlotModal('${dateKey}')" class="planner-add-slot">${state.lang === 'id' ? '+ Tambah aktivitas' : '+ Add activity'}</button>` : ''}
+                ${state.currentUser?.role !== 'parent' ? `<button type="button" data-schedule-date="${dateKey}" class="planner-add-slot">${state.lang === 'id' ? '+ Tambah aktivitas' : '+ Add activity'}</button>` : ''}
               </section>`;
             }).join('')}
           </div>`;
       }
 
+      container.querySelectorAll('[data-guide-curriculum]').forEach(button => {
+        button.addEventListener('click', () => openCurriculumGuide(button.dataset.guideCurriculum));
+      });
+      container.querySelectorAll('[data-delete-schedule]').forEach(button => {
+        button.addEventListener('click', () => deletePlanItem(button.dataset.deleteSchedule));
+      });
+      container.querySelectorAll('[data-planner-date]').forEach(button => {
+        button.addEventListener('click', () => {
+          const date = button.dataset.plannerDate;
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+          state.plannerDate = new Date(`${date}T00:00:00`);
+          setPlannerLayout('day');
+        });
+      });
+      container.querySelectorAll('[data-schedule-date]').forEach(button => {
+        button.addEventListener('click', () => openScheduleSlotModal(button.dataset.scheduleDate));
+      });
+
       const materialsContainer = document.getElementById('planner-materials-list');
       const materials = [...new Set(state.scheduleItems
         .filter(item => item.date >= toLocalDateKey(weekdays[0]) && item.date <= toLocalDateKey(weekdays[4]))
-        .map(item => state.curriculumData.find(activity => activity.id === item.curriculumUnitId)?.tools)
+        .map(item => bText(state.curriculumData.find(activity => activity.id === item.curriculumUnitId), 'tools'))
         .filter(Boolean)
         .flatMap(value => value.split(',').map(material => material.trim())))];
       materialsContainer.innerHTML = materials.length ? materials.map(material => `
         <label class="planner-material-item">
-          <input type="checkbox">
+          <input type="checkbox" data-weekly-material value="${escapeHTML(material)}">
           <span>${escapeHTML(material)}</span>
         </label>
       `).join('') : `<p class="planner-material-empty">${state.lang === 'id' ? 'Material akan muncul dari aktivitas terjadwal minggu ini.' : 'Materials will appear from this week’s scheduled activities.'}</p>`;
+      const weekStartKey = toLocalDateKey(weekdays[0]);
+      const scopeKey = state.activeClassId || 'all';
+      void loadWeeklyMaterialChecks(materialsContainer, materials, weekStartKey, scopeKey);
+    }
+
+    let weeklyMaterialLoadSequence = 0;
+
+    async function loadWeeklyMaterialChecks(container, materials, weekStart, scopeKey) {
+      if (!materials.length) return;
+      const requestNumber = ++weeklyMaterialLoadSequence;
+      container.dataset.weekStart = weekStart;
+      container.dataset.scopeKey = scopeKey;
+      const checkboxes = [...container.querySelectorAll('[data-weekly-material]')];
+      const canEdit = state.currentUser?.role !== 'parent' && Boolean(state.currentUser?.id);
+      checkboxes.forEach(input => {
+        input.disabled = true;
+        input.addEventListener('change', () => {
+          void saveWeeklyMaterialCheck(input, weekStart, scopeKey);
+        });
+      });
+
+      if (!canEdit) return;
+      try {
+        const { data, error } = await sb.from('weekly_material_checks')
+          .select('material, is_checked')
+          .eq('user_id', state.currentUser.id)
+          .eq('scope_key', scopeKey)
+          .eq('week_start', weekStart)
+          .in('material', materials);
+        if (error) throw error;
+        if (requestNumber !== weeklyMaterialLoadSequence ||
+            container.dataset.weekStart !== weekStart ||
+            container.dataset.scopeKey !== scopeKey) return;
+
+        const checkedMaterials = new Map((data || []).map(item => [item.material, item.is_checked]));
+        checkboxes.forEach(input => {
+          input.checked = checkedMaterials.get(input.value) || false;
+          input.disabled = false;
+        });
+      } catch (error) {
+        if (requestNumber !== weeklyMaterialLoadSequence) return;
+        console.warn('[Supabase] weekly materials load failed:', error);
+        showToast(`${state.lang === 'id'
+          ? 'Status material minggu ini gagal dimuat'
+          : 'Weekly material status could not be loaded'}: ${error.message || error}`, '⚠️');
+      }
+    }
+
+    async function saveWeeklyMaterialCheck(input, weekStart, scopeKey) {
+      const isChecked = input.checked;
+      input.disabled = true;
+      try {
+        const { error } = await sb.from('weekly_material_checks').upsert({
+          user_id: state.currentUser.id,
+          scope_key: scopeKey,
+          week_start: weekStart,
+          material: input.value,
+          is_checked: isChecked,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,scope_key,week_start,material' });
+        if (error) throw error;
+      } catch (error) {
+        console.warn('[Supabase] weekly material update failed:', error);
+        input.checked = !isChecked;
+        showToast(`${state.lang === 'id'
+          ? 'Status material gagal disimpan'
+          : 'Material status could not be saved'}: ${error.message || error}`, '⚠️');
+      } finally {
+        input.disabled = false;
+      }
+    }
+
+    const searchableSelectControls = new WeakMap();
+
+    function enhanceSearchableSelect(select) {
+      let control = searchableSelectControls.get(select);
+      if (!control) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'searchable-select';
+        const isRequired = select.required || select.id === 'modal-schedule-act';
+        const input = document.createElement('input');
+        input.type = 'search';
+        input.id = `${select.id}-search`;
+        input.className = select.className;
+        input.placeholder = state.lang === 'id' ? 'Ketik untuk mencari...' : 'Type to search...';
+        input.autocomplete = 'off';
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-expanded', 'false');
+        input.setAttribute('aria-controls', `${select.id}-options`);
+        input.required = isRequired;
+
+        const list = document.createElement('div');
+        list.id = `${select.id}-options`;
+        list.className = 'searchable-select-options hidden';
+        list.setAttribute('role', 'listbox');
+
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.append(input, list, select);
+        select.classList.add('searchable-select-native');
+        select.required = false;
+        select.tabIndex = -1;
+        select.setAttribute('aria-hidden', 'true');
+        const label = select.parentElement.parentElement.querySelector(`label[for="${select.id}"]`) ||
+          select.parentElement.parentElement.querySelector('label');
+        if (label) label.htmlFor = input.id;
+
+        const closeList = () => {
+          list.classList.add('hidden');
+          input.setAttribute('aria-expanded', 'false');
+        };
+        const chooseOption = option => {
+          select.value = option.value;
+          input.value = option.textContent.trim();
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          closeList();
+        };
+        const renderOptions = () => {
+          const query = input.value.trim().toLocaleLowerCase();
+          const options = [...select.options].filter(option =>
+            option.textContent.trim().toLocaleLowerCase().includes(query)
+          );
+          list.replaceChildren();
+          if (!options.length) {
+            const empty = document.createElement('p');
+            empty.className = 'searchable-select-empty';
+            empty.textContent = state.lang === 'id' ? 'Tidak ada pilihan yang cocok.' : 'No matching options.';
+            list.append(empty);
+          } else {
+            options.forEach(option => {
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'searchable-select-option';
+              button.setAttribute('role', 'option');
+              button.setAttribute('aria-selected', String(option.value === select.value));
+              button.textContent = option.textContent.trim();
+              button.addEventListener('pointerdown', event => event.preventDefault());
+              button.addEventListener('click', () => chooseOption(option));
+              list.append(button);
+            });
+          }
+          const wrapperBounds = wrapper.getBoundingClientRect();
+          const roomBelow = window.innerHeight - wrapperBounds.bottom;
+          list.classList.toggle('opens-up', roomBelow < 210 && wrapperBounds.top > roomBelow);
+          list.classList.remove('hidden');
+          input.setAttribute('aria-expanded', 'true');
+        };
+
+        input.addEventListener('focus', renderOptions);
+        input.addEventListener('input', () => {
+          const query = input.value.trim().toLocaleLowerCase();
+          const exactOption = [...select.options].find(option =>
+            option.textContent.trim().toLocaleLowerCase() === query
+          );
+          select.value = exactOption?.value || '';
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          renderOptions();
+        });
+        input.addEventListener('keydown', event => {
+          const options = [...list.querySelectorAll('[role="option"]')];
+          if (event.key === 'Escape') {
+            closeList();
+          } else if (event.key === 'ArrowDown' && options.length) {
+            event.preventDefault();
+            options[0].focus();
+          } else if (event.key === 'Enter' && options.length === 1) {
+            event.preventDefault();
+            options[0].click();
+          }
+        });
+        list.addEventListener('keydown', event => {
+          const options = [...list.querySelectorAll('[role="option"]')];
+          const activeIndex = options.findIndex(option => option === document.activeElement);
+          if (event.key === 'ArrowDown' && options.length) {
+            event.preventDefault();
+            options[Math.min(activeIndex + 1, options.length - 1)].focus();
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (activeIndex <= 0) input.focus();
+            else options[activeIndex - 1].focus();
+          } else if (event.key === 'Escape') {
+            input.focus();
+            closeList();
+          }
+        });
+        wrapper.addEventListener('focusout', event => {
+          if (!wrapper.contains(event.relatedTarget)) closeList();
+        });
+
+        control = { input, list, required: isRequired };
+        searchableSelectControls.set(select, control);
+      }
+
+      const selectedOption = select.selectedOptions[0];
+      control.input.value = selectedOption?.value ? selectedOption.textContent.trim() : '';
+      control.list.classList.add('hidden');
+      control.input.setAttribute('aria-expanded', 'false');
+      control.input.required = control.required;
+      control.input.disabled = select.disabled;
     }
 
     function openScheduleSlotModal(date = toLocalDateKey(state.plannerDate)) {
+      if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+        showToast(state.lang === 'id' ? 'Akses menjadwalkan aktivitas ditolak.' : 'You cannot schedule activities.', '⚠️');
+        return;
+      }
       if (!state.databaseStatus.schedule || !state.databaseStatus.curriculum || !state.databaseStatus.tutors) {
         showToast(state.lang === 'id'
           ? 'Database jadwal, kurikulum, atau pendidik belum siap.'
@@ -1558,37 +2079,39 @@
         return;
       }
       const selectAct = document.getElementById('modal-schedule-act');
-      selectAct.innerHTML = state.curriculumData.filter(item => item._fromDB).map(a => `
+      selectAct.innerHTML = `<option value="">${state.lang === 'id' ? 'Pilih aktivitas...' : 'Choose an activity...'}</option>` +
+        state.curriculumData.filter(item => item._fromDB).map(a => `
         <option value="${escapeHTML(a.id)}">${escapeHTML(bText(a, 'title'))}</option>
       `).join('');
+      const availableTutors = getSelectableTutors();
       const tutorSelect = document.getElementById('modal-schedule-tutor');
-      tutorSelect.innerHTML = state.tutors.map(tutor => `
+      tutorSelect.innerHTML = `<option value="">${state.lang === 'id' ? 'Pilih pendidik...' : 'Choose an educator...'}</option>` +
+        availableTutors.map(tutor => `
         <option value="${escapeHTML(tutor.id)}">${escapeHTML(tutor.full_name)}</option>
       `).join('');
       const assistantSelect = document.getElementById('modal-schedule-assistant');
-      assistantSelect.innerHTML = `<option value="">${state.lang === 'id' ? 'Tidak ada tutor pendamping' : 'No co-tutor'}</option>` +
-        state.tutors.map(tutor => `
+      assistantSelect.innerHTML = `<option value="">${state.lang === 'id' ? 'Pilih tutor pendamping (opsional)...' : 'Choose a co-tutor (optional)...'}</option>` +
+        availableTutors.map(tutor => `
           <option value="${escapeHTML(tutor.id)}">${escapeHTML(tutor.full_name)}</option>
         `).join('');
       const classSelect = document.getElementById('modal-schedule-class');
-      classSelect.innerHTML = state.classes.map(classItem => `
+      classSelect.innerHTML = `<option value="">${state.lang === 'id' ? 'Pilih kelas...' : 'Choose a class...'}</option>` +
+        state.classes.map(classItem => `
         <option value="${escapeHTML(classItem.id)}">${escapeHTML(classItem.name)}</option>
       `).join('');
-      classSelect.value = state.activeClassId || state.classes[0]?.id || '';
-      const currentTutor = state.tutors.find(tutor =>
-        tutor.email?.toLowerCase() === state.currentUser?.email?.toLowerCase()
-      );
-      if (currentTutor) tutorSelect.value = currentTutor.id;
       document.getElementById('modal-schedule-day').value = date;
-      const selectedClass = state.classes.find(classItem => classItem.id === classSelect.value);
-      if (selectedClass?.start_time) {
-        document.getElementById('modal-schedule-time').value = selectedClass.start_time.slice(0, 5);
-      }
+      document.getElementById('modal-schedule-time').value = '';
+      document.getElementById('modal-schedule-block').value = '';
+      document.querySelectorAll('#modal-schedule-lesson select').forEach(enhanceSearchableSelect);
       openModal('modal-schedule-lesson');
     }
 
     async function handleSaveScheduledLesson(e) {
       e.preventDefault();
+      if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+        showToast(state.lang === 'id' ? 'Akses menjadwalkan aktivitas ditolak.' : 'You cannot schedule activities.', '⚠️');
+        return;
+      }
       const date = document.getElementById('modal-schedule-day').value;
       const actId = document.getElementById('modal-schedule-act').value;
       const time = document.getElementById('modal-schedule-time').value;
@@ -1602,6 +2125,13 @@
       }
       if (assistantTutorId === tutorId) {
         showToast(state.lang === 'id' ? 'Pilih tutor pendamping yang berbeda.' : 'Choose a different co-tutor.', '⚠️');
+        return;
+      }
+      if (state.currentUser?.role === 'teacher' &&
+          ![tutorId, assistantTutorId].includes(state.currentUser.tutorId)) {
+        showToast(state.lang === 'id'
+          ? 'Pendidik yang sedang login harus menjadi pendidik utama atau pendamping.'
+          : 'You must be the educator or co-educator for this schedule.', '⚠️');
         return;
       }
 
@@ -1626,6 +2156,10 @@
     }
 
     async function deletePlanItem(id) {
+      if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+        showToast(state.lang === 'id' ? 'Akses menghapus jadwal ditolak.' : 'You cannot delete this schedule.', '⚠️');
+        return;
+      }
       const { data, error } = await sb.from('schedule_assignments')
         .delete()
         .eq('id', id)
@@ -1644,20 +2178,22 @@
     }
 
     function changePlannerWeek(delta) {
+      const nextDate = new Date(state.plannerDate);
       if (state.plannerLayout === 'month') {
-        const dayOfMonth = state.plannerDate.getDate();
-        state.plannerDate.setDate(1);
-        state.plannerDate.setMonth(state.plannerDate.getMonth() + delta);
+        const dayOfMonth = nextDate.getDate();
+        nextDate.setDate(1);
+        nextDate.setMonth(nextDate.getMonth() + delta);
         const lastDayOfMonth = new Date(
-          state.plannerDate.getFullYear(),
-          state.plannerDate.getMonth() + 1,
+          nextDate.getFullYear(),
+          nextDate.getMonth() + 1,
           0
         ).getDate();
-        state.plannerDate.setDate(Math.min(dayOfMonth, lastDayOfMonth));
+        nextDate.setDate(Math.min(dayOfMonth, lastDayOfMonth));
       } else {
         const amount = state.plannerLayout === 'day' ? 1 : 7;
-        state.plannerDate.setDate(state.plannerDate.getDate() + delta * amount);
+        nextDate.setDate(nextDate.getDate() + delta * amount);
       }
+      state.plannerDate = nextDate;
       renderPlanner();
     }
 
@@ -1671,7 +2207,7 @@
       const grid = document.getElementById('students-grid');
       const feed = document.getElementById('observation-feed');
 
-      const roster = state.currentUser?.role === 'parent' ? state.students : state.allStudents;
+      const roster = state.students;
       const feedObservations = state.observationsLog.filter(observation => {
         const student = state.allStudents.find(item => item.id === observation.studentId);
         return !state.activeClassId || student?.classId === state.activeClassId;
@@ -1699,7 +2235,7 @@
         state.lang === 'id' ? 'Tambah Anak' : 'Add Child';
       document.getElementById('add-observation-student-button').classList.toggle(
         'hidden',
-        state.currentUser?.role === 'parent'
+        !isAdminUser()
       );
       const searchInput = document.getElementById('observation-student-search');
       searchInput.placeholder = state.lang === 'id' ? 'Cari nama anak...' : 'Search children...';
@@ -1758,6 +2294,7 @@
               ${state.lang === 'id' ? 'Yuk, amati' : 'Let’s observe'} <span aria-hidden="true">✦</span>
             </button>
             ${state.currentUser?.role === 'parent' ? '' : `<button type="button" data-preview-student="${escapeHTML(s.id)}" class="observation-preview-action">${state.lang === 'id' ? 'Pratinjau' : 'Preview'}</button>`}
+            ${isAdminUser() ? `<button type="button" data-delete-student="${escapeHTML(s.id)}" class="observation-delete-action">${state.lang === 'id' ? 'Hapus anak' : 'Delete child'}</button>` : ''}
           </div>
         </article>
       `;
@@ -1784,6 +2321,12 @@
         button.addEventListener('click', event => {
           event.stopPropagation();
           openObservationModal(button.dataset.recordStudent);
+        });
+      });
+      grid.querySelectorAll('[data-delete-student]').forEach(button => {
+        button.addEventListener('click', event => {
+          event.stopPropagation();
+          void deleteStudentFromSupabase(button.dataset.deleteStudent);
         });
       });
       filterObservationStudents(searchInput.value);
@@ -1836,9 +2379,92 @@
       noResults.classList.toggle('hidden', !cards.length || visibleCount > 0);
     }
 
+    async function deleteStudentFromSupabase(studentId) {
+      if (!isAdminUser()) {
+        showToast(state.lang === 'id'
+          ? 'Hanya administrator yang dapat menghapus anak.'
+          : 'Only administrators can delete children.', '⚠️');
+        return;
+      }
+      const student = state.allStudents.find(item => item.id === studentId);
+      if (!student?._fromDB) return;
+
+      const confirmed = window.confirm(state.lang === 'id'
+        ? `Hapus permanen ${student.name}? Semua catatan observasi, pesan, dan profil orang tua terkait juga akan dihapus. Tindakan ini tidak dapat dibatalkan.`
+        : `Permanently delete ${student.name}? All related observations, messages, and parent profiles will also be deleted. This cannot be undone.`);
+      if (!confirmed) return;
+
+      try {
+        const deletedObservations = state.databaseObservations.filter(item => item.student_id === student.id);
+        const { error } = await sb.rpc('admin_delete_student', { p_student_id: student.id });
+        if (error) throw error;
+
+        const storage = sb.storage.from('student-observation-photos');
+        let removedPhotoCount = 0;
+        let photoCleanupError = null;
+        const findPhotoPaths = async prefix => {
+          const paths = [];
+          let offset = 0;
+          while (true) {
+            const { data: files, error: listError } = await storage.list(prefix, { limit: 100, offset });
+            if (listError) throw listError;
+            for (const file of files || []) {
+              const path = `${prefix}/${file.name}`;
+              if (file.id) paths.push(path);
+              else paths.push(...await findPhotoPaths(path));
+            }
+            if (!files || files.length < 100) break;
+            offset += files.length;
+          }
+          return paths;
+        };
+        try {
+          const photoPaths = await findPhotoPaths(student.id);
+          for (let index = 0; index < photoPaths.length; index += 100) {
+            const batch = photoPaths.slice(index, index + 100);
+            const { error: removeError } = await storage.remove(batch);
+            if (removeError) throw removeError;
+            removedPhotoCount += batch.length;
+          }
+        } catch (error) {
+          photoCleanupError = error;
+        }
+
+        state.allStudents = state.allStudents.filter(item => item.id !== student.id);
+        state.students = state.students.filter(item => item.id !== student.id);
+        state.databaseObservations = state.databaseObservations.filter(item => item.student_id !== student.id);
+        state.observationsLog = state.observationsLog.filter(item => item.studentId !== student.id);
+        if (state.databaseObservationCount !== null) {
+          state.databaseObservationCount = Math.max(0, state.databaseObservationCount - deletedObservations.length);
+        }
+        if (state.databaseRecentObservationCount !== null) {
+          const recentCount = deletedObservations.filter(item =>
+            item.created_at && Date.now() - new Date(item.created_at).getTime() < 24 * 60 * 60 * 1000
+          ).length;
+          state.databaseRecentObservationCount = Math.max(0, state.databaseRecentObservationCount - recentCount);
+        }
+        if (state.previewStudentId === student.id) state.previewStudentId = '';
+        renderView();
+        showToast(photoCleanupError
+          ? `${state.lang === 'id'
+            ? `${student.name} berhasil dihapus, tetapi sebagian foto mungkin masih tersimpan`
+            : `${student.name} was deleted, but some photos may remain in storage`}: ${photoCleanupError.message || photoCleanupError}`
+          : (state.lang === 'id'
+            ? `${student.name} dan ${removedPhotoCount} foto terkait berhasil dihapus permanen.`
+            : `${student.name} and ${removedPhotoCount} related photos were permanently deleted.`), photoCleanupError ? '⚠️' : '🗑️');
+      } catch (error) {
+        console.warn('[Supabase] permanent student deletion failed:', error);
+        showToast(`${state.lang === 'id'
+          ? 'Penghapusan anak gagal atau foto terkait belum seluruhnya terhapus'
+          : 'Student deletion failed or some related photos could not be removed'}: ${error.message || error}`, '⚠️');
+      }
+    }
+
     function openAddStudentModal() {
-      if (state.currentUser?.role === 'parent') {
-        showToast(state.lang === 'id' ? 'Orang tua tidak memiliki izin menambahkan anak.' : 'Parents cannot add children.', '⚠️');
+      if (!isAdminUser()) {
+        showToast(state.lang === 'id'
+          ? 'Hanya administrator yang dapat menambahkan anak.'
+          : 'Only administrators can add children.', '⚠️');
         return;
       }
       if (!state.databaseStatus.students || !state.databaseStatus.classes) {
@@ -1892,18 +2518,32 @@
       if (state.activeClassId && state.classes.some(classItem => classItem.id === state.activeClassId)) {
         classSelect.value = state.activeClassId;
       }
+      enhanceSearchableSelect(classSelect);
       openModal('modal-add-student');
       document.getElementById('new-student-name').focus();
     }
 
     async function saveNewStudent(event) {
       event.preventDefault();
+      if (!isAdminUser()) {
+        showToast(state.lang === 'id'
+          ? 'Hanya administrator yang dapat menambahkan anak.'
+          : 'Only administrators can add children.', '⚠️');
+        return;
+      }
       const nameInput = document.getElementById('new-student-name');
       const classSelect = document.getElementById('new-student-class');
       const fullName = nameInput.value.trim();
       const classId = classSelect.value;
       if (!fullName || !classId) {
         showToast(state.lang === 'id' ? 'Isi nama anak dan pilih kelas terlebih dahulu.' : 'Enter the child’s name and choose a class.', '⚠️');
+        return;
+      }
+      const selectedClass = state.classes.find(classItem => classItem.id === classId);
+      if (!selectedClass?.school_id) {
+        showToast(state.lang === 'id'
+          ? 'Sekolah untuk kelas ini tidak ditemukan. Periksa data kelas di database.'
+          : 'The school for this class could not be found. Check the class record in the database.', '⚠️');
         return;
       }
 
@@ -1914,6 +2554,7 @@
         const { error } = await sb.from('students').insert([{
           full_name: fullName,
           class_id: classId,
+          school_id: selectedClass.school_id,
         }]);
         if (error) throw error;
 
@@ -1943,8 +2584,10 @@
     }
 
     function openObservationModal(studentId = state.students[0]?.id) {
-      if (state.currentUser?.role === 'parent') {
-        showToast('Orang tua tidak memiliki izin mencatat observasi', '⚠️');
+      if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+        showToast(state.lang === 'id'
+          ? 'Akses mencatat observasi ditolak.'
+          : 'You cannot record observations.', '⚠️');
         return;
       }
 
@@ -1956,11 +2599,11 @@
       }
       state.selectedStudentForObs = student;
 
-      document.getElementById('obs-modal-student-name').textContent = `Observasi: ${student.name}`;
+      document.getElementById('obs-modal-student-name').textContent =
+        `${state.lang === 'id' ? 'Observasi' : 'Observation'}: ${student.name}`;
       document.getElementById('obs-modal-avatar-initials').textContent = getInitials(student.name);
       document.getElementById('obs-anecdote-input').value = '';
-      document.getElementById('obs-photo-url').value = '';
-      const milestoneSelect = document.getElementById('obs-milestone-select');
+      document.getElementById('obs-photo-file').value = '';
       const milestones = state.curriculumData.filter(item => item._fromDB);
       if (!milestones.length) {
         showToast(state.lang === 'id'
@@ -1968,9 +2611,7 @@
           : 'No observation indicators are available from the database.', '⚠️');
         return;
       }
-      milestoneSelect.innerHTML = milestones.map(item => `
-        <option value="${escapeHTML(bText(item, 'title'))}">${escapeHTML(bText(item, 'title'))}</option>
-      `).join('');
+      renderObservationMilestones();
 
       selectObsLevel('developing');
       openModal('modal-observation');
@@ -1988,6 +2629,10 @@
     }
 
     async function saveObservation() {
+      if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+        showToast(state.lang === 'id' ? 'Akses mencatat observasi ditolak.' : 'You cannot record observations.', '⚠️');
+        return;
+      }
       const student = state.selectedStudentForObs;
       if (!student) {
         showToast(state.lang === 'id' ? 'Pilih siswa sebelum mencatat observasi.' : 'Select a student before recording an observation.', '⚠️');
@@ -1997,7 +2642,20 @@
       const anecdote = document.getElementById('obs-anecdote-input').value.trim() ||
         (state.lang === 'id' ? 'Anak menyelesaikan eksplorasi mandiri dengan fokus tenang.' : 'Child completed exploration independently with focused poise.');
       const milestone = document.getElementById('obs-milestone-select').value;
-      const photoUrl = document.getElementById('obs-photo-url').value.trim();
+      if (!milestone) {
+        showToast(state.lang === 'id'
+          ? 'Pilih indikator yang diamati terlebih dahulu.'
+          : 'Choose an observation indicator first.', '⚠️');
+        return;
+      }
+      const photoFile = document.getElementById('obs-photo-file').files?.[0] || null;
+      const allowedPhotoTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (photoFile && (!allowedPhotoTypes.includes(photoFile.type) || photoFile.size > 8 * 1024 * 1024)) {
+        showToast(state.lang === 'id'
+          ? 'Pilih foto JPG, PNG, atau WebP dengan ukuran maksimal 8 MB.'
+          : 'Choose a JPG, PNG, or WebP photo no larger than 8 MB.', '⚠️');
+        return;
+      }
 
       const observation = {
         studentId: student.id,
@@ -2007,12 +2665,20 @@
         level: state.obsLevel,
         time: state.lang === 'id' ? 'Baru saja' : 'Just now',
         anecdote,
-        photoUrl,
+        photoFile,
       };
 
       if (student._fromDB) {
         const saved = await saveObservationToSupabase(observation);
         if (!saved) return;
+        try {
+          await signObservationPhotos([saved]);
+        } catch (error) {
+          console.warn('[Supabase] saved observation photo preview could not be generated:', error);
+          showToast(`${state.lang === 'id'
+            ? 'Observasi tersimpan, tetapi pratinjau foto gagal dimuat'
+            : 'Observation saved, but the photo preview could not be loaded'}: ${error.message || error}`, '⚠️');
+        }
         state.databaseObservations.unshift(saved);
         if (state.databaseObservationCount !== null) state.databaseObservationCount += 1;
         if (state.databaseRecentObservationCount !== null &&
@@ -2033,6 +2699,422 @@
         state.lang === 'id' ? 'Observasi berhasil disimpan ke database.' : 'Observation saved to the database.',
         '✅'
       );
+    }
+
+    const messageLoadSequence = { parent: 0, teacher: 0, inbox: 0, sharedThread: 0 };
+    let activeAdminMessageConversation = null;
+    let activeTeacherMessageConversation = null;
+
+    function renderTeacherMessageWidget() {
+      const canViewInbox = isAdminUser() || state.currentUser?.role === 'teacher';
+      const inboxSection = document.getElementById('teacher-message-inbox-section');
+      inboxSection?.classList.toggle('hidden', !canViewInbox);
+      const controls = document.getElementById('teacher-message-controls');
+      controls?.classList.add('hidden');
+      const conversationPanel = document.getElementById('teacher-message-conversation-panel');
+      const activeConversation = isAdminUser()
+        ? activeAdminMessageConversation
+        : activeTeacherMessageConversation;
+      conversationPanel?.classList.toggle('hidden', !activeConversation);
+      inboxSection?.classList.toggle('hidden', !canViewInbox || Boolean(activeConversation));
+      document.getElementById('teacher-message-compose')?.classList.toggle('hidden', !isAdminUser());
+      const hint = document.getElementById('teacher-message-conversation-hint');
+      if (hint) {
+        hint.textContent = isAdminUser()
+          ? (state.lang === 'id' ? 'Balas pesan orang tua sebagai admin.' : 'Reply to the parent as an administrator.')
+          : (state.lang === 'id'
+            ? 'Pesan orang tua bisa dibaca di sini. Balasan ditangani oleh admin.'
+            : 'You can read parent messages here. Replies are handled by the admin team.');
+      }
+      const backButton = document.getElementById('teacher-message-back-button');
+      if (backButton) {
+        backButton.onclick = () => {
+          activeAdminMessageConversation = null;
+          activeTeacherMessageConversation = null;
+          conversationPanel?.classList.add('hidden');
+          inboxSection?.classList.remove('hidden');
+        };
+      }
+      const studentSelect = document.getElementById('teacher-message-student');
+      if (!studentSelect || !canViewInbox) return;
+      if (!isAdminUser()) {
+        void loadTeacherMessageInbox();
+        return;
+      }
+      const selectedStudentId = studentSelect.value;
+      const students = state.allStudents;
+      studentSelect.innerHTML = `<option value="">${state.lang === 'id' ? 'Pilih anak...' : 'Choose a child...'}</option>` +
+        students.map(student =>
+          `<option value="${escapeHTML(student.id)}">${escapeHTML(student.name)}</option>`
+        ).join('');
+      studentSelect.value = students.some(student => student.id === selectedStudentId)
+        ? selectedStudentId
+        : students[0]?.id || '';
+      studentSelect.disabled = students.length === 0;
+      enhanceSearchableSelect(studentSelect);
+      void loadAdminMessageInbox();
+    }
+
+    function refreshTeacherMessages() {
+      if (isAdminUser()) {
+        void loadAdminMessageInbox();
+        if (activeAdminMessageConversation) void loadParentAdminMessageThread(activeAdminMessageConversation);
+      } else if (activeTeacherMessageConversation) {
+        void loadTeacherMessageThread(activeTeacherMessageConversation);
+      } else {
+        void loadTeacherMessageInbox();
+      }
+    }
+
+    function messageSurfaceElements(surface) {
+      return surface === 'parent'
+        ? {
+          contact: document.getElementById('parent-message-contact'),
+          thread: document.getElementById('chat-messages-container'),
+          input: document.getElementById('parent-reply-input'),
+          button: document.getElementById('parent-message-send-button'),
+          studentId: state.previewStudentId || state.students[0]?.id || '',
+        }
+        : {
+          contact: document.getElementById('teacher-message-contact'),
+          thread: document.getElementById('teacher-message-thread'),
+          input: document.getElementById('teacher-reply-input'),
+          button: document.getElementById('teacher-message-send-button'),
+          studentId: document.getElementById('teacher-message-student')?.value || '',
+        };
+    }
+
+    async function loadMessageConversation(surface) {
+      if (surface === 'teacher' && !isAdminUser()) return;
+      const elements = messageSurfaceElements(surface);
+      if (!elements.contact || !elements.thread || !elements.input || !elements.button) return;
+      const requestNumber = ++messageLoadSequence[surface];
+      const selectedContactId = elements.contact.value;
+      elements.input.disabled = true;
+      elements.button.disabled = true;
+      elements.thread.textContent = state.lang === 'id' ? 'Memuat percakapan...' : 'Loading conversation...';
+      if (!elements.studentId) {
+        if (surface === 'parent') elements.contact.value = '';
+        else elements.contact.replaceChildren(new Option(
+            state.lang === 'id' ? 'Pilih anak terlebih dahulu' : 'Choose a child first',
+            ''
+          ));
+        elements.contact.disabled = true;
+        elements.thread.textContent = state.lang === 'id'
+          ? (surface === 'teacher' && state.currentUser?.role === 'teacher'
+            ? 'Belum ada anak pada kelas yang ditugaskan kepada Anda.'
+            : 'Pilih anak untuk melihat pesan.')
+          : (surface === 'teacher' && state.currentUser?.role === 'teacher'
+            ? 'No children are in your assigned classes yet.'
+            : 'Choose a child to view messages.');
+        return;
+      }
+
+      try {
+        const { data: contacts, error: contactError } = await sb.rpc('get_message_contacts', {
+          p_student_id: elements.studentId,
+        });
+        if (contactError) throw contactError;
+        if (requestNumber !== messageLoadSequence[surface]) return;
+
+        const availableContacts = contacts || [];
+        if (surface === 'parent') {
+          elements.contact.value = availableContacts.some(contact => contact.contact_id === selectedContactId)
+            ? selectedContactId
+            : availableContacts[0]?.contact_id || '';
+        } else {
+          elements.contact.replaceChildren(new Option(
+            availableContacts.length
+              ? (state.lang === 'id' ? 'Pilih kontak...' : 'Choose a contact...')
+              : (state.lang === 'id' ? 'Belum ada kontak untuk kelas ini' : 'No contacts available for this class'),
+            ''
+          ));
+          availableContacts.forEach(contact => {
+            elements.contact.add(new Option(contact.contact_name, contact.contact_id));
+          });
+          elements.contact.value = availableContacts.some(contact => contact.contact_id === selectedContactId)
+            ? selectedContactId
+            : availableContacts[0]?.contact_id || '';
+          enhanceSearchableSelect(elements.contact);
+        }
+        elements.contact.disabled = !availableContacts.length;
+        if (surface === 'teacher') enhanceSearchableSelect(elements.contact);
+
+        if (!elements.contact.value) {
+          elements.thread.textContent = surface === 'parent'
+            ? (state.lang === 'id'
+              ? 'Belum ada akun admin yang tersedia untuk menerima pesan.'
+              : 'No administrator account is available to receive messages.')
+            : (state.lang === 'id'
+              ? 'Belum ada akun orang tua/wali yang terhubung ke anak ini.'
+              : 'No parent/guardian account is linked to this child yet.');
+          return;
+        }
+
+        const activeContact = availableContacts.find(contact =>
+          contact.contact_id === elements.contact.value
+        );
+        const currentUserId = state.currentUser?.id;
+        const { data: messages, error: messageError } = await sb.from('messages')
+          .select('id, sender_id, recipient_id, student_id, message, created_at')
+          .eq('student_id', elements.studentId)
+          .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${activeContact.contact_id}),and(sender_id.eq.${activeContact.contact_id},recipient_id.eq.${currentUserId})`)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        if (messageError) throw messageError;
+        if (requestNumber !== messageLoadSequence[surface]) return;
+
+        const conversation = (messages || []).filter(item =>
+          (item.sender_id === currentUserId && item.recipient_id === activeContact.contact_id) ||
+          (item.sender_id === activeContact.contact_id && item.recipient_id === currentUserId)
+        ).reverse();
+        renderMessageThread(elements.thread, conversation, activeContact);
+        elements.input.disabled = false;
+        elements.button.disabled = false;
+      } catch (error) {
+        if (requestNumber !== messageLoadSequence[surface]) return;
+        console.warn('[Supabase] message conversation load failed:', error);
+        elements.contact.disabled = true;
+        elements.thread.textContent = `${state.lang === 'id'
+          ? 'Percakapan gagal dimuat'
+          : 'Could not load conversation'}: ${error.message || error}`;
+        showToast(state.lang === 'id'
+          ? 'Gagal memuat pesan. Periksa migrasi dan izin tabel messages.'
+          : 'Could not load messages. Check the messages migration and table permissions.', '⚠️');
+      }
+    }
+
+    async function loadMessageInbox(rpcName) {
+      const section = document.getElementById('teacher-message-inbox-section');
+      const container = document.getElementById('teacher-message-inbox');
+      const count = document.getElementById('teacher-message-inbox-count');
+      const search = document.getElementById('teacher-message-inbox-search');
+      if (!section || !container || !count) return;
+      const requestNumber = ++messageLoadSequence.inbox;
+      const activeConversation = isAdminUser()
+        ? activeAdminMessageConversation
+        : activeTeacherMessageConversation;
+      section.classList.toggle('hidden', Boolean(activeConversation));
+      container.textContent = state.lang === 'id' ? 'Memuat pesan...' : 'Loading messages...';
+      try {
+        const { data, error } = await sb.rpc(rpcName);
+        if (error) throw error;
+        if (requestNumber !== messageLoadSequence.inbox) return;
+        const conversations = data || [];
+        count.textContent = String(conversations.length);
+        container.replaceChildren();
+        if (!conversations.length) {
+          container.textContent = state.lang === 'id'
+            ? 'Belum ada pesan masuk dari orang tua.'
+            : 'No messages from parents yet.';
+          return;
+        }
+        conversations.forEach(conversation => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'admin-message-inbox-item';
+          button.dataset.studentId = conversation.student_id;
+          button.dataset.parentId = conversation.parent_id;
+          button.dataset.search = `${conversation.parent_name} ${conversation.student_name} ${conversation.last_message}`
+            .toLocaleLowerCase();
+          const heading = document.createElement('strong');
+          heading.textContent = `${conversation.parent_name} · ${conversation.student_name}`;
+          const preview = document.createElement('span');
+          preview.textContent = conversation.last_message;
+          const timestamp = document.createElement('time');
+          timestamp.dateTime = conversation.last_message_at;
+          timestamp.textContent = new Date(conversation.last_message_at).toLocaleString(
+            state.lang === 'id' ? 'id-ID' : 'en-US',
+            { dateStyle: 'short', timeStyle: 'short' }
+          );
+          button.append(heading, preview, timestamp);
+          button.addEventListener('click', async () => {
+            const isAdmin = isAdminUser();
+            activeAdminMessageConversation = isAdmin ? conversation : null;
+            activeTeacherMessageConversation = isAdmin ? null : conversation;
+            section.classList.add('hidden');
+            const conversationPanel = document.getElementById('teacher-message-conversation-panel');
+            conversationPanel.classList.remove('hidden');
+            document.getElementById('teacher-message-active-title').textContent =
+              `${conversation.parent_name} · ${conversation.student_name}`;
+            document.getElementById('teacher-message-compose')?.classList.toggle('hidden', !isAdmin);
+            if (isAdmin) {
+              const studentSelect = document.getElementById('teacher-message-student');
+              const contactSelect = document.getElementById('teacher-message-contact');
+              studentSelect.value = conversation.student_id;
+              enhanceSearchableSelect(studentSelect);
+              await loadMessageConversation('teacher');
+              if (![...contactSelect.options].some(option => option.value === conversation.parent_id)) {
+                contactSelect.add(new Option(conversation.parent_name, conversation.parent_id));
+              }
+              contactSelect.value = conversation.parent_id;
+              enhanceSearchableSelect(contactSelect);
+              await loadParentAdminMessageThread(conversation);
+            } else {
+              await loadTeacherMessageThread(conversation);
+            }
+            document.getElementById('teacher-message-thread').scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+            });
+          });
+          container.append(button);
+        });
+        search.oninput = () => {
+          const query = search.value.trim().toLocaleLowerCase();
+          container.querySelectorAll('.admin-message-inbox-item').forEach(button => {
+            button.hidden = !button.dataset.search.includes(query);
+          });
+        };
+        search.dispatchEvent(new Event('input'));
+      } catch (error) {
+        if (requestNumber !== messageLoadSequence.inbox) return;
+        console.warn('[Supabase] message inbox load failed:', error);
+        count.textContent = '!';
+        container.textContent = `${state.lang === 'id'
+          ? 'Kotak masuk gagal dimuat'
+          : 'Inbox could not be loaded'}: ${error.message || error}`;
+      }
+    }
+
+    function loadAdminMessageInbox() {
+      if (isAdminUser()) return loadMessageInbox('get_admin_message_inbox');
+    }
+
+    function loadTeacherMessageInbox() {
+      if (state.currentUser?.role === 'teacher') return loadMessageInbox('get_teacher_message_inbox');
+    }
+
+    async function loadTeacherMessageThread(conversation) {
+      const container = document.getElementById('teacher-message-thread');
+      if (!container || !conversation || state.currentUser?.role !== 'teacher') return;
+      await loadParentAdminMessageThread(conversation);
+    }
+
+    async function loadParentAdminMessageThread(conversation) {
+      const container = document.getElementById('teacher-message-thread');
+      if (!container || !conversation) return;
+      const requestNumber = ++messageLoadSequence.sharedThread;
+      container.textContent = state.lang === 'id' ? 'Memuat percakapan...' : 'Loading conversation...';
+      try {
+        const { data: messages, error } = await sb.rpc('get_parent_admin_message_thread', {
+          p_student_id: conversation.student_id,
+          p_parent_id: conversation.parent_id,
+        });
+        if (error) throw error;
+        if (requestNumber !== messageLoadSequence.sharedThread) return;
+        renderMessageThread(container, messages || [], {
+          contact_id: conversation.parent_id,
+          contact_name: conversation.parent_name,
+        }, !isAdminUser(), true);
+      } catch (error) {
+        if (requestNumber !== messageLoadSequence.sharedThread) return;
+        console.warn('[Supabase] parent-admin message thread load failed:', error);
+        container.textContent = `${state.lang === 'id'
+          ? 'Percakapan gagal dimuat'
+          : 'Could not load conversation'}: ${error.message || error}`;
+      }
+    }
+
+    function renderMessageThread(
+      container,
+      messages,
+      activeContact,
+      readOnlyParentThread = false,
+      sharedAdminThread = false
+    ) {
+      container.replaceChildren();
+      if (!messages.length) {
+        container.textContent = state.lang === 'id'
+          ? (readOnlyParentThread ? 'Belum ada pesan dalam percakapan ini.' : 'Belum ada pesan. Mulai percakapan di sini.')
+          : (readOnlyParentThread ? 'No messages in this conversation yet.' : 'No messages yet. Start the conversation here.');
+        return;
+      }
+
+      messages.forEach(item => {
+        const isAdminMessage = sharedAdminThread && item.sender_id !== activeContact.contact_id;
+        const isMine = sharedAdminThread
+          ? isAdminMessage
+          : readOnlyParentThread
+            ? item.sender_id !== activeContact.contact_id
+            : item.sender_id === state.currentUser?.id;
+        const bubble = document.createElement('article');
+        bubble.className = `message-bubble${isMine ? ' is-mine' : ''}`;
+        const sender = document.createElement('strong');
+        sender.textContent = sharedAdminThread
+          ? item.sender_id === activeContact.contact_id
+            ? activeContact.contact_name
+            : item.sender_id === state.currentUser?.id
+              ? (state.lang === 'id' ? 'Admin · Anda' : 'Admin · You')
+              : 'Admin'
+          : readOnlyParentThread
+          ? (item.sender_id === activeContact.contact_id
+            ? activeContact.contact_name
+            : (state.lang === 'id' ? 'Admin' : 'Admin'))
+          : isMine
+            ? (state.lang === 'id' ? 'Anda' : 'You')
+            : activeContact.contact_name;
+        const body = document.createElement('p');
+        body.textContent = item.message;
+        const sentAt = document.createElement('time');
+        sentAt.dateTime = item.created_at;
+        sentAt.textContent = new Date(item.created_at).toLocaleString(
+          state.lang === 'id' ? 'id-ID' : 'en-US',
+          { dateStyle: 'short', timeStyle: 'short' }
+        );
+        bubble.append(sender, body, sentAt);
+        container.append(bubble);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendConversationMessage(surface, event) {
+      event?.preventDefault();
+      const elements = messageSurfaceElements(surface);
+      const message = elements.input.value.trim();
+      const recipientId = elements.contact.value;
+      if (!state.currentUser?.id || !elements.studentId || !recipientId || !message) return;
+      if (message.length > 2000) {
+        showToast(state.lang === 'id' ? 'Pesan maksimal 2000 karakter.' : 'Messages must be 2000 characters or fewer.', '⚠️');
+        return;
+      }
+
+      elements.input.disabled = true;
+      elements.button.disabled = true;
+      try {
+        const { error } = await sb.from('messages').insert({
+          sender_id: state.currentUser.id,
+          recipient_id: recipientId,
+          student_id: elements.studentId,
+          message,
+        });
+        if (error) throw error;
+      } catch (error) {
+        console.warn('[Supabase] message send failed:', error);
+        elements.input.disabled = false;
+        elements.button.disabled = false;
+        showToast(`${state.lang === 'id' ? 'Pesan gagal dikirim' : 'Message could not be sent'}: ${error.message || error}`, '⚠️');
+        return;
+      }
+
+      elements.input.value = '';
+      if (surface === 'teacher' && isAdminUser() && activeAdminMessageConversation) {
+        await loadParentAdminMessageThread(activeAdminMessageConversation);
+      } else {
+        await loadMessageConversation(surface);
+      }
+    }
+
+    function sendParentReply(event) {
+      return sendConversationMessage('parent', event);
+    }
+
+    function sendTeacherMessage(event) {
+      if (!isAdminUser()) {
+        event?.preventDefault();
+        return;
+      }
+      return sendConversationMessage('teacher', event);
     }
 
     /* FLOW 6: PARENT HUB */
@@ -2065,6 +3147,7 @@
         `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name)}</option>`
       ).join('');
       picker.value = student?.id || '';
+      enhanceSearchableSelect(picker);
       const pickerWrap = document.getElementById('parent-preview-picker-wrap');
       const showPicker = !parentUser || students.length > 1;
       pickerWrap.classList.toggle('hidden', !showPicker);
@@ -2162,14 +3245,19 @@
           ? 'Ringkasan capaian muncul setelah observasi tersimpan di database.'
           : 'Progress appears after observations are saved to the database.'}</p>`;
 
-      const photos = observations.filter(observation => observation.photo_url).slice(0, 3);
+      const photos = observations
+        .map(observation => ({
+          ...observation,
+          safePhotoUrl: safeHttpsUrl(observation.photo_signed_url || observation.photo_url),
+        }))
+        .filter(observation => observation.safePhotoUrl);
       document.getElementById('parent-photo-feed').innerHTML = photos.length
-        ? photos.map(observation => `<button type="button" data-parent-photo="${escapeHTML(observation.photo_url)}" class="rounded-2xl overflow-hidden aspect-video bg-sand-200">
-            <img src="${escapeHTML(observation.photo_url)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" class="w-full h-full object-cover">
+        ? photos.map(observation => `<button type="button" data-parent-photo="${escapeHTML(observation.safePhotoUrl)}" class="rounded-2xl overflow-hidden aspect-video bg-sand-200">
+            <img src="${escapeHTML(observation.safePhotoUrl)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" class="w-full h-full object-cover">
           </button>`).join('')
         : `<p class="parent-photo-empty">${state.lang === 'id'
-          ? 'Foto akan tampil setelah URL foto disimpan pada catatan observasi.'
-          : 'Photos appear when a photo URL is saved with an observation.'}</p>`;
+          ? 'Foto akan tampil setelah pendidik mengunggah dokumentasi observasi.'
+          : 'Photos appear after an educator uploads observation documentation.'}</p>`;
       document.querySelectorAll('[data-parent-photo]').forEach(button => {
         button.addEventListener('click', () => openPhotoModal(button.dataset.parentPhoto));
       });
@@ -2178,17 +3266,14 @@
         schedule.curriculumUnitId === item.id
       )) || state.curriculumData[0];
       document.getElementById('parent-home-activity-title').textContent = activity
-        ? bText(activity, 'title')
+        ? bText(activity, 'title') || (state.lang === 'id' ? 'Judul belum tersedia' : 'Title not provided')
         : (state.lang === 'id' ? 'Belum ada aktivitas dari kurikulum database' : 'No database curriculum activity available');
-      document.getElementById('parent-home-activity-desc').textContent = activity?.elo || '';
+      document.getElementById('parent-home-activity-desc').textContent = activity
+        ? bText(activity, 'elo') || (state.lang === 'id' ? 'Capaian pembelajaran belum tersedia.' : 'No learning outcome listed.')
+        : '';
       document.getElementById('parent-home-activity-materials').textContent = activity?.tools || '';
 
-      const chat = document.getElementById('chat-messages-container');
-      chat.textContent = state.lang === 'id'
-        ? 'Percakapan belum terhubung: database belum menyediakan tabel pesan orang tua.'
-        : 'Messaging is not connected: the database has no parent messages table.';
-      document.getElementById('parent-reply-input').disabled = true;
-      document.querySelector('#view-parentHub button[onclick="sendParentReply()"]').disabled = true;
+      void loadMessageConversation('parent');
 
       const progressTitle = document.querySelector('#view-parentHub [data-i18n="parent.domainProgress"]');
       progressTitle.textContent = state.lang === 'id' ? 'Ringkasan Tingkat Observasi' : 'Observation Mastery Summary';
@@ -2198,17 +3283,21 @@
         : 'Based on saved observation records';
     }
 
-    function sendParentReply() {
-      const input = document.getElementById('parent-reply-input');
-      const text = input.value.trim();
-      if (!text) return;
-      showToast(state.lang === 'id'
-        ? 'Pesan belum dikirim: tabel percakapan orang tua belum tersedia di database.'
-        : 'Message not sent: the parent conversation table is not available in the database.', '⚠️');
+    function printParentPortfolio() {
+      document.body.classList.add('printing-parent-portfolio');
+      window.addEventListener('afterprint', () => {
+        document.body.classList.remove('printing-parent-portfolio');
+      }, { once: true });
+      window.print();
     }
 
     function openPhotoModal(imgUrl) {
-      document.getElementById('modal-photo-img').src = imgUrl;
+      const safeUrl = safeHttpsUrl(imgUrl);
+      if (!safeUrl) {
+        showToast(state.lang === 'id' ? 'URL foto tidak aman atau tidak valid.' : 'The photo URL is invalid or unsafe.', '⚠️');
+        return;
+      }
+      document.getElementById('modal-photo-img').src = safeUrl;
       openModal('modal-photo');
     }
 
@@ -2217,20 +3306,32 @@
        ===================================================================== */
     function getDomainColor(domain) {
       switch (domain) {
-        case 'science': return { bg: 'bg-sky', bgLight: 'bg-sky-light', textColor: 'text-sky', label: '🔬 Science' };
-        case 'technology': return { bg: 'bg-violet', bgLight: 'bg-violet-light', textColor: 'text-violet', label: '💻 Technology' };
-        case 'engineering': return { bg: 'bg-terracotta', bgLight: 'bg-terracotta-light', textColor: 'text-terracotta', label: '⚙️ Engineering' };
-        case 'math': return { bg: 'bg-sunshine', bgLight: 'bg-sunshine-light', textColor: 'text-sunshine-dark', label: '📐 Math' };
-        default: return { bg: 'bg-leaf', bgLight: 'bg-leaf/10', textColor: 'text-leaf', label: '🌿 Practical Life' };
+        case 'science': return { bg: 'bg-sky', bgLight: 'bg-sky-light', textColor: 'text-sky', label: state.lang === 'id' ? '🔬 Sains' : '🔬 Science' };
+        case 'technology': return { bg: 'bg-violet', bgLight: 'bg-violet-light', textColor: 'text-violet', label: state.lang === 'id' ? '💻 Teknologi' : '💻 Technology' };
+        case 'engineering': return { bg: 'bg-terracotta', bgLight: 'bg-terracotta-light', textColor: 'text-terracotta', label: state.lang === 'id' ? '⚙️ Rekayasa' : '⚙️ Engineering' };
+        case 'math': return { bg: 'bg-sunshine', bgLight: 'bg-sunshine-light', textColor: 'text-sunshine-dark', label: state.lang === 'id' ? '📐 Matematika' : '📐 Math' };
+        default: return { bg: 'bg-leaf', bgLight: 'bg-leaf/10', textColor: 'text-leaf', label: state.lang === 'id' ? '🌿 Kehidupan Praktis' : '🌿 Practical Life' };
       }
     }
 
     function getBloomBadge(bloom) {
-      if (bloom.includes('Remembering')) return { bg: 'bg-sky-light', text: 'text-sky-dark' };
-      if (bloom.includes('Understanding')) return { bg: 'bg-sage-100', text: 'text-sage-700' };
-      if (bloom.includes('Applying')) return { bg: 'bg-sunshine-light', text: 'text-sunshine-dark' };
-      if (bloom.includes('Analyzing')) return { bg: 'bg-violet-light', text: 'text-violet' };
+      if ((bloom || '').includes('Remembering')) return { bg: 'bg-sky-light', text: 'text-sky-dark' };
+      if ((bloom || '').includes('Understanding')) return { bg: 'bg-sage-100', text: 'text-sage-700' };
+      if ((bloom || '').includes('Applying')) return { bg: 'bg-sunshine-light', text: 'text-sunshine-dark' };
+      if ((bloom || '').includes('Analyzing')) return { bg: 'bg-violet-light', text: 'text-violet' };
       return { bg: 'bg-terracotta-light', text: 'text-terracotta' };
+    }
+
+    function getBloomLabel(bloom) {
+      if (state.lang === 'en') return bloom || '';
+      const translations = {
+        Remembering: 'Mengingat',
+        Understanding: 'Memahami',
+        Applying: 'Menerapkan',
+        Analyzing: 'Menganalisis',
+        Creating: 'Mencipta',
+      };
+      return translations[bloom] || bloom || '';
     }
 
     function getMasteryLabel(level) {
@@ -2390,7 +3491,8 @@
           title_en: row.title_en || '',
           tools: row.tools,
           elo: row.elo,
-          canva_url: row.canva_url || `https://www.canva.com/templates/?query=montessori+stem`,
+          canva_url: row.canva_url || null,
+          canva_url_eng: row.canva_url_eng || null,
           _fromDB: true,
         }));
 
@@ -2409,7 +3511,7 @@
     async function loadStudentsFromSupabase() {
       try {
         let query = sb.from('students')
-          .select('*, classes(id, name, school_id, schools(name))')
+          .select('id, full_name, nickname, class_id, classes(id, name, school_id, schools(name))')
           .order('full_name');
         if (state.currentUser?.role === 'parent') {
           const studentIds = state.currentUser.childStudentIds || [];
@@ -2471,7 +3573,7 @@
     async function loadScheduleFromSupabase() {
       try {
         let query = sb.from('schedule_assignments')
-            .select('*, tutors!schedule_assignments_tutor_id_fkey(full_name), curriculum_units!schedule_assignments_activity_id_fkey(id, title_id, level, domain), classes(name, start_time)');
+            .select('*, tutors!schedule_assignments_tutor_id_fkey(full_name), curriculum_units!schedule_assignments_activity_id_fkey(id, title_id, title_en, level, domain), classes(name, start_time)');
         if (state.currentUser?.role === 'parent') {
           const classIds = [...new Set(state.students.map(student => student.classId).filter(Boolean))];
           query = classIds.length
@@ -2492,6 +3594,7 @@
           assistantTutorName: state.tutors.find(tutor => tutor.id === row.assistant_tutor_id)?.full_name || '',
           assistantTutorId: row.assistant_tutor_id || null,
           actTitle: row.curriculum_units?.title_id || '—',
+          actTitleEn: row.curriculum_units?.title_en || '',
           domain: row.curriculum_units?.domain || 'science',
           curriculumUnitId: row.activity_id || row.curriculum_units?.id || null,
           actLevel: row.curriculum_units ? dbLevelToCode(row.curriculum_units.level) : null,
@@ -2525,7 +3628,7 @@
             recentQuery = recentQuery.eq('student_id', '00000000-0000-0000-0000-000000000000');
           }
         } else {
-          const studentIds = state.allStudents.map(student => student.id);
+          const studentIds = state.students.map(student => student.id);
           if (studentIds.length) {
             allQuery = allQuery.in('student_id', studentIds);
             recentQuery = recentQuery.in('student_id', studentIds);
@@ -2541,6 +3644,7 @@
         if (allResult.error) throw allResult.error;
         if (recentResult.error) throw recentResult.error;
         state.databaseObservations = allResult.data || [];
+        await signObservationPhotos(state.databaseObservations);
         state.databaseObservationCount = allResult.count ?? state.databaseObservations.length;
         state.databaseRecentObservationCount = recentResult.count ?? 0;
         state.databaseStatus.observations = true;
@@ -2552,6 +3656,25 @@
         state.databaseStatus.observations = false;
         return false;
       }
+    }
+
+    async function signObservationPhotos(observations) {
+      const paths = [...new Set(observations.map(observation => observation.photo_path).filter(Boolean))];
+      if (!paths.length) return;
+      const signedUrlResults = [];
+      for (let index = 0; index < paths.length; index += 100) {
+        const { data, error } = await sb.storage
+          .from('student-observation-photos')
+          .createSignedUrls(paths.slice(index, index + 100), 3600);
+        if (error) throw error;
+        signedUrlResults.push(...(data || []));
+      }
+      const failedSignature = signedUrlResults.find(item => item.error);
+      if (failedSignature) throw new Error(failedSignature.error.message || 'Could not create a signed photo URL.');
+      const signedUrls = new Map(signedUrlResults.map(item => [item.path, item.signedUrl]));
+      observations.forEach(observation => {
+        if (observation.photo_path) observation.photo_signed_url = signedUrls.get(observation.photo_path) || '';
+      });
     }
 
     function applyDatabaseObservations() {
@@ -2582,7 +3705,7 @@
         level: obs.mastery_level || 'developing',
         time: obs.created_at ? new Date(obs.created_at).toLocaleString(state.lang === 'id' ? 'id-ID' : 'en-US') : '—',
         anecdote: obs.anecdote || '',
-        photoUrl: obs.photo_url || '',
+        photoUrl: obs.photo_signed_url || obs.photo_url || '',
         createdAt: obs.created_at,
       }));
     }
@@ -2642,6 +3765,12 @@
 
     // INSERT curriculum to Supabase
     async function saveCurriculumToSupabase(item) {
+      if (!isAdminUser()) {
+        showToast(state.lang === 'id'
+          ? 'Hanya administrator yang dapat mengubah kurikulum inti.'
+          : 'Only administrators can change the core curriculum.', '⚠️');
+        return null;
+      }
       try {
         const levelText = (() => {
           const map = {
@@ -2664,6 +3793,7 @@
           tools: item.tools,
           elo: item.elo,
           canva_url: item.canva_url || null,
+          canva_url_eng: item.canva_url_eng || null,
         }]).select().single();
 
         if (error) throw error;
@@ -2681,6 +3811,10 @@
 
     // INSERT observation to Supabase
     async function saveObservationToSupabase(obs) {
+      if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+        showToast(state.lang === 'id' ? 'Akses mencatat observasi ditolak.' : 'You cannot record observations.', '⚠️');
+        return null;
+      }
       // Find student UUID (if loaded from DB)
       const student = state.allStudents.find(s => s.name === obs.studentName || s.id === obs.studentId);
       if (!student || !student._fromDB) {
@@ -2688,6 +3822,8 @@
         return null;
       }
 
+      let uploadedPhotoPath = '';
+      let photoUploadInProgress = false;
       try {
         const payload = {
           student_id: student.id,
@@ -2695,10 +3831,41 @@
           milestone: obs.milestone || null,
           anecdote: obs.anecdote,
         };
-        if (obs.photoUrl) payload.photo_url = obs.photoUrl;
-        const assignedTutor = state.currentUser?.id ||
-          state.scheduleItems.find(item => item.classId === student.classId)?.tutorId;
-        if (typeof assignedTutor === 'string') payload.tutor_id = assignedTutor;
+        if (obs.photoFile) {
+          const extensionByType = {
+            'image/jpeg': 'jpg',
+            'image/png': 'png',
+            'image/webp': 'webp',
+          };
+          const extension = extensionByType[obs.photoFile.type];
+          if (!extension || obs.photoFile.size > 8 * 1024 * 1024) {
+            throw new Error('Photo must be JPG, PNG, or WebP and no larger than 8 MB.');
+          }
+          uploadedPhotoPath = `${student.id}/${state.currentUser.id}/${crypto.randomUUID()}.${extension}`;
+          photoUploadInProgress = true;
+          const { error: uploadError } = await sb.storage
+            .from('student-observation-photos')
+            .upload(uploadedPhotoPath, obs.photoFile, {
+              contentType: obs.photoFile.type,
+              upsert: false,
+            });
+          if (uploadError) throw uploadError;
+          photoUploadInProgress = false;
+          payload.photo_path = uploadedPhotoPath;
+        }
+        const tutorProfile = state.tutors.find(tutor =>
+          String(tutor.email || '').toLowerCase() === String(state.currentUser?.email || '').toLowerCase()
+        );
+        const assignedTutor = state.currentUser?.role === 'teacher'
+          ? tutorProfile?.id || state.currentUser.tutorId
+          : state.currentUser?.tutorId ||
+            state.scheduleItems.find(item => item.classId === student.classId)?.tutorId;
+        if (typeof assignedTutor !== 'string' || !assignedTutor) {
+          throw new Error(state.lang === 'id'
+            ? 'Profil tutor tidak ditemukan. Muat ulang halaman lalu coba lagi.'
+            : 'Tutor profile not found. Reload the page and try again.');
+        }
+        payload.tutor_id = assignedTutor;
         const { data, error } = await sb.from('observations').insert([payload]).select().single();
 
         if (error) throw error;
@@ -2706,8 +3873,20 @@
         return data;
       } catch (err) {
         console.warn('[Supabase] INSERT observation error:', err);
+        let cleanupError = null;
+        if (uploadedPhotoPath) {
+          const { error } = await sb.storage
+            .from('student-observation-photos')
+            .remove([uploadedPhotoPath]);
+          cleanupError = error;
+          if (cleanupError) console.warn('[Supabase] uploaded observation photo cleanup failed:', cleanupError);
+        }
         showToast(
-          `${state.lang === 'id' ? 'Gagal menyimpan observasi ke database' : 'Could not save observation to the database'}: ${err.message || err}`,
+          `${photoUploadInProgress
+            ? (state.lang === 'id' ? 'Gagal mengunggah foto observasi' : 'Could not upload the observation photo')
+            : (state.lang === 'id' ? 'Gagal menyimpan observasi ke database' : 'Could not save observation to the database')}: ${err.message || err}${cleanupError
+            ? `; ${state.lang === 'id' ? 'foto yang sudah diunggah belum terhapus' : 'the uploaded photo could not be removed'}: ${cleanupError.message}`
+            : ''}`,
           '⚠️'
         );
         return null;
@@ -2718,7 +3897,10 @@
     // STARTUP LIFECYCLE: Enforce starting at the Login Screen
     document.addEventListener('DOMContentLoaded', () => {
       // Must start at login screen
+      updateCurriculumFormLanguage();
       document.getElementById('auth-screen').classList.remove('hidden');
       document.getElementById('app-wrapper').classList.add('hidden');
-      loadTutorDemoButtons();
+      document.querySelectorAll('[data-demo-role]').forEach(button => {
+        button.addEventListener('click', () => quickLoginDemo(button.dataset.demoRole));
+      });
     });

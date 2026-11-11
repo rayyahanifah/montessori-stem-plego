@@ -52,7 +52,5 @@ CREATE POLICY parents_select_linked_account
     TO authenticated
     USING (auth_id = auth.uid());
 
--- This does not enable row-level security on students, observations, or other
--- application tables. The current tutor client uses the anon key, so protecting
--- those tables requires migrating tutor auth as well; frontend filtering alone
--- is not a database security boundary.
+-- Run supabase/policy.sql after this mapping is ready. That policy set enables
+-- RLS for the application tables and maps tutors to Supabase Auth by email.

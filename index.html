@@ -87,7 +87,7 @@
           <div class="flex items-center justify-between mb-1.5">
             <label class="block text-xs font-bold text-forest" data-i18n="login.password">Kata Sandi (Password):</label>
             <button type="button" class="text-[11px] text-sage hover:underline cursor-pointer"
-              onclick="showToast('Gunakan kata sandi demo: plegostem2026', '🔑')">Lupa Sandi?</button>
+              onclick="showResetPasswordHelp()" data-i18n="login.reset">Lupa Sandi?</button>
           </div>
           <div class="password-field">
             <input type="password" id="login-password" placeholder="Masukkan kata sandi" autocomplete="current-password"
@@ -122,8 +122,19 @@
       <div class="mt-6 pt-5 border-t border-sand-200/80">
         <p class="text-[11px] font-bold text-forest-light text-center mb-2.5" data-i18n="login.quickDemo">Akses Demo
           Cepat 1-Klik (Deteksi Peran Otomatis):</p>
-        <div id="tutor-demo-buttons" class="grid grid-cols-3 gap-2">
-          <p class="col-span-3 text-center text-xs text-forest-light">Memuat akun tutor dari database...</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" data-demo-role="admin"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
+            <span class="block text-base mb-0.5">🛡️</span><span data-i18n="login.demoAdmin">Admin</span>
+          </button>
+          <button type="button" data-demo-role="tutor"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
+            <span class="block text-base mb-0.5">👩‍🏫</span><span data-i18n="login.demoTutor">Tutor</span>
+          </button>
+          <button type="button" data-demo-role="parent"
+            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
+            <span class="block text-base mb-0.5">👨‍👩‍👦</span><span data-i18n="login.demoParent">Ortu</span>
+          </button>
         </div>
       </div>
 
@@ -365,6 +376,58 @@
             </div>
           </div>
         </div>
+
+        <article class="dashboard-panel dashboard-message-panel rounded-3xl p-6 border shadow-soft">
+          <div class="parent-card-heading">
+            <span class="parent-card-icon is-message" aria-hidden="true">✉️</span>
+            <div>
+              <span class="parent-card-eyebrow" data-i18n="teacher.messageEyebrow">Parent connection</span>
+              <h2 class="text-lg font-bold text-forest" data-i18n="teacher.messageTitle">Pesan Singkat dengan Orang Tua</h2>
+            </div>
+            <button type="button" onclick="refreshTeacherMessages()"
+              class="px-2.5 py-1.5 rounded-full bg-sand-100 text-forest-light hover:bg-sage-50"
+              data-i18n-aria-label="message.refresh" aria-label="Muat ulang pesan">↻</button>
+          </div>
+          <div class="dashboard-message-controls hidden" id="teacher-message-controls" aria-hidden="true">
+            <label>
+              <span data-i18n="teacher.messageStudent">Pilih anak</span>
+              <select id="teacher-message-student" onchange="loadMessageConversation('teacher')"></select>
+            </label>
+            <label>
+              <span data-i18n="teacher.messageContact">Orang tua/wali</span>
+              <select id="teacher-message-contact" onchange="loadMessageConversation('teacher')" disabled>
+                <option value="">Pilih anak terlebih dahulu</option>
+              </select>
+            </label>
+          </div>
+          <section id="teacher-message-inbox-section" class="hidden" aria-label="Kotak masuk pesan orang tua">
+            <div class="admin-message-inbox-heading">
+              <strong data-i18n="teacher.messageInbox">Pesan terbaru dari orang tua</strong>
+              <span id="teacher-message-inbox-count"></span>
+            </div>
+            <input id="teacher-message-inbox-search" type="search" class="admin-message-inbox-search"
+              data-i18n-placeholder="teacher.messageInboxSearch"
+              placeholder="Cari nama orang tua atau anak..." autocomplete="off">
+            <div id="teacher-message-inbox" class="admin-message-inbox" aria-live="polite"></div>
+          </section>
+          <section id="teacher-message-conversation-panel" class="teacher-message-conversation-panel hidden" aria-live="polite">
+            <div class="teacher-message-conversation-heading">
+              <strong id="teacher-message-active-title"></strong>
+              <button type="button" id="teacher-message-back-button" class="teacher-message-back-button">
+                <span data-i18n="teacher.messageBackToInbox">Kembali ke kotak masuk</span>
+              </button>
+            </div>
+            <p id="teacher-message-conversation-hint" class="teacher-message-reply-hint"></p>
+            <div id="teacher-message-thread" class="parent-message-thread" aria-live="polite"></div>
+            <form id="teacher-message-compose" class="parent-message-compose" onsubmit="sendTeacherMessage(event)">
+              <input type="text" id="teacher-reply-input" maxlength="2000" required
+                data-i18n-placeholder="teacher.messagePlaceholder"
+                placeholder="Tulis pesan untuk orang tua..." autocomplete="off" disabled>
+              <button type="submit" id="teacher-message-send-button" disabled
+                data-i18n-aria-label="teacher.messageSend" aria-label="Kirim pesan">➤</button>
+            </form>
+          </section>
+        </article>
       </section>
 
       <!-- FLOW 2: CURRICULUM BROWSER (Teacher & Owner only) -->
@@ -483,11 +546,7 @@
 
               <!-- Quick action buttons -->
               <div class="flex items-center gap-2">
-                <button onclick="showToast('Rencana disalin ke minggu depan!', '📋')"
-                  class="planner-utility-button garden-interactive-btn">
-                  <span data-i18n="planner.copyForward">Salin Jadwal</span>
-                </button>
-                <button onclick="window.print()"
+                <button onclick="printPlanner()"
                   class="planner-print-button garden-interactive-btn">
                   <span data-i18n="planner.print">Cetak PDF</span>
                 </button>
@@ -620,7 +679,7 @@
               <span data-i18n="parent.previewStudent">Pilih anak</span>
               <select id="parent-preview-student" onchange="openStudentParentPreview(this.value)"></select>
             </label>
-            <button onclick="window.print()" class="parent-print-button garden-interactive-btn">
+            <button onclick="printParentPortfolio()" class="parent-print-button garden-interactive-btn">
               <span aria-hidden="true">↧</span>
               <span data-i18n="parent.downloadPdf">Unduh Portofolio (PDF)</span>
             </button>
@@ -730,14 +789,22 @@
                 <span class="parent-card-icon is-message" aria-hidden="true">✉️</span>
                 <div>
                   <span class="parent-card-eyebrow" data-i18n="parent.connectionEyebrow">Tetap terhubung</span>
-                  <h2 data-i18n="parent.messageTitle">Pesan Singkat dengan Pendidik</h2>
+                  <h2 data-i18n="parent.messageTitle">Pesan Singkat dengan Admin</h2>
                 </div>
+                <button type="button" onclick="loadMessageConversation('parent')"
+                  class="px-2.5 py-1.5 rounded-full bg-sand-100 text-forest-light hover:bg-sage-50"
+                  data-i18n-aria-label="message.refresh" aria-label="Muat ulang pesan">↻</button>
               </div>
-              <div id="chat-messages-container" class="parent-message-status"></div>
-              <div class="parent-message-compose">
-                <input type="text" id="parent-reply-input" placeholder="Tulis catatan untuk guru..." disabled>
-                <button onclick="sendParentReply()" disabled aria-label="Kirim pesan">➤</button>
-              </div>
+              <p class="parent-message-routing" data-i18n="parent.messageRecipient">Pesan akan langsung dikirim ke admin.</p>
+              <input type="hidden" id="parent-message-contact" value="">
+              <div id="chat-messages-container" class="parent-message-thread" aria-live="polite"></div>
+              <form class="parent-message-compose" onsubmit="sendParentReply(event)">
+                <input type="text" id="parent-reply-input" maxlength="2000" required
+                  data-i18n-placeholder="parent.messagePlaceholder"
+                  placeholder="Tulis pesan untuk admin..." autocomplete="off" disabled>
+                <button type="submit" id="parent-message-send-button" disabled
+                  data-i18n-aria-label="parent.messageSend" aria-label="Kirim pesan">➤</button>
+              </form>
             </article>
           </aside>
         </div>
@@ -771,7 +838,7 @@
       <form onsubmit="handleCreateCurriculumSubmit(event)" class="p-6 overflow-y-auto space-y-4 text-xs text-forest">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold mb-1">Level Jenjang:</label>
+            <label class="block font-bold mb-1" data-i18n="addCurr.level">Level Jenjang:</label>
             <select id="new-curr-level" class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
               <option value="level-0">Level 0 - Green (Preschool - PLEGO Blocks)</option>
               <option value="level-1">Level 1 - Yellow (SD 1–3 Precoding)</option>
@@ -780,7 +847,7 @@
             </select>
           </div>
           <div>
-            <label class="block font-bold mb-1">Semester & Pertemuan ke-:</label>
+            <label class="block font-bold mb-1" data-i18n="addCurr.semesterWeek">Semester & Pertemuan ke-:</label>
             <div class="flex gap-2">
               <select id="new-curr-semester"
                 class="w-1/2 bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
@@ -791,10 +858,11 @@
                 class="w-1/2 bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold text-center">
             </div>
           </div>
+
         </div>
 
         <div>
-          <label class="block font-bold mb-1">Taksonomi Bloom & Domain:</label>
+          <label class="block font-bold mb-1" data-i18n="addCurr.bloomDomain">Taksonomi Bloom & Domain:</label>
           <div class="grid grid-cols-2 gap-3">
             <select id="new-curr-bloom" class="bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
               <option value="Remembering">Remembering (Mengingat)</option>
@@ -813,32 +881,39 @@
         </div>
 
         <div>
-          <label class="block font-bold mb-1">Judul Misi / Unit (Bahasa Indonesia):</label>
+          <label class="block font-bold mb-1" data-i18n="addCurr.titleId">Judul Misi / Unit (Bahasa Indonesia):</label>
           <input type="text" id="new-curr-title-id" placeholder="mis. Misi Raja Ampat: Radar Terumbu Karang" required
             class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
         </div>
 
         <div>
-          <label class="block font-bold mb-1">Judul Misi / Unit (English):</label>
+          <label class="block font-bold mb-1" data-i18n="addCurr.titleEn">Judul Misi / Unit (English):</label>
           <input type="text" id="new-curr-title-en" placeholder="e.g. Mission Raja Ampat: Coral Reef Radar" required
             class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
         </div>
 
         <div>
-          <label class="block font-bold mb-1">Learning Tools & Materials:</label>
-          <input type="text" id="new-curr-tools" placeholder="mis. Light Sensor, Buzzer, PLEGO Blocks, Baki Kayu"
+          <label class="block font-bold mb-1" for="new-curr-tools" data-i18n="addCurr.toolsId">Perangkat & Material:</label>
+          <input type="text" id="new-curr-tools" placeholder="mis. Sensor cahaya, buzzer, balok PLEGO"
             required class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
         </div>
 
-        <div>
-          <label class="block font-bold mb-1">Link Desain Media Canva (URL Slide/Template):</label>
-          <input type="url" id="new-curr-canva" placeholder="https://www.canva.com/design/..."
-            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1" for="new-curr-canva-id" data-i18n="addCurr.canvaId">Link Canva Bahasa Indonesia:</label>
+            <input type="url" id="new-curr-canva-id" placeholder="https://www.canva.com/design/..."
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+          </div>
+          <div>
+            <label class="block font-bold mb-1" for="new-curr-canva-en" data-i18n="addCurr.canvaEn">Link Canva Bahasa Inggris:</label>
+            <input type="url" id="new-curr-canva-en" placeholder="https://www.canva.com/design/..."
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+          </div>
         </div>
 
         <div>
-          <label class="block font-bold mb-1">ELO (Enabling Learning Outcome / Tujuan Pembelajaran):</label>
-          <textarea id="new-curr-elo" rows="2"
+          <label class="block font-bold mb-1" for="new-curr-elo" data-i18n="addCurr.eloId">Capaian Pembelajaran:</label>
+          <textarea id="new-curr-elo" rows="3"
             placeholder="Peserta didik mampu memahami keterkaitan input sensor dengan output..." required
             class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5"></textarea>
         </div>
@@ -861,8 +936,8 @@
   <div id="modal-schedule-lesson"
     class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
     <div
-      class="bg-cream w-full max-w-md rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
-      <div class="p-5 border-b border-sand-200 flex items-center justify-between bg-sand-50">
+      class="bg-cream w-full max-w-md max-h-[92vh] rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
+      <div class="shrink-0 p-5 border-b border-sand-200 flex items-center justify-between bg-sand-50">
         <h3 class="font-heading font-bold text-forest text-base flex items-center gap-2">
           <span>📅</span> Jadwalkan Aktivitas Pembelajaran
         </h3>
@@ -870,7 +945,7 @@
           class="w-7 h-7 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
       </div>
 
-      <form onsubmit="handleSaveScheduledLesson(event)" class="p-5 space-y-4 text-xs text-forest">
+      <form onsubmit="handleSaveScheduledLesson(event)" class="min-h-0 overflow-y-auto overscroll-contain p-5 space-y-4 text-xs text-forest">
         <div>
           <label class="block font-bold mb-1">Pilih Tanggal:</label>
           <input type="date" id="modal-schedule-day" required
@@ -885,7 +960,7 @@
 
         <div>
           <label class="block font-bold mb-1">Pilih Aktivitas Montessori STEM:</label>
-          <select id="modal-schedule-act"
+          <select id="modal-schedule-act" required
             class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
             <!-- Populated dynamically -->
           </select>
@@ -906,16 +981,17 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1">Waktu Mulai:</label>
-            <input type="time" id="modal-schedule-time" value="09:15" required
+            <input type="time" id="modal-schedule-time" required
               class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
           </div>
           <div>
-            <label class="block font-bold mb-1">Blok Montessori:</label>
-            <select id="modal-schedule-block"
+            <label class="block font-bold mb-1">Jenis Sesi:</label>
+            <select id="modal-schedule-block" required
               class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
-              <option value="work_cycle">Work Cycle</option>
-              <option value="circle_time">Circle Time</option>
-              <option value="outdoor">Outdoor</option>
+              <option value="">Pilih jenis sesi...</option>
+              <option value="work_cycle">Siklus kerja</option>
+              <option value="circle_time">Waktu lingkaran</option>
+              <option value="outdoor">Kegiatan luar ruang</option>
             </select>
           </div>
         </div>
@@ -1036,8 +1112,11 @@
             <div class="flex-1">
               <span class="font-bold text-forest block" data-i18n="obsModal.attachPhoto">Lampirkan Foto Hasil
                 Karya</span>
-              <input type="url" id="obs-photo-url" placeholder="URL foto dari Supabase Storage (opsional)"
+              <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp"
+                aria-describedby="obs-photo-help"
                 class="mt-1 w-full bg-cream border border-sand-200 rounded-xl px-3 py-2 text-xs">
+              <span id="obs-photo-help" class="mt-1 block text-[10px] text-forest-light"
+                data-i18n="obsModal.photoHelp">JPG, PNG, atau WebP, maksimal 8 MB. Foto disimpan privat.</span>
             </div>
           </div>
         </div>
