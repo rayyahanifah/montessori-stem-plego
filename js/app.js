@@ -287,14 +287,14 @@
 
     const ADMIN_IDENTITIES = {
       'rayya@plego.com': 'Rayya',
-      'bu.sabil@plego.com': 'Bu Sabil',
+      'busabil@plego.com': 'Bu Sabil',
       'mbaghina@plego.com': 'Mba Ghina',
     };
     // Demo credentials are public in this client; replace or disable before production.
     const DEMO_ACCOUNTS = {
-      admin: { email: 'mbaghina@plego.com', password: 'plego123' },
+      admin: { email: 'busabil@plego.com', password: 'plego123' },
       tutor: { email: 'syifa@plego.com', password: 'plego123' },
-      parent: { email: 'ortu.bilal@plego.com', password: 'plego123' },
+      parent: { email: 'ortu.aileen@plego.com', password: 'plego123' },
     };
     const SCHEDULABLE_TUTOR_EMAILS = new Set([
       'tata@plego.com',
