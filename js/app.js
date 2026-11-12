@@ -292,7 +292,7 @@
     };
     // Demo credentials are public in this client; replace or disable before production.
     const DEMO_ACCOUNTS = {
-      admin: { email: 'mbaghinal@plego.com', password: 'plego123' },
+      admin: { email: 'mbaghina@plego.com', password: 'plego123' },
       tutor: { email: 'syifa@plego.com', password: 'plego123' },
       parent: { email: 'ortu.aileen@plego.com', password: 'plego123' },
     };
