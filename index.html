@@ -597,6 +597,18 @@
 
             <!-- View Layout Toggles (Day | Week | Month) & Quick Controls -->
             <div class="planner-header-actions flex items-center flex-wrap gap-3">
+              <!-- Quick Filter: Semua Jadwal (Global) vs Jadwal Saya -->
+              <div class="inline-flex rounded-full bg-sand-200/70 p-1 border border-sand-300/80 text-xs font-bold" role="group" aria-label="Filter cakupan jadwal">
+                <button type="button" onclick="setPlannerFilter('all')" id="planner-filter-all"
+                  class="px-3.5 py-1.5 rounded-full bg-forest text-cream transition font-bold shadow-soft flex items-center gap-1.5 garden-interactive-btn">
+                  <span>🌐</span> <span data-i18n="planner.filterAll">Semua Jadwal</span>
+                </button>
+                <button type="button" onclick="setPlannerFilter('mine')" id="planner-filter-mine"
+                  class="px-3.5 py-1.5 rounded-full text-forest-light hover:text-forest transition font-bold flex items-center gap-1.5 garden-interactive-btn">
+                  <span>👤</span> <span data-i18n="planner.filterMine">Jadwal Saya</span>
+                </button>
+              </div>
+
               <!-- Day / Week / Month Segmented Switch -->
               <div class="planner-view-switch" role="group" aria-label="Tampilan kalender">
                 <button onclick="setPlannerLayout('day')" id="planner-btn-day" aria-pressed="false"
@@ -617,7 +629,7 @@
           </div>
 
           <!-- Date Navigation Bar -->
-          <div class="planner-date-toolbar">
+          <div class="planner-date-toolbar flex flex-wrap items-center justify-between gap-3">
             <div class="planner-date-navigation">
               <button onclick="changePlannerWeek(-1)" class="planner-arrow-button garden-interactive-btn"
                 aria-label="Periode sebelumnya">‹</button>
@@ -626,8 +638,13 @@
               <button onclick="changePlannerWeek(1)" class="planner-arrow-button garden-interactive-btn"
                 aria-label="Periode berikutnya">›</button>
             </div>
-            <span class="planner-date-hint" data-i18n="planner.hint">Pilih hari untuk melihat atau menambahkan
-              aktivitas</span>
+            <div class="flex items-center gap-2">
+              <span id="planner-filter-indicator" class="text-xs font-semibold px-3 py-1 rounded-full bg-sand-100 text-forest border border-sand-200">
+                🌐 Menampilkan Seluruh Jadwal (Global)
+              </span>
+              <span class="planner-date-hint hidden md:inline" data-i18n="planner.hint">Pilih hari untuk melihat atau menambahkan
+                aktivitas</span>
+            </div>
           </div>
 
           <!-- Dynamic Planner Layout Container -->
