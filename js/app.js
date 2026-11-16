@@ -3767,7 +3767,7 @@ function switchAdminTab(tabName = 'admins') {
   state.currentView = 'adminManagement';
 
   document.getElementById('profile-dropdown')?.classList.add('hidden');
-  ['dashboard', 'curriculum', 'planner', 'observations', 'parentHub'].forEach(v => {
+  ['dashboard', 'curriculum', 'planner', 'observations', 'parentHub', 'studentReport'].forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) el.classList.add('hidden');
   });
