@@ -38,7 +38,8 @@
       <section class="auth-story" aria-label="Tentang Plego">
         <div class="story-kicker"><span class="story-kicker-dot"></span> Belajar sambil bertumbuh</div>
         <h1>Setiap rasa ingin tahu adalah <span>awal yang hebat.</span></h1>
-        <p class="story-description">Ruang belajar Montessori yang membantu guru, sekolah, dan keluarga merayakan setiap penemuan kecil anak.</p>
+        <p class="story-description">Ruang belajar Montessori yang membantu guru, sekolah, dan keluarga merayakan setiap
+          penemuan kecil anak.</p>
 
         <div class="story-scene" aria-hidden="true">
           <div class="scene-sun"></div>
@@ -46,95 +47,145 @@
           <div class="scene-hill scene-hill-front"></div>
           <div class="scene-stem"><span></span><i></i><b></b></div>
           <div class="scene-card scene-card-top"><span>🔍</span><strong>Temukan</strong><small>hal baru</small></div>
-          <div class="scene-card scene-card-bottom"><span>🌱</span><strong>Tumbuh</strong><small>setiap hari</small></div>
+          <div class="scene-card scene-card-bottom"><span>🌱</span><strong>Tumbuh</strong><small>setiap hari</small>
+          </div>
         </div>
 
         <div class="story-highlights">
-          <div><span>✦</span><p><strong>Belajar bermakna</strong><small>Berangkat dari rasa ingin tahu anak</small></p></div>
-          <div><span>♡</span><p><strong>Tumbuh bersama</strong><small>Guru dan keluarga dalam satu ruang</small></p></div>
+          <div><span>✦</span>
+            <p><strong>Belajar bermakna</strong><small>Berangkat dari rasa ingin tahu anak</small></p>
+          </div>
+          <div><span>♡</span>
+            <p><strong>Tumbuh bersama</strong><small>Guru dan keluarga dalam satu ruang</small></p>
+          </div>
         </div>
       </section>
 
-      <div class="auth-card w-full max-w-md bg-cream rounded-3xl p-8 border border-sand-200 shadow-float relative z-10 fade-enter">
-      <!-- Brand Header -->
-      <div class="text-center mb-6">
-        <div
-          class="w-14 h-14 mx-auto rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-soft mb-3 transform hover:rotate-6 transition">
-          <img src="src/logo-plego-tp.png" alt="Logo Plego" class="w-10 h-10 object-contain">
-        </div>
-        <div class="flex items-center justify-center gap-2">
-          <span class="font-heading font-bold text-2xl tracking-wide text-forest">plego</span>
-          <span
-            class="text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-sand-200 text-forest font-bold">Early
-            Years</span>
-        </div>
-        <p class="text-xs text-forest-light mt-1.5" data-i18n="login.subtitle">Montessori STEM Platform · Masuk Akun
-          Anda</p>
-      </div>
-
-      <!-- Credentials Form (NO ROLE DROPDOWN: System detects role automatically) -->
-      <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-forest mb-1.5" data-i18n="login.email">Email Akun
-            Terdaftar:</label>
-          <input type="email" id="login-email" placeholder="nama@sekolah.id" required
-            class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-xs font-bold text-forest" data-i18n="login.password">Kata Sandi (Password):</label>
-            <button type="button" class="text-[11px] text-sage hover:underline cursor-pointer"
-              onclick="showResetPasswordHelp()" data-i18n="login.reset">Lupa Sandi?</button>
+      <div
+        class="auth-card w-full max-w-md bg-cream rounded-3xl p-8 border border-sand-200 shadow-float relative z-10 fade-enter">
+        <!-- Brand Header -->
+        <div class="text-center mb-6">
+          <div
+            class="w-14 h-14 mx-auto rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-soft mb-3 transform hover:rotate-6 transition">
+            <img src="src/logo-plego-tp.png" alt="Logo Plego" class="w-10 h-10 object-contain">
           </div>
-          <div class="password-field">
-            <input type="password" id="login-password" placeholder="Masukkan kata sandi" autocomplete="current-password"
-              required
+          <div class="flex items-center justify-center gap-2">
+            <span class="font-heading font-bold text-2xl tracking-wide text-forest">plego</span>
+            <span
+              class="text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-sand-200 text-forest font-bold">Early
+              Years</span>
+          </div>
+          <p class="text-xs text-forest-light mt-1.5" data-i18n="login.subtitle">Montessori STEM Platform · Masuk Akun
+            Anda</p>
+        </div>
+
+        <!-- Role Switcher Tabs (Parent First vs Staff/Admin) -->
+        <div class="flex p-1 rounded-2xl bg-sand-200/80 mb-5 text-xs font-bold" role="tablist">
+          <button type="button" id="tab-login-parent" onclick="switchLoginTab('parent')"
+            class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-white text-forest shadow-soft">
+            <span>👨‍👩‍👦</span> <span>Orang Tua Murid</span>
+          </button>
+          <button type="button" id="tab-login-staff" onclick="switchLoginTab('staff')"
+            class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-forest-light hover:text-forest">
+            <span>👨‍🏫</span> <span>Pendidik / Admin</span>
+          </button>
+        </div>
+
+        <!-- FORM 1: PARENT LOGIN (No HP / WhatsApp & PIN) - DEFAULT VIEW -->
+        <form id="form-parent-login" onsubmit="handleParentLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-forest mb-1.5">Nomor WhatsApp / HP Terdaftar:</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-3 text-xs text-forest-light font-bold">📱</span>
+              <input type="tel" id="login-parent-phone" placeholder="Contoh: 081234567890" required
+                class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 pl-9 pr-3.5 focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
+            </div>
+            <p class="text-[10px] text-forest-light mt-1">Gunakan nomor HP yang terdaftar pada sistem sekolah anak.</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-forest">PIN Akses (4 Digit):</label>
+              <span class="text-[11px] text-forest-light">Default: 1234</span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3.5 top-3 text-xs text-forest-light font-bold">🔑</span>
+              <input type="password" id="login-parent-pin" maxlength="6" placeholder="Masukkan 4 digit PIN" required
+                class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 pl-9 pr-3.5 tracking-widest font-mono text-center text-sm focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
+            </div>
+          </div>
+
+          <button type="submit" id="login-parent-submit-btn"
+            class="w-full py-3 rounded-full bg-sunshine-dark hover:bg-amber-600 text-white font-heading font-semibold text-sm shadow-soft garden-interactive-btn flex items-center justify-center gap-2 mt-3">
+            <span>Masuk ke Portal Orang Tua</span>
+            <span>➔</span>
+          </button>
+        </form>
+
+        <!-- FORM 2: STAFF / ADMIN LOGIN (Email & Password) -->
+        <form id="form-staff-login" onsubmit="handleLoginSubmit(event)" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-bold text-forest mb-1.5" data-i18n="login.email">Email Akun
+              Terdaftar:</label>
+            <input type="email" id="login-email" placeholder="nama@sekolah.id"
               class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
-            <button type="button" class="password-toggle" onclick="togglePasswordVisibility()"
-              aria-label="Tampilkan kata sandi" aria-pressed="false">
-              <svg class="password-eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6Z" />
-                <circle cx="12" cy="12" r="2.5" />
-              </svg>
-              <svg class="password-eye-closed hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6.3 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.7M6.2 6.2C3.8 7.7 2.5 12 2.5 12s3.2 6 9.5 6c1 0 1.9-.2 2.7-.5" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
-              </svg>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-forest" data-i18n="login.password">Kata Sandi
+                (Password):</label>
+              <button type="button" class="text-[11px] text-sage hover:underline cursor-pointer"
+                onclick="showResetPasswordHelp()" data-i18n="login.reset">Lupa Sandi?</button>
+            </div>
+            <div class="password-field">
+              <input type="password" id="login-password" placeholder="Masukkan kata sandi"
+                autocomplete="current-password"
+                class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-sage shadow-inner transition">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility()"
+                aria-label="Tampilkan kata sandi" aria-pressed="false">
+                <svg class="password-eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6Z" />
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+                <svg class="password-eye-closed hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6.3 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.7M6.2 6.2C3.8 7.7 2.5 12 2.5 12s3.2 6 9.5 6c1 0 1.9-.2 2.7-.5" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit"
+            class="w-full py-3 rounded-full bg-sage hover:bg-sage-600 text-white font-heading font-semibold text-sm shadow-soft garden-interactive-btn flex items-center justify-center gap-2 mt-3">
+            <span data-i18n="login.btn">Masuk ke Ruang Kerja</span>
+            <span>➔</span>
+          </button>
+        </form>
+
+        <!-- Quick Demo Access 1-Click Buttons -->
+        <div class="mt-6 pt-5 border-t border-sand-200/80">
+          <p class="text-[11px] font-bold text-forest-light text-center mb-2.5" data-i18n="login.quickDemo">Akses Demo
+            Cepat 1-Klik (Deteksi Peran Otomatis):</p>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-demo-role="parent"
+              class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
+              <span class="block text-base mb-0.5">👨‍👩‍👦</span><span data-i18n="login.demoParent">Ortu</span>
+            </button>
+            <button type="button" data-demo-role="admin"
+              class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
+              <span class="block text-base mb-0.5">🛡️</span><span data-i18n="login.demoAdmin">Admin</span>
+            </button>
+            <button type="button" data-demo-role="tutor"
+              class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
+              <span class="block text-base mb-0.5">👩‍🏫</span><span data-i18n="login.demoTutor">Tutor</span>
             </button>
           </div>
         </div>
-
-        <button type="submit"
-          class="w-full py-3 rounded-full bg-sage hover:bg-sage-600 text-white font-heading font-semibold text-sm shadow-soft garden-interactive-btn flex items-center justify-center gap-2 mt-3">
-          <span data-i18n="login.btn">Masuk ke Ruang Kerja</span>
-          <span>➔</span>
-        </button>
-      </form>
-
-      <!-- Quick Demo Access 1-Click Buttons -->
-      <div class="mt-6 pt-5 border-t border-sand-200/80">
-        <p class="text-[11px] font-bold text-forest-light text-center mb-2.5" data-i18n="login.quickDemo">Akses Demo
-          Cepat 1-Klik (Deteksi Peran Otomatis):</p>
-        <div class="grid grid-cols-3 gap-2">
-          <button type="button" data-demo-role="admin"
-            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
-            <span class="block text-base mb-0.5">🛡️</span><span data-i18n="login.demoAdmin">Admin</span>
-          </button>
-          <button type="button" data-demo-role="tutor"
-            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
-            <span class="block text-base mb-0.5">👩‍🏫</span><span data-i18n="login.demoTutor">Tutor</span>
-          </button>
-          <button type="button" data-demo-role="parent"
-            class="p-2 rounded-2xl bg-sand-50 hover:bg-sage-50 text-forest border border-sand-200 hover:border-sage garden-interactive-btn text-center text-xs font-bold">
-            <span class="block text-base mb-0.5">👨‍👩‍👦</span><span data-i18n="login.demoParent">Ortu</span>
-          </button>
-        </div>
-      </div>
 
       </div>
     </div>
@@ -149,9 +200,10 @@
 
         <!-- Brand & Ecosystem Link -->
         <div class="flex items-center gap-3 cursor-pointer group" onclick="handleBrandClick()">
-          <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-soft transition">
+          <div
+            class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-soft transition">
             <img src="src/logo-plego-tp.png" alt="Logo Plego" class="w-8 h-8 object-contain">
-            </div>  
+          </div>
           <div>
             <div class="flex items-center gap-2">
               <span class="font-heading font-bold text-lg tracking-wide text-forest">plego</span>
@@ -194,7 +246,8 @@
           <div class="relative">
             <button onclick="toggleProfileDropdown()"
               class="flex items-center gap-2 bg-sand-100 hover:bg-sand-200/80 py-1 px-2.5 rounded-full border border-sand-200 transition garden-interactive-btn">
-              <div class="w-7 h-7 rounded-full overflow-hidden border border-sage flex-shrink-0 grid place-items-center bg-sage-50 text-sage text-[10px] font-bold">
+              <div
+                class="w-7 h-7 rounded-full overflow-hidden border border-sage flex-shrink-0 grid place-items-center bg-sage-50 text-sage text-[10px] font-bold">
                 <img id="user-avatar" src="" alt="" class="hidden w-full h-full object-cover">
                 <span id="user-avatar-initials">PL</span>
               </div>
@@ -250,7 +303,8 @@
             <h1 class="text-2xl md:text-3xl font-bold text-forest">
               <span data-i18n="dash.greeting">Selamat pagi</span>, <span id="dash-greeting-name">Pendidik</span>! 👋
             </h1>
-            <p id="dashboard-summary" class="text-forest-light text-sm mt-2 max-w-xl leading-relaxed" data-i18n="dash.subtitle">
+            <p id="dashboard-summary" class="text-forest-light text-sm mt-2 max-w-xl leading-relaxed"
+              data-i18n="dash.subtitle">
               Memuat jadwal dan data observasi dari database...
             </p>
           </div>
@@ -270,6 +324,10 @@
             <button onclick="navigateTo('planner')"
               class="px-5 py-2.5 rounded-full bg-transparent hover:bg-white/50 text-forest font-semibold text-sm border border-white/80 garden-interactive-btn flex items-center gap-2">
               <span data-i18n="dash.openPlanner">Buka Planner</span>
+            </button>
+            <button onclick="navigateTo('studentReport')"
+              class="px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-forest font-semibold text-sm border border-sand-200 shadow-xs garden-interactive-btn flex items-center">
+              <span data-i18n="dash.viewReport">Jurnal Belajar</span>
             </button>
           </div>
         </div>
@@ -326,7 +384,8 @@
               </div>
             </div>
             <p id="dashboard-needs-observation-count" class="text-3xl font-heading font-bold text-forest mt-3">—</p>
-            <p class="text-xs text-violet font-semibold mt-1" data-i18n="metrics.observationWindow">Belum diamati 7 hari</p>
+            <p class="text-xs text-violet font-semibold mt-1" data-i18n="metrics.observationWindow">Belum diamati 7 hari
+            </p>
           </div>
         </div>
 
@@ -376,7 +435,8 @@
             <span class="parent-card-icon is-message" aria-hidden="true">✉️</span>
             <div>
               <span class="parent-card-eyebrow" data-i18n="teacher.messageEyebrow">Parent connection</span>
-              <h2 class="text-lg font-bold text-forest" data-i18n="teacher.messageTitle">Pesan Singkat dengan Orang Tua</h2>
+              <h2 class="text-lg font-bold text-forest" data-i18n="teacher.messageTitle">Pesan Singkat dengan Orang Tua
+              </h2>
             </div>
             <button type="button" onclick="refreshTeacherMessages()"
               class="px-2.5 py-1.5 rounded-full bg-sand-100 text-forest-light hover:bg-sage-50"
@@ -400,11 +460,12 @@
               <span id="teacher-message-inbox-count"></span>
             </div>
             <input id="teacher-message-inbox-search" type="search" class="admin-message-inbox-search"
-              data-i18n-placeholder="teacher.messageInboxSearch"
-              placeholder="Cari nama orang tua atau anak..." autocomplete="off">
+              data-i18n-placeholder="teacher.messageInboxSearch" placeholder="Cari nama orang tua atau anak..."
+              autocomplete="off">
             <div id="teacher-message-inbox" class="admin-message-inbox" aria-live="polite"></div>
           </section>
-          <section id="teacher-message-conversation-panel" class="teacher-message-conversation-panel hidden" aria-live="polite">
+          <section id="teacher-message-conversation-panel" class="teacher-message-conversation-panel hidden"
+            aria-live="polite">
             <div class="teacher-message-conversation-heading">
               <strong id="teacher-message-active-title"></strong>
               <button type="button" id="teacher-message-back-button" class="teacher-message-back-button">
@@ -415,10 +476,10 @@
             <div id="teacher-message-thread" class="parent-message-thread" aria-live="polite"></div>
             <form id="teacher-message-compose" class="parent-message-compose" onsubmit="sendTeacherMessage(event)">
               <input type="text" id="teacher-reply-input" maxlength="2000" required
-                data-i18n-placeholder="teacher.messagePlaceholder"
-                placeholder="Tulis pesan untuk orang tua..." autocomplete="off" disabled>
-              <button type="submit" id="teacher-message-send-button" disabled
-                data-i18n-aria-label="teacher.messageSend" aria-label="Kirim pesan">➤</button>
+                data-i18n-placeholder="teacher.messagePlaceholder" placeholder="Tulis pesan untuk orang tua..."
+                autocomplete="off" disabled>
+              <button type="submit" id="teacher-message-send-button" disabled data-i18n-aria-label="teacher.messageSend"
+                aria-label="Kirim pesan">➤</button>
             </form>
           </section>
         </article>
@@ -432,10 +493,13 @@
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="curriculum-title-mark" aria-hidden="true">✦</span>
-                <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="curr.title">Kurikulum Plego STEM & AI Path</h1>
-                <span class="text-[10px] bg-sage/10 text-sage-700 px-2.5 py-1 rounded-full font-bold tracking-wide">v3.2 · OFFICIAL</span>
+                <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="curr.title">Kurikulum Plego STEM & AI
+                  Path</h1>
+                <span class="text-[10px] bg-sage/10 text-sage-700 px-2.5 py-1 rounded-full font-bold tracking-wide">v3.2
+                  · OFFICIAL</span>
               </div>
-              <p class="text-sm text-forest-light mt-1.5 max-w-2xl leading-relaxed" data-i18n="curr.subtitle">Pemetaan berjenjang dari Preschool
+              <p class="text-sm text-forest-light mt-1.5 max-w-2xl leading-relaxed" data-i18n="curr.subtitle">Pemetaan
+                berjenjang dari Preschool
                 (Level 0) hingga SMA dengan Taxonomy Bloom & PLEGO Blocks</p>
             </div>
 
@@ -450,48 +514,51 @@
 
           <!-- Level Segmented Controller -->
           <div class="curriculum-level-grid py-5" id="curriculum-level-pills">
-              <button type="button" aria-pressed="true" onclick="setCurriculumLevel('level-0')"
-                class="curriculum-level-button level-green is-active garden-interactive-btn">
-                <span class="curriculum-level-dot"></span>
-                <span><strong>Level 0 · Green</strong><small>Preschool / PAUD</small></span>
-                <span class="curriculum-level-count" data-level-count="level-0">—</span>
-              </button>
-              <button type="button" aria-pressed="false" onclick="setCurriculumLevel('level-1')"
-                class="curriculum-level-button level-yellow garden-interactive-btn">
-                <span class="curriculum-level-dot"></span>
-                <span><strong>Level 1 · Yellow</strong><small>SD 1–3</small></span>
-                <span class="curriculum-level-count" data-level-count="level-1">—</span>
-              </button>
-              <button type="button" aria-pressed="false" onclick="setCurriculumLevel('level-2')"
-                class="curriculum-level-button level-red garden-interactive-btn">
-                <span class="curriculum-level-dot"></span>
-                <span><strong>Level 2 · Red</strong><small>SD 4–5 · AI</small></span>
-                <span class="curriculum-level-count" data-level-count="level-2">—</span>
-              </button>
-              <button type="button" aria-pressed="false" onclick="setCurriculumLevel('level-3')"
-                class="curriculum-level-button level-blue garden-interactive-btn">
-                <span class="curriculum-level-dot"></span>
-                <span><strong>Level 3 · Blue</strong><small>SMP · Text / AI</small></span>
-                <span class="curriculum-level-count" data-level-count="level-3">—</span>
-              </button>
+            <button type="button" aria-pressed="true" onclick="setCurriculumLevel('level-0')"
+              class="curriculum-level-button level-green is-active garden-interactive-btn">
+              <span class="curriculum-level-dot"></span>
+              <span><strong>Level 0 · Green</strong><small>Preschool / PAUD</small></span>
+              <span class="curriculum-level-count" data-level-count="level-0">—</span>
+            </button>
+            <button type="button" aria-pressed="false" onclick="setCurriculumLevel('level-1')"
+              class="curriculum-level-button level-yellow garden-interactive-btn">
+              <span class="curriculum-level-dot"></span>
+              <span><strong>Level 1 · Yellow</strong><small>SD 1–3</small></span>
+              <span class="curriculum-level-count" data-level-count="level-1">—</span>
+            </button>
+            <button type="button" aria-pressed="false" onclick="setCurriculumLevel('level-2')"
+              class="curriculum-level-button level-red garden-interactive-btn">
+              <span class="curriculum-level-dot"></span>
+              <span><strong>Level 2 · Red</strong><small>SD 4–5 · AI</small></span>
+              <span class="curriculum-level-count" data-level-count="level-2">—</span>
+            </button>
+            <button type="button" aria-pressed="false" onclick="setCurriculumLevel('level-3')"
+              class="curriculum-level-button level-blue garden-interactive-btn">
+              <span class="curriculum-level-dot"></span>
+              <span><strong>Level 3 · Blue</strong><small>SMP · Text / AI</small></span>
+              <span class="curriculum-level-count" data-level-count="level-3">—</span>
+            </button>
           </div>
 
           <div class="curriculum-toolbar">
             <label class="curriculum-search">
               <span aria-hidden="true">⌕</span>
               <input id="curriculum-search" type="search" autocomplete="off"
-                placeholder="Cari aktivitas, perangkat, atau capaian..."
-                aria-label="Cari unit kurikulum"
+                placeholder="Cari aktivitas, perangkat, atau capaian..." aria-label="Cari unit kurikulum"
                 oninput="state.curriculumSearch = this.value; renderCurriculum()">
               <button type="button" onclick="clearCurriculumSearch()" aria-label="Hapus pencarian">×</button>
             </label>
-            <div class="inline-flex rounded-full bg-sand-100 p-1 border border-sand-200 text-xs font-bold" role="group" aria-label="Filter semester">
+            <div class="inline-flex rounded-full bg-sand-100 p-1 border border-sand-200 text-xs font-bold" role="group"
+              aria-label="Filter semester">
               <button onclick="setCurriculumSemester('all')" id="sem-all"
-                class="px-3.5 py-2 rounded-full bg-forest text-cream transition" data-i18n="curr.semesterAll">Semua</button>
+                class="px-3.5 py-2 rounded-full bg-forest text-cream transition"
+                data-i18n="curr.semesterAll">Semua</button>
               <button onclick="setCurriculumSemester('Gasal')" id="sem-gasal"
-                class="px-3.5 py-2 rounded-full text-forest-light hover:text-forest transition" data-i18n="curr.semesterOdd">Gasal</button>
+                class="px-3.5 py-2 rounded-full text-forest-light hover:text-forest transition"
+                data-i18n="curr.semesterOdd">Gasal</button>
               <button onclick="setCurriculumSemester('Genap')" id="sem-genap"
-                class="px-3.5 py-2 rounded-full text-forest-light hover:text-forest transition" data-i18n="curr.semesterEven">Genap</button>
+                class="px-3.5 py-2 rounded-full text-forest-light hover:text-forest transition"
+                data-i18n="curr.semesterEven">Genap</button>
             </div>
           </div>
 
@@ -512,7 +579,8 @@
         <div class="planner-shell bg-cream rounded-3xl p-5 md:p-7 border border-sand-200 shadow-soft">
 
           <!-- Planner Header with Date Range & View Switcher -->
-          <div class="planner-header flex flex-col xl:flex-row xl:items-center justify-between gap-5 pb-6 border-b border-sand-200">
+          <div
+            class="planner-header flex flex-col xl:flex-row xl:items-center justify-between gap-5 pb-6 border-b border-sand-200">
             <div>
               <div class="flex items-center flex-wrap gap-2">
                 <span class="planner-title-mark" aria-hidden="true">✦</span>
@@ -523,25 +591,25 @@
                 <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="planner.title">Rencana Belajar</h1>
                 <span class="planner-period-pill" id="planner-period-label">16 – 20 Nov 2026</span>
               </div>
-              <p class="text-xs md:text-sm text-forest-light mt-1.5" data-i18n="planner.subtitle">Atur aktivitas, kelas, dan pendidik dalam satu tampilan.</p>
+              <p class="text-xs md:text-sm text-forest-light mt-1.5" data-i18n="planner.subtitle">Atur aktivitas, kelas,
+                dan pendidik dalam satu tampilan.</p>
             </div>
 
             <!-- View Layout Toggles (Day | Week | Month) & Quick Controls -->
             <div class="planner-header-actions flex items-center flex-wrap gap-3">
               <!-- Day / Week / Month Segmented Switch -->
               <div class="planner-view-switch" role="group" aria-label="Tampilan kalender">
-                <button onclick="setPlannerLayout('day')" id="planner-btn-day" aria-pressed="false" data-i18n="planner.view.day"
-                  class="planner-view-button">Hari</button>
-                <button onclick="setPlannerLayout('week')" id="planner-btn-week" aria-pressed="true" data-i18n="planner.view.week"
-                  class="planner-view-button is-active">Minggu</button>
-                <button onclick="setPlannerLayout('month')" id="planner-btn-month" aria-pressed="false" data-i18n="planner.view.month"
-                  class="planner-view-button">Bulan</button>
+                <button onclick="setPlannerLayout('day')" id="planner-btn-day" aria-pressed="false"
+                  data-i18n="planner.view.day" class="planner-view-button">Hari</button>
+                <button onclick="setPlannerLayout('week')" id="planner-btn-week" aria-pressed="true"
+                  data-i18n="planner.view.week" class="planner-view-button is-active">Minggu</button>
+                <button onclick="setPlannerLayout('month')" id="planner-btn-month" aria-pressed="false"
+                  data-i18n="planner.view.month" class="planner-view-button">Bulan</button>
               </div>
 
               <!-- Quick action buttons -->
               <div class="flex items-center gap-2">
-                <button onclick="printPlanner()"
-                  class="planner-print-button garden-interactive-btn">
+                <button onclick="printPlanner()" class="planner-print-button garden-interactive-btn">
                   <span data-i18n="planner.print">Cetak PDF</span>
                 </button>
               </div>
@@ -551,14 +619,15 @@
           <!-- Date Navigation Bar -->
           <div class="planner-date-toolbar">
             <div class="planner-date-navigation">
-              <button onclick="changePlannerWeek(-1)"
-                class="planner-arrow-button garden-interactive-btn" aria-label="Periode sebelumnya">‹</button>
-              <button onclick="resetPlannerWeek()"
-                class="planner-today-button garden-interactive-btn" data-i18n="planner.today">Hari Ini</button>
-              <button onclick="changePlannerWeek(1)"
-                class="planner-arrow-button garden-interactive-btn" aria-label="Periode berikutnya">›</button>
+              <button onclick="changePlannerWeek(-1)" class="planner-arrow-button garden-interactive-btn"
+                aria-label="Periode sebelumnya">‹</button>
+              <button onclick="resetPlannerWeek()" class="planner-today-button garden-interactive-btn"
+                data-i18n="planner.today">Hari Ini</button>
+              <button onclick="changePlannerWeek(1)" class="planner-arrow-button garden-interactive-btn"
+                aria-label="Periode berikutnya">›</button>
             </div>
-            <span class="planner-date-hint" data-i18n="planner.hint">Pilih hari untuk melihat atau menambahkan aktivitas</span>
+            <span class="planner-date-hint" data-i18n="planner.hint">Pilih hari untuk melihat atau menambahkan
+              aktivitas</span>
           </div>
 
           <!-- Dynamic Planner Layout Container -->
@@ -571,9 +640,11 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <div class="flex items-center gap-2">
                 <div class="planner-materials-icon">📦</div>
-                <h3 class="font-heading font-bold text-forest text-base" data-i18n="planner.materialsTitle">Material Minggu Ini</h3>
+                <h3 class="font-heading font-bold text-forest text-base" data-i18n="planner.materialsTitle">Material
+                  Minggu Ini</h3>
               </div>
-              <span class="text-xs text-forest-light font-semibold" data-i18n="planner.autoAggregated">Dikumpulkan dari aktivitas terjadwal</span>
+              <span class="text-xs text-forest-light font-semibold" data-i18n="planner.autoAggregated">Dikumpulkan dari
+                aktivitas terjadwal</span>
             </div>
             <div class="planner-materials-grid" id="planner-materials-list"></div>
           </div>
@@ -587,9 +658,12 @@
 
           <div class="observation-header">
             <div class="observation-heading-copy">
-              <span class="observation-eyebrow"><span aria-hidden="true">✦</span> <span data-i18n="obs.eyebrow">Ruang tumbuh anak</span></span>
-              <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="obs.title">Alat Observasi & Ceklis Capaian STEM</h1>
-              <p class="text-xs md:text-sm text-forest-light mt-1" data-i18n="obs.subtitle">Format observasi 3-ketukan yang menghormati ritme alami anak saat bereksplorasi</p>
+              <span class="observation-eyebrow"><span aria-hidden="true">✦</span> <span data-i18n="obs.eyebrow">Ruang
+                  tumbuh anak</span></span>
+              <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="obs.title">Alat Observasi & Ceklis
+                Capaian STEM</h1>
+              <p class="text-xs md:text-sm text-forest-light mt-1" data-i18n="obs.subtitle">Format observasi 3-ketukan
+                yang menghormati ritme alami anak saat bereksplorasi</p>
             </div>
             <div class="observation-header-count">
               <span class="observation-count-icon" aria-hidden="true">👧</span>
@@ -600,23 +674,28 @@
           <div class="observation-summary-grid" aria-live="polite">
             <article class="observation-summary-card">
               <span class="observation-summary-icon is-green" aria-hidden="true">🌱</span>
-              <div><span class="observation-summary-label" id="obs-summary-total-label">Anak terdaftar</span><strong id="obs-summary-total">—</strong></div>
+              <div><span class="observation-summary-label" id="obs-summary-total-label">Anak terdaftar</span><strong
+                  id="obs-summary-total">—</strong></div>
             </article>
             <article class="observation-summary-card">
               <span class="observation-summary-icon is-amber" aria-hidden="true">🔎</span>
-              <div><span class="observation-summary-label" id="obs-summary-needs-label">Perlu diamati</span><strong id="obs-summary-needs">—</strong></div>
+              <div><span class="observation-summary-label" id="obs-summary-needs-label">Perlu diamati</span><strong
+                  id="obs-summary-needs">—</strong></div>
             </article>
             <article class="observation-summary-card">
               <span class="observation-summary-icon is-blue" aria-hidden="true">📝</span>
-              <div><span class="observation-summary-label" id="obs-summary-recent-label">Catatan terbaru</span><strong id="obs-summary-recent">—</strong></div>
+              <div><span class="observation-summary-label" id="obs-summary-recent-label">Catatan terbaru</span><strong
+                  id="obs-summary-recent">—</strong></div>
             </article>
           </div>
 
           <div class="observation-students-panel">
             <div class="observation-section-heading">
               <div>
-                <h2 class="font-heading font-bold text-forest text-lg" data-i18n="obs.selectStudent">Pilih Anak untuk Dicatat / Dievaluasi:</h2>
-                <p class="observation-section-hint" id="obs-roster-hint">Pilih anak untuk menambahkan catatan perkembangan.</p>
+                <h2 class="font-heading font-bold text-forest text-lg" data-i18n="obs.selectStudent">Pilih Anak untuk
+                  Dicatat / Dievaluasi:</h2>
+                <p class="observation-section-hint" id="obs-roster-hint">Pilih anak untuk menambahkan catatan
+                  perkembangan.</p>
               </div>
               <div class="observation-roster-tools">
                 <label class="observation-search">
@@ -640,8 +719,10 @@
           <div class="observation-feed-panel">
             <div class="observation-feed-heading">
               <div>
-                <span class="observation-eyebrow"><span aria-hidden="true">✧</span> <span data-i18n="obs.feedEyebrow">Jejak belajar</span></span>
-                <h2 class="font-heading font-bold text-forest text-lg" data-i18n="obs.recentFeedTitle">Catatan Observasi Terkini</h2>
+                <span class="observation-eyebrow"><span aria-hidden="true">✧</span> <span
+                    data-i18n="obs.feedEyebrow">Jejak belajar</span></span>
+                <h2 class="font-heading font-bold text-forest text-lg" data-i18n="obs.recentFeedTitle">Catatan Observasi
+                  Terkini</h2>
               </div>
               <span class="observation-source-badge" data-i18n="obs.liveSynced">Tersinkron dengan database</span>
             </div>
@@ -677,21 +758,28 @@
               <span aria-hidden="true">↧</span>
               <span data-i18n="parent.downloadPdf">Unduh Portofolio (PDF)</span>
             </button>
+            <button type="button" onclick="navigateTo('studentReport')"
+              class="parent-print-button garden-interactive-btn bg-sage text-white hover:bg-forest">
+              <span data-i18n="parent.viewReport">Jurnal Belajar</span>
+            </button>
           </div>
         </div>
 
         <div class="parent-report-stats">
           <article class="parent-stat-card">
             <span class="parent-stat-icon is-notes" aria-hidden="true">📝</span>
-            <div><span class="parent-stat-label" data-i18n="parent.statObservations">Catatan observasi</span><strong id="parent-observation-count">Memuat catatan...</strong></div>
+            <div><span class="parent-stat-label" data-i18n="parent.statObservations">Catatan observasi</span><strong
+                id="parent-observation-count">Memuat catatan...</strong></div>
           </article>
           <article class="parent-stat-card">
             <span class="parent-stat-icon is-mastery" aria-hidden="true">🌟</span>
-            <div><span class="parent-stat-label" data-i18n="parent.statMastered">Capaian dikuasai</span><strong id="parent-stat-mastered">—</strong></div>
+            <div><span class="parent-stat-label" data-i18n="parent.statMastered">Capaian dikuasai</span><strong
+                id="parent-stat-mastered">—</strong></div>
           </article>
           <article class="parent-stat-card">
             <span class="parent-stat-icon is-class" aria-hidden="true">🏫</span>
-            <div><span class="parent-stat-label" data-i18n="parent.statClass">Lingkungan belajar</span><strong id="parent-stat-class">—</strong></div>
+            <div><span class="parent-stat-label" data-i18n="parent.statClass">Lingkungan belajar</span><strong
+                id="parent-stat-class">—</strong></div>
           </article>
         </div>
 
@@ -716,7 +804,8 @@
                   <span class="parent-card-eyebrow" data-i18n="parent.progressEyebrow">Langkah demi langkah</span>
                   <h2 data-i18n="parent.domainProgress">Pertumbuhan Dimensi STEM</h2>
                 </div>
-                <span class="parent-progress-scale" data-i18n="parent.masteryScale">Berdasarkan catatan yang tersimpan</span>
+                <span class="parent-progress-scale" data-i18n="parent.masteryScale">Berdasarkan catatan yang
+                  tersimpan</span>
               </div>
               <div id="parent-progress-content" class="parent-progress-list"></div>
             </article>
@@ -760,11 +849,13 @@
                   <path d="M77 72c2-20 16-33 35-33 0 18-12 33-35 37" fill="#83A77C" />
                   <path d="M74 57c-13-8-17-21-12-35 14 6 21 18 16 34" fill="#9AB889" />
                   <circle cx="76" cy="28" r="6" fill="#F2C14E" />
-                  <path d="M35 115c-5-7-5-15 0-22m80 18c5-7 5-15 0-22" stroke="#F2C14E" stroke-width="3" stroke-linecap="round" />
+                  <path d="M35 115c-5-7-5-15 0-22m80 18c5-7 5-15 0-22" stroke="#F2C14E" stroke-width="3"
+                    stroke-linecap="round" />
                 </svg>
               </div>
               <div class="parent-garden-progress"><span id="parent-mastery-count">Memuat capaian...</span></div>
-              <p class="parent-garden-caption" data-i18n="parent.gardenCaption">Setiap anak tumbuh dengan ritmenya sendiri.</p>
+              <p class="parent-garden-caption" data-i18n="parent.gardenCaption">Setiap anak tumbuh dengan ritmenya
+                sendiri.</p>
             </article>
 
             <article class="parent-home-card">
@@ -789,18 +880,98 @@
                   class="px-2.5 py-1.5 rounded-full bg-sand-100 text-forest-light hover:bg-sage-50"
                   data-i18n-aria-label="message.refresh" aria-label="Muat ulang pesan">↻</button>
               </div>
-              <p class="parent-message-routing" data-i18n="parent.messageRecipient">Pesan akan langsung dikirim ke admin.</p>
+              <p class="parent-message-routing" data-i18n="parent.messageRecipient">Pesan akan langsung dikirim ke
+                admin.</p>
               <input type="hidden" id="parent-message-contact" value="">
               <div id="chat-messages-container" class="parent-message-thread" aria-live="polite"></div>
               <form class="parent-message-compose" onsubmit="sendParentReply(event)">
                 <input type="text" id="parent-reply-input" maxlength="2000" required
-                  data-i18n-placeholder="parent.messagePlaceholder"
-                  placeholder="Tulis pesan untuk admin..." autocomplete="off" disabled>
-                <button type="submit" id="parent-message-send-button" disabled
-                  data-i18n-aria-label="parent.messageSend" aria-label="Kirim pesan">➤</button>
+                  data-i18n-placeholder="parent.messagePlaceholder" placeholder="Tulis pesan untuk admin..."
+                  autocomplete="off" disabled>
+                <button type="submit" id="parent-message-send-button" disabled data-i18n-aria-label="parent.messageSend"
+                  aria-label="Kirim pesan">➤</button>
               </form>
             </article>
           </aside>
+        </div>
+
+      </section>
+
+      <!-- FLOW 8: STUDENT REPORT / JURNAL BELAJAR PREVIEW & CETAK -->
+      <section id="view-studentReport" class="hidden fade-enter space-y-6">
+
+        <!-- Control Toolbar (Screen only - Hidden during print) -->
+        <div class="print:hidden bg-cream rounded-3xl p-4 md:p-5 border border-sand-200 shadow-soft space-y-4">
+          <!-- Top Row: Navigation Back, Title, Print PDF Button -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-sand-200/80">
+            <div class="flex items-center gap-3">
+              <button type="button"
+                onclick="navigateTo(state.currentUser?.role === 'parent' ? 'parentHub' : 'dashboard')"
+                class="px-3.5 py-2 rounded-xl bg-white hover:bg-sand-100 text-forest text-xs font-bold transition flex items-center gap-1.5 border border-sand-200 shadow-2xs garden-interactive-btn">
+                <span>←</span> <span id="report-back-btn-text">Kembali</span>
+              </button>
+              <div>
+                <h2 id="report-page-title" class="text-sm font-extrabold text-forest">Preview & Cetak Jurnal Belajar</h2>
+                <p id="report-page-subtitle" class="text-[11px] text-forest-light">Dokumen resmi evaluasi perkembangan ekstrakurikuler STEM</p>
+              </div>
+            </div>
+
+            <!-- Print Action -->
+            <button type="button" onclick="printStudentReport()"
+              class="px-5 py-2.5 rounded-2xl bg-forest hover:bg-forest/90 text-cream text-xs font-bold shadow-soft transition flex items-center justify-center gap-2 garden-interactive-btn">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span id="report-print-btn-text">Cetak / Unduh PDF</span>
+            </button>
+          </div>
+
+          <!-- Bottom Row: Filter Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+            <!-- School & Student Selectors (Staff/Admin only - hidden for parents) -->
+            <div id="report-staff-controls" class="flex flex-wrap items-center gap-3">
+              <!-- School Selector Buttons -->
+              <div
+                class="flex items-center gap-1 bg-white p-1 rounded-2xl border border-sand-200 shadow-2xs overflow-x-auto">
+                <span id="label-report-school" class="text-xs font-bold text-forest-light px-2.5">Sekolah:</span>
+                <button type="button" onclick="switchReportSchool('early_step')" id="btn-school-early_step"
+                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Early Step</button>
+                <button type="button" onclick="switchReportSchool('azhari')" id="btn-school-azhari"
+                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Azhari</button>
+                <button type="button" onclick="switchReportSchool('masa_kecil')" id="btn-school-masa_kecil"
+                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Masa Kecil</button>
+                <button type="button" onclick="switchReportSchool('citra_alam')" id="btn-school-citra_alam"
+                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Citra Alam</button>
+              </div>
+
+              <!-- Student Selector -->
+              <div class="flex items-center gap-1.5">
+                <span id="label-report-student" class="text-xs font-bold text-forest-light">Siswa:</span>
+                <select id="report-student-select" onchange="switchReportStudent(this.value)"
+                  class="px-3 py-1.5 rounded-xl bg-white border border-sand-200 text-xs font-bold text-forest shadow-2xs focus:ring-2 focus:ring-sage focus:outline-none">
+                </select>
+              </div>
+            </div>
+
+            <!-- Semester / Term Selector (Accessible for BOTH Staff AND Parents) -->
+            <div class="flex items-center gap-1.5 ml-auto">
+              <span id="label-report-semester" class="text-xs font-bold text-forest-light">Semester:</span>
+              <select id="report-term-select" onchange="switchReportTerm(this.value)"
+                class="px-3.5 py-2 rounded-xl bg-white border border-sand-200 text-xs font-bold text-forest shadow-2xs focus:ring-2 focus:ring-sage focus:outline-none">
+                <option value="Semester Gasal 2026/2027">Semester Gasal 2026/2027</option>
+                <option value="Semester Genap 2026/2027">Semester Genap 2026/2027</option>
+                <option value="Semester Gasal 2025/2026">Semester Gasal 2025/2026</option>
+                <option value="Semester Genap 2025/2026">Semester Genap 2025/2026</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Official Report Card Sheet Container -->
+        <div id="student-report-document"
+          class="max-w-4xl mx-auto bg-white rounded-3xl border border-sand-300 shadow-xl p-6 md:p-10 font-sans print:p-0 print:border-none print:shadow-none print:max-w-none text-forest">
+          <!-- Rendered dynamically by renderStudentReportContent() in app.js -->
         </div>
 
       </section>
@@ -887,19 +1058,22 @@
         </div>
 
         <div>
-          <label class="block font-bold mb-1" for="new-curr-tools" data-i18n="addCurr.toolsId">Perangkat & Material:</label>
-          <input type="text" id="new-curr-tools" placeholder="mis. Sensor cahaya, buzzer, balok PLEGO"
-            required class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
+          <label class="block font-bold mb-1" for="new-curr-tools" data-i18n="addCurr.toolsId">Perangkat &
+            Material:</label>
+          <input type="text" id="new-curr-tools" placeholder="mis. Sensor cahaya, buzzer, balok PLEGO" required
+            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold mb-1" for="new-curr-canva-id" data-i18n="addCurr.canvaId">Link Canva Bahasa Indonesia:</label>
+            <label class="block font-bold mb-1" for="new-curr-canva-id" data-i18n="addCurr.canvaId">Link Canva Bahasa
+              Indonesia:</label>
             <input type="url" id="new-curr-canva-id" placeholder="https://www.canva.com/design/..."
               class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
           </div>
           <div>
-            <label class="block font-bold mb-1" for="new-curr-canva-en" data-i18n="addCurr.canvaEn">Link Canva Bahasa Inggris:</label>
+            <label class="block font-bold mb-1" for="new-curr-canva-en" data-i18n="addCurr.canvaEn">Link Canva Bahasa
+              Inggris:</label>
             <input type="url" id="new-curr-canva-en" placeholder="https://www.canva.com/design/..."
               class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5">
           </div>
@@ -939,7 +1113,8 @@
           class="w-7 h-7 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
       </div>
 
-      <form onsubmit="handleSaveScheduledLesson(event)" class="min-h-0 overflow-y-auto overscroll-contain p-5 space-y-4 text-xs text-forest">
+      <form onsubmit="handleSaveScheduledLesson(event)"
+        class="min-h-0 overflow-y-auto overscroll-contain p-5 space-y-4 text-xs text-forest">
         <div>
           <label class="block font-bold mb-1">Pilih Tanggal:</label>
           <input type="date" id="modal-schedule-day" required
@@ -1136,7 +1311,8 @@
         <div>
           <span class="text-xs font-bold text-sage">🌱 <span id="add-student-eyebrow">Ruang tumbuh anak</span></span>
           <h2 class="font-heading font-bold text-forest text-xl mt-1" id="add-student-title">Tambah Anak</h2>
-          <p class="text-xs text-forest-light mt-1" id="add-student-subtitle">Daftarkan anak ke kelas agar dapat dicatat perkembangannya.</p>
+          <p class="text-xs text-forest-light mt-1" id="add-student-subtitle">Daftarkan anak ke kelas agar dapat dicatat
+            perkembangannya.</p>
         </div>
         <button type="button" onclick="closeModal('modal-add-student')" aria-label="Tutup"
           class="w-9 h-9 flex-shrink-0 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
@@ -1144,22 +1320,26 @@
 
       <form id="add-student-form" onsubmit="saveNewStudent(event)" class="p-5 sm:p-6 space-y-4">
         <div>
-          <label for="new-student-name" class="block text-xs font-bold text-forest mb-1.5" id="new-student-name-label">Nama lengkap anak</label>
+          <label for="new-student-name" class="block text-xs font-bold text-forest mb-1.5"
+            id="new-student-name-label">Nama lengkap anak</label>
           <input type="text" id="new-student-name" name="full_name" required maxlength="120" autocomplete="name"
             placeholder="Contoh: Kenzo Wijaya"
             class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
         </div>
         <div>
-          <label for="new-student-class" class="block text-xs font-bold text-forest mb-1.5" id="new-student-class-label">Kelas</label>
+          <label for="new-student-class" class="block text-xs font-bold text-forest mb-1.5"
+            id="new-student-class-label">Kelas</label>
           <select id="new-student-class" name="class_id" required
             class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
           </select>
         </div>
-        <p class="rounded-xl bg-sage-50/70 border border-sage/20 p-3 text-xs leading-relaxed text-forest-light" id="add-student-note">
+        <p class="rounded-xl bg-sage-50/70 border border-sage/20 p-3 text-xs leading-relaxed text-forest-light"
+          id="add-student-note">
           ✨ Anak baru akan langsung muncul di daftar observasi setelah berhasil disimpan.
         </p>
         <div class="pt-3 border-t border-sand-200 flex items-center justify-between gap-3">
-          <button type="button" onclick="closeModal('modal-add-student')" class="text-xs font-bold text-forest-light hover:text-forest" id="add-student-cancel">Batal</button>
+          <button type="button" onclick="closeModal('modal-add-student')"
+            class="text-xs font-bold text-forest-light hover:text-forest" id="add-student-cancel">Batal</button>
           <button type="submit" id="add-student-submit"
             class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-bold transition shadow-soft garden-interactive-btn">
             Simpan Anak

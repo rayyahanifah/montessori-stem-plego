@@ -3660,6 +3660,49 @@ body {
         padding: 0.7rem !important;
       }
 
+      /* STUDENT REPORT / RAPOR EKSTRAKURIKULER PRINT OPTIMIZATION */
+      body.printing-student-report {
+        display: block !important;
+        min-height: 0 !important;
+        background: #fff !important;
+        color: #1a2f23 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body.printing-student-report > :not(#app-wrapper),
+      body.printing-student-report #app-wrapper > header,
+      body.printing-student-report #app-wrapper main > section:not(#view-studentReport),
+      body.printing-student-report .print-hidden,
+      body.printing-student-report .print\:hidden {
+        display: none !important;
+      }
+
+      body.printing-student-report #app-wrapper,
+      body.printing-student-report #app-wrapper main,
+      body.printing-student-report #view-studentReport {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+      }
+
+      body.printing-student-report #student-report-document {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+      }
+
+      body.printing-student-report .report-break-avoid {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
     }
 
     .searchable-select {
