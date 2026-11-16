@@ -3008,7 +3008,11 @@ function openAddStudentModal() {
       subtitle: 'Daftarkan anak ke kelas agar dapat dicatat perkembangannya.',
       name: 'Nama lengkap anak',
       class: 'Kelas',
-      note: '✨ Anak baru akan langsung muncul di daftar observasi setelah berhasil disimpan.',
+      parentSection: 'Data Akun Orang Tua / Wali',
+      parentName: 'Nama Orang Tua / Wali',
+      parentPhone: 'No. WhatsApp / HP Ortu',
+      parentPin: 'PIN Masuk Ortu',
+      note: '✨ Anak baru akan langsung muncul di daftar observasi & orang tua dapat langsung login ke Portal Orang Tua.',
       cancel: 'Batal',
       submit: 'Simpan Anak',
       chooseClass: 'Pilih kelas',
@@ -3019,7 +3023,11 @@ function openAddStudentModal() {
       subtitle: 'Add a child to a class so their learning progress can be recorded.',
       name: 'Child’s full name',
       class: 'Class',
-      note: '✨ The new child will appear in the observation list after saving.',
+      parentSection: 'Parent / Guardian Account',
+      parentName: 'Parent / Guardian Name',
+      parentPhone: 'Parent Phone / WhatsApp',
+      parentPin: 'Parent Access PIN',
+      note: '✨ The new child will appear in the observation list & parents can immediately log in.',
       cancel: 'Cancel',
       submit: 'Save Child',
       chooseClass: 'Choose a class',
@@ -3029,6 +3037,14 @@ function openAddStudentModal() {
   document.getElementById('add-student-subtitle').textContent = labels.subtitle;
   document.getElementById('new-student-name-label').textContent = labels.name;
   document.getElementById('new-student-class-label').textContent = labels.class;
+  const parentSectionEl = document.getElementById('add-student-parent-section-title');
+  if (parentSectionEl) parentSectionEl.textContent = labels.parentSection;
+  const parentNameLabel = document.getElementById('new-student-parent-name-label');
+  if (parentNameLabel) parentNameLabel.textContent = labels.parentName;
+  const parentPhoneLabel = document.getElementById('new-student-parent-phone-label');
+  if (parentPhoneLabel) parentPhoneLabel.innerHTML = `${labels.parentPhone} <span class="text-terracotta">*</span>`;
+  const parentPinLabel = document.getElementById('new-student-parent-pin-label');
+  if (parentPinLabel) parentPinLabel.innerHTML = `${labels.parentPin} <span class="text-terracotta">*</span>`;
   document.getElementById('add-student-note').textContent = labels.note;
   document.getElementById('add-student-cancel').textContent = labels.cancel;
   document.getElementById('add-student-submit').textContent = labels.submit;
@@ -3038,6 +3054,8 @@ function openAddStudentModal() {
     `<option value="${escapeHTML(classItem.id)}">${escapeHTML(classItem.name)}</option>`
   ).join('');
   document.getElementById('add-student-form').reset();
+  const parentPinInput = document.getElementById('new-student-parent-pin');
+  if (parentPinInput) parentPinInput.value = '1234';
   if (state.activeClassId && state.classes.some(classItem => classItem.id === state.activeClassId)) {
     classSelect.value = state.activeClassId;
   }

@@ -1306,8 +1306,8 @@
   <!-- MODAL: ADD STUDENT -->
   <div id="modal-add-student"
     class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-cream w-full max-w-lg rounded-3xl border border-sand-200 shadow-float overflow-hidden fade-enter">
-      <div class="p-5 sm:p-6 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-4">
+    <div class="bg-cream w-full max-w-lg rounded-3xl border border-sand-200 shadow-float overflow-hidden fade-enter max-h-[90vh] flex flex-col">
+      <div class="p-5 sm:p-6 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-4 flex-shrink-0">
         <div>
           <span class="text-xs font-bold text-sage">🌱 <span id="add-student-eyebrow">Ruang tumbuh anak</span></span>
           <h2 class="font-heading font-bold text-forest text-xl mt-1" id="add-student-title">Tambah Anak</h2>
@@ -1318,7 +1318,7 @@
           class="w-9 h-9 flex-shrink-0 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
       </div>
 
-      <form id="add-student-form" onsubmit="saveNewStudent(event)" class="p-5 sm:p-6 space-y-4">
+      <form id="add-student-form" onsubmit="saveNewStudent(event)" class="p-5 sm:p-6 space-y-4 overflow-y-auto">
         <div>
           <label for="new-student-name" class="block text-xs font-bold text-forest mb-1.5"
             id="new-student-name-label">Nama lengkap anak</label>
@@ -1333,9 +1333,47 @@
             class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
           </select>
         </div>
+
+        <!-- Data Akun Orang Tua / Wali -->
+        <div class="pt-3 border-t border-sand-200 space-y-3">
+          <div class="flex items-center gap-2 text-xs font-bold text-forest">
+            <span class="p-1 rounded-lg bg-sand-200 text-sm">👨‍👩‍👦</span>
+            <span id="add-student-parent-section-title">Data Akun Orang Tua / Wali</span>
+          </div>
+
+          <div>
+            <label for="new-student-parent-name" class="block text-xs font-bold text-forest mb-1.5"
+              id="new-student-parent-name-label">Nama Orang Tua / Wali</label>
+            <input type="text" id="new-student-parent-name" name="parent_name" autocomplete="name"
+              placeholder="Contoh: Ibu Rina Wijaya"
+              class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="new-student-parent-phone" class="block text-xs font-bold text-forest mb-1.5"
+                id="new-student-parent-phone-label">
+                No. WhatsApp / HP Ortu <span class="text-terracotta">*</span>
+              </label>
+              <input type="tel" id="new-student-parent-phone" name="parent_phone" required
+                placeholder="Contoh: 081234567890"
+                class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
+            </div>
+            <div>
+              <label for="new-student-parent-pin" class="block text-xs font-bold text-forest mb-1.5"
+                id="new-student-parent-pin-label">
+                PIN Masuk Ortu <span class="text-terracotta">*</span>
+              </label>
+              <input type="text" id="new-student-parent-pin" name="parent_pin" required maxlength="6"
+                placeholder="1234" value="1234"
+                class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest font-mono tracking-widest text-center">
+            </div>
+          </div>
+        </div>
+
         <p class="rounded-xl bg-sage-50/70 border border-sage/20 p-3 text-xs leading-relaxed text-forest-light"
           id="add-student-note">
-          ✨ Anak baru akan langsung muncul di daftar observasi setelah berhasil disimpan.
+          ✨ Anak baru akan langsung muncul di daftar observasi & orang tua dapat langsung login ke Portal Orang Tua.
         </p>
         <div class="pt-3 border-t border-sand-200 flex items-center justify-between gap-3">
           <button type="button" onclick="closeModal('modal-add-student')"
