@@ -2782,7 +2782,8 @@ function openScheduleSlotModal(date = toLocalDateKey(state.plannerDate)) {
       `).join('');
   document.getElementById('modal-schedule-day').value = date;
   document.getElementById('modal-schedule-time').value = '';
-  document.getElementById('modal-schedule-block').value = '';
+  const blockEl = document.getElementById('modal-schedule-block');
+  if (blockEl) blockEl.value = '';
   document.querySelectorAll('#modal-schedule-lesson select').forEach(enhanceSearchableSelect);
   openModal('modal-schedule-lesson');
 }
@@ -2796,7 +2797,7 @@ async function handleSaveScheduledLesson(e) {
   const date = document.getElementById('modal-schedule-day').value;
   const actId = document.getElementById('modal-schedule-act').value;
   const time = document.getElementById('modal-schedule-time').value;
-  const block = document.getElementById('modal-schedule-block').value;
+  const block = document.getElementById('modal-schedule-block')?.value || 'work_cycle';
   const tutorId = document.getElementById('modal-schedule-tutor').value;
   const assistantTutorId = document.getElementById('modal-schedule-assistant').value || null;
   const classId = document.getElementById('modal-schedule-class').value;
@@ -4899,9 +4900,8 @@ const SCHOOL_REPORT_PRESETS = {
     defaultTutors: 'Karina Liandra, S.Pd · Ratasya Andhini · Ratu Rina Syafira, S.Pd',
     headmaster: 'Siti Rahmawati, M.Psi',
     logoHtml: `
-      <div class="w-16 h-16 rounded-full border-2 border-amber-600 bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
-        <span class="text-xl">🌱</span>
-        <span class="text-[8px] font-bold text-amber-800 leading-tight">MASA KECIL</span>
+      <div class="w-16 h-16 rounded-full border-2 border-amber-600 bg-white flex items-center justify-center p-1 text-center shadow-2xs flex-shrink-0 overflow-hidden">
+        <img src="src/logo-masa-kecil.png" alt="Logo Sekolah Masa Kecil" class="w-full h-full object-contain">
       </div>
     `
   },
@@ -5476,6 +5476,15 @@ function renderStudentReport() {
     loadStudentReportFromSupabase(state.reportSelectedStudentId, state.reportSelectedTerm);
   }
 
+  // Load observations if not already loaded so photos are populated
+  if (!state.databaseObservations || state.databaseObservations.length === 0) {
+    if (typeof loadObservationsFromSupabase === 'function') {
+      loadObservationsFromSupabase().then(() => {
+        renderStudentReportContent();
+      }).catch(() => {});
+    }
+  }
+
   // 9. Render the Full Printable Report Document
   renderStudentReportContent();
 }
@@ -5542,7 +5551,45 @@ function renderStudentReportContent() {
   ).trim();
 
   // Documentation photos from observations
-  const photos = activeData.photos || student.gallery || [];
+  const studentUuid = resolveStudentUuid(student.id);
+  const studentObs = (state.databaseObservations || [])
+    .filter(obs => obs.student_id === student.id || obs.student_id === studentUuid)
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+  if (studentObs.some(obs => obs.photo_path && !obs.photo_signed_url)) {
+    if (typeof signObservationPhotos === 'function') {
+      signObservationPhotos(state.databaseObservations).then(() => {
+        renderStudentReportContent();
+      }).catch(() => {});
+    }
+  }
+
+  const obsPhotos = studentObs
+    .map(obs => {
+      let rawUrl = obs.photo_signed_url || obs.photo_url || '';
+      if (!rawUrl && obs.photo_path && typeof sb !== 'undefined' && sb) {
+        rawUrl = sb.storage.from('student-observation-photos').getPublicUrl(obs.photo_path).data?.publicUrl || '';
+      }
+      const safeUrl = typeof safeHttpsUrl === 'function' ? safeHttpsUrl(rawUrl) : rawUrl;
+      if (!safeUrl) return null;
+      const createdAt = obs.created_at ? new Date(obs.created_at) : null;
+      const dateFormatted = createdAt && !Number.isNaN(createdAt.getTime())
+        ? createdAt.toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+        : (obs.time || '');
+      return {
+        url: safeUrl,
+        title: obs.milestone || (lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'),
+        caption: obs.anecdote || '',
+        date: dateFormatted
+      };
+    })
+    .filter(Boolean);
+
+  const photos = obsPhotos.length > 0
+    ? obsPhotos
+    : (activeData.photos && activeData.photos.length > 0 ? activeData.photos : (student.gallery || []));
+
+  window.__currentReportPhotos = photos;
 
   container.innerHTML = `
     <div class="space-y-6 font-sans text-slate-900">
@@ -5682,13 +5729,14 @@ function renderStudentReportContent() {
         <div class="mt-2">
           ${photos && photos.length > 0 ? `
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              ${photos.map(item => `
+              ${photos.map((item, idx) => `
                 <div class="rounded-xl border ${school.borderClass}/40 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition cursor-pointer"
-                  onclick="openPhotoModal('${escapeHTML(item.url)}', '${escapeHTML(item.title || 'Dokumentasi STEM')}', '${escapeHTML(item.caption || '')}', '${escapeHTML(item.date || '')}')">
+                  onclick="handleReportPhotoClick(${idx})">
                   <div>
                     <div class="w-full h-36 rounded-lg bg-sand-100 border border-slate-200 overflow-hidden relative">
                       <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
-                        class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                        class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                        loading="lazy">
                     </div>
                     <span class="block text-xs font-bold text-slate-900 mt-2">${escapeHTML(item.title || 'Momen Pembelajaran')}</span>
                     <span class="block text-[10px] text-slate-500 mt-0.5">${escapeHTML(item.date || '')}</span>
@@ -6352,6 +6400,13 @@ async function handleSaveStudentReportSubmit(event) {
 
 
 
+function handleReportPhotoClick(index) {
+  const photo = window.__currentReportPhotos?.[index];
+  if (!photo) return;
+  openPhotoModal(photo.url, photo.title, photo.caption, photo.date);
+}
+
+window.handleReportPhotoClick = handleReportPhotoClick;
 window.resolveStudentUuid = resolveStudentUuid;
 window.getStudentSchoolKey = getStudentSchoolKey;
 window.findReportStudent = findReportStudent;
