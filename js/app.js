@@ -1012,6 +1012,11 @@ async function handleLoginSubmit(e) {
   }
 }
 
+window.quickLoginDemo = quickLoginDemo;
+window.switchLoginTab = switchLoginTab;
+window.handleParentLoginSubmit = handleParentLoginSubmit;
+window.handleLoginSubmit = handleLoginSubmit;
+
 async function quickLoginDemo(role) {
   if (role === 'parent') {
     switchLoginTab('parent');
@@ -4640,14 +4645,121 @@ function printParentPortfolio() {
   window.print();
 }
 
-function openPhotoModal(imgUrl) {
+let currentPhotoZoom = 1.0;
+
+function openPhotoModal(imgUrl, title = '', caption = '', meta = '') {
   const safeUrl = safeHttpsUrl(imgUrl);
   if (!safeUrl) {
     showToast(state.lang === 'id' ? 'URL foto tidak aman atau tidak valid.' : 'The photo URL is invalid or unsafe.', '⚠️');
     return;
   }
-  document.getElementById('modal-photo-img').src = safeUrl;
+
+  state.currentViewingPhotoUrl = safeUrl;
+  resetPhotoZoom();
+
+  const imgEl = document.getElementById('modal-photo-img');
+  if (imgEl) imgEl.src = safeUrl;
+
+  const titleEl = document.getElementById('modal-photo-title');
+  if (titleEl) {
+    titleEl.textContent = title || (state.lang === 'id' ? 'Dokumentasi Pembelajaran STEM' : 'STEM Learning Documentation');
+  }
+
+  const metaEl = document.getElementById('modal-photo-meta');
+  if (metaEl) {
+    metaEl.textContent = meta || (state.lang === 'id' ? 'Foto Observasi Siswa' : 'Student Observation Photo');
+  }
+
+  const captionEl = document.getElementById('modal-photo-caption');
+  if (captionEl) {
+    captionEl.textContent = caption || (state.lang === 'id' ? 'Catatan refleksi pengamatan observasi tutor.' : 'Observation reflection note.');
+  }
+
   openModal('modal-photo');
+}
+
+function setPhotoZoom(scale) {
+  currentPhotoZoom = Math.min(3.0, Math.max(0.5, Math.round(scale * 100) / 100));
+  const img = document.getElementById('modal-photo-img');
+  const label = document.getElementById('modal-photo-zoom-level');
+  if (img) {
+    img.style.transform = `scale(${currentPhotoZoom})`;
+    img.classList.toggle('cursor-zoom-out', currentPhotoZoom > 1.05);
+    img.classList.toggle('cursor-zoom-in', currentPhotoZoom <= 1.05);
+  }
+  if (label) {
+    label.textContent = `${Math.round(currentPhotoZoom * 100)}%`;
+  }
+}
+
+function zoomPhoto(delta) {
+  setPhotoZoom(currentPhotoZoom + delta);
+}
+
+function resetPhotoZoom() {
+  setPhotoZoom(1.0);
+}
+
+function togglePhotoZoomClick() {
+  if (currentPhotoZoom > 1.05) {
+    resetPhotoZoom();
+  } else {
+    setPhotoZoom(1.6);
+  }
+}
+
+function togglePhotoFullscreen() {
+  const container = document.getElementById('modal-photo-container') || document.getElementById('modal-photo');
+  if (!document.fullscreenElement) {
+    if (container.requestFullscreen) {
+      container.requestFullscreen();
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen();
+    } else if (container.msRequestFullscreen) {
+      container.msRequestFullscreen();
+    }
+    const icon = document.getElementById('photo-fullscreen-icon');
+    const text = document.getElementById('photo-fullscreen-text');
+    if (icon) icon.textContent = '✕';
+    if (text) text.textContent = state.lang === 'id' ? 'Keluar' : 'Exit';
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+    const icon = document.getElementById('photo-fullscreen-icon');
+    const text = document.getElementById('photo-fullscreen-text');
+    if (icon) icon.textContent = '⛶';
+    if (text) text.textContent = state.lang === 'id' ? 'Layar Penuh' : 'Fullscreen';
+  }
+}
+
+async function downloadCurrentPhoto() {
+  const url = state.currentViewingPhotoUrl;
+  if (!url) return;
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = blobUrl;
+    a.download = `dokumentasi-plego-${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(blobUrl);
+    document.body.removeChild(a);
+    showToast(state.lang === 'id' ? 'Foto berhasil diunduh!' : 'Photo downloaded successfully!', '📥');
+  } catch (err) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.download = `dokumentasi-plego-${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 /* =====================================================================
@@ -5398,6 +5510,564 @@ function renderStudentReportContent() {
     </div>
   `;
 }
+
+function handleAttendanceSessionChange() {
+  const attendedInput = document.getElementById('edit-report-attended-sessions');
+  const totalInput = document.getElementById('edit-report-total-sessions');
+  const percentInput = document.getElementById('edit-report-attendance-percent');
+  const percentDisplay = document.getElementById('edit-report-attendance-percent-display');
+  const previewText = document.getElementById('edit-report-attendance-preview-text');
+
+  let attended = parseInt(attendedInput?.value, 10);
+  let total = parseInt(totalInput?.value, 10);
+
+  if (isNaN(total) || total < 1) total = 12;
+  if (isNaN(attended) || attended < 0) attended = 0;
+  if (attended > total) attended = total;
+
+  if (attendedInput) attendedInput.value = attended;
+  if (totalInput) totalInput.value = total;
+
+  const pct = Math.round((attended / total) * 100);
+  if (percentInput) percentInput.value = pct;
+  if (percentDisplay) percentDisplay.textContent = `${pct}%`;
+  if (previewText) previewText.textContent = `(${attended} dari ${total} Pertemuan)`;
+}
+
+function setAttendancePreset(attended, total = 12) {
+  const attendedInput = document.getElementById('edit-report-attended-sessions');
+  const totalInput = document.getElementById('edit-report-total-sessions');
+  if (attendedInput) attendedInput.value = attended;
+  if (totalInput) totalInput.value = total;
+  handleAttendanceSessionChange();
+}
+
+function handleAttendancePercentDirectChange() {
+  // Maintained for backward compatibility, delegates to session change
+  handleAttendanceSessionChange();
+}
+
+// -------------------------------------------------------------
+// FACILITATORS AUTO-DETECTION & MULTI-SELECT DROPDOWN HELPERS
+// -------------------------------------------------------------
+function getScheduledFacilitators(student) {
+  if (!student) return '';
+
+  const studentUuid = resolveStudentUuid(student.id);
+  const dbStudent = (state.allStudents || []).find(s => s.id === studentUuid || s.id === student.id);
+  const targetClassId = dbStudent?.classId || student.classId;
+  const currentSchoolKey = student.schoolId || state.reportSelectedSchool || 'early_step';
+  const schoolPreset = SCHOOL_REPORT_PRESETS[currentSchoolKey] || SCHOOL_REPORT_PRESETS.early_step;
+
+  const foundTutors = new Set();
+
+  if (Array.isArray(state.scheduleItems) && state.scheduleItems.length > 0) {
+    // 1. Match by classId if available
+    let matchingSchedules = targetClassId
+      ? state.scheduleItems.filter(item => item.classId === targetClassId)
+      : [];
+
+    // 2. If no direct classId match, match by school keywords in class name
+    if (matchingSchedules.length === 0) {
+      const keywords = {
+        early_step: ['early step', 'tk b', 'tk-b'],
+        azhari: ['azhari', 'rasuna'],
+        masa_kecil: ['masa kecil', 'green'],
+        citra_alam: ['citra alam', 'red', 'yellow']
+      }[currentSchoolKey] || [currentSchoolKey];
+
+      matchingSchedules = state.scheduleItems.filter(item => {
+        const clsName = String(item.className || '').toLowerCase();
+        return keywords.some(kw => clsName.includes(kw));
+      });
+    }
+
+    matchingSchedules.forEach(item => {
+      if (item.tutorName && item.tutorName !== '—' && !item.tutorName.includes('null')) {
+        foundTutors.add(item.tutorName.trim());
+      }
+      if (item.assistantTutorName && item.assistantTutorName !== '—' && !item.assistantTutorName.includes('null')) {
+        foundTutors.add(item.assistantTutorName.trim());
+      }
+    });
+  }
+
+  if (foundTutors.size > 0) {
+    return Array.from(foundTutors).join(' · ');
+  }
+
+  return (state.lang === 'id' ? schoolPreset.defaultTutors_id : schoolPreset.defaultTutors_en) || schoolPreset.defaultTutors || 'Tim Tutor Plego';
+}
+
+function getAllEducatorsList() {
+  const tutors = [];
+  const admins = [];
+
+  // Tutors from state.tutors
+  (state.tutors || []).forEach(t => {
+    if (t && t.full_name && !tutors.some(existing => existing.name.toLowerCase() === t.full_name.toLowerCase())) {
+      tutors.push({ id: t.id, name: t.full_name, type: 'tutor' });
+    }
+  });
+
+  // Common preset tutors fallback
+  const defaultTutorNames = [
+    'Athiyyah Syifa, S.Pd',
+    'Karina Liandra, S.Pd',
+    'Astria, S.Si',
+    'Ghina Salma Susilo, S.Si',
+    'Ratu Rina Syafira, S.Pd',
+    'Ai Syarifah Maulida',
+    'Nadhiyaa Shafa Mufidah',
+    'Rafasya Hurul \'Ain',
+    'Ratasya Andhini'
+  ];
+  defaultTutorNames.forEach(name => {
+    const baseName = name.split(',')[0].toLowerCase().trim();
+    if (!tutors.some(t => t.name.toLowerCase().includes(baseName))) {
+      tutors.push({ id: `preset-${name}`, name: name, type: 'tutor' });
+    }
+  });
+
+  // Admins from state.admins and ADMIN_IDENTITIES
+  (state.admins || []).forEach(a => {
+    if (a && a.full_name && !admins.some(existing => existing.name.toLowerCase() === a.full_name.toLowerCase())) {
+      admins.push({ id: a.id, name: a.full_name, type: 'admin' });
+    }
+  });
+  Object.values(ADMIN_IDENTITIES).forEach(name => {
+    if (!admins.some(a => a.name.toLowerCase() === name.toLowerCase())) {
+      admins.push({ id: `admin-${name}`, name: name, type: 'admin' });
+    }
+  });
+
+  return { tutors, admins };
+}
+
+function populateFacilitatorDropdown() {
+  const tutorOptgroup = document.getElementById('optgroup-facilitator-tutors');
+  const adminOptgroup = document.getElementById('optgroup-facilitator-admins');
+  if (!tutorOptgroup || !adminOptgroup) return;
+
+  const { tutors, admins } = getAllEducatorsList();
+
+  tutorOptgroup.innerHTML = tutors.map(t => `
+    <option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>
+  `).join('');
+
+  adminOptgroup.innerHTML = admins.map(a => `
+    <option value="${escapeHTML(a.name)}">${escapeHTML(a.name)} (Admin)</option>
+  `).join('');
+}
+
+function renderFacilitatorPills() {
+  const container = document.getElementById('edit-report-facilitator-pills');
+  if (!container) return;
+
+  const input = document.getElementById('edit-report-facilitators');
+  const currentVal = (input?.value || '').toLowerCase();
+
+  const { tutors, admins } = getAllEducatorsList();
+  const candidateNames = [];
+  tutors.forEach(t => {
+    if (!candidateNames.includes(t.name)) candidateNames.push(t.name);
+  });
+  admins.forEach(a => {
+    if (!candidateNames.includes(a.name)) candidateNames.push(a.name);
+  });
+
+  container.innerHTML = `
+    <span class="text-[10px] text-forest-light font-bold self-center">Pilih cepat:</span>
+    ${candidateNames.slice(0, 7).map(name => {
+      const baseName = name.split(',')[0].toLowerCase().trim();
+      const isSelected = currentVal.includes(baseName);
+      return `
+        <button type="button" onclick="toggleFacilitatorName('${escapeHTML(name)}')"
+          class="px-2 py-0.5 rounded-full text-[10px] font-bold transition flex items-center gap-1 cursor-pointer ${
+            isSelected
+              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              : 'bg-sand-100 hover:bg-sand-200 text-forest border border-sand-300'
+          }">
+          <span>${isSelected ? '✓' : '＋'}</span>
+          <span>${escapeHTML(name.split(',')[0])}</span>
+        </button>
+      `;
+    }).join('')}
+  `;
+}
+
+function handleSelectFacilitatorFromDropdown(selectEl) {
+  if (!selectEl || !selectEl.value) return;
+  const nameToAdd = selectEl.value.trim();
+  addFacilitatorName(nameToAdd);
+  selectEl.value = '';
+}
+
+function addFacilitatorName(name) {
+  const input = document.getElementById('edit-report-facilitators');
+  if (!input) return;
+  const currentVal = input.value.trim();
+  if (!currentVal) {
+    input.value = name;
+  } else {
+    const baseName = name.split(',')[0].toLowerCase().trim();
+    if (currentVal.toLowerCase().includes(baseName)) {
+      showToast(state.lang === 'id' ? `${name} sudah ada dalam daftar pengampu.` : `${name} is already listed.`, 'ℹ️');
+      return;
+    }
+    input.value = `${currentVal} · ${name}`;
+  }
+  renderFacilitatorPills();
+  showToast(state.lang === 'id' ? `${name} ditambahkan!` : `${name} added!`, '✅');
+}
+
+function toggleFacilitatorName(name) {
+  const input = document.getElementById('edit-report-facilitators');
+  if (!input) return;
+  const currentVal = input.value.trim();
+  if (!currentVal) {
+    input.value = name;
+    renderFacilitatorPills();
+    return;
+  }
+  let items = currentVal.split(/\s*·\s*/).map(s => s.trim()).filter(Boolean);
+  const baseName = name.split(',')[0].toLowerCase().trim();
+  const existingIndex = items.findIndex(item => item.toLowerCase().includes(baseName));
+  if (existingIndex >= 0) {
+    items.splice(existingIndex, 1);
+    input.value = items.join(' · ');
+  } else {
+    items.push(name);
+    input.value = items.join(' · ');
+  }
+  renderFacilitatorPills();
+}
+
+function syncFacilitatorsFromSchedule() {
+  const student = findReportStudent(state.reportSelectedStudentId);
+  const scheduled = getScheduledFacilitators(student);
+  const facInput = document.getElementById('edit-report-facilitators');
+  if (facInput && scheduled) {
+    facInput.value = scheduled;
+    renderFacilitatorPills();
+    showToast(state.lang === 'id' ? 'Nama pengampu disinkronkan dari jadwal mengajar.' : 'Facilitators synced from schedule.', '📅');
+  }
+}
+
+function getActiveReportValues(student, term) {
+  const studentUuid = resolveStudentUuid(student.id);
+  const currentTerm = term || state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+  const cacheKey = `${studentUuid}_${currentTerm}`;
+  const savedReport = state.studentReportsCache?.[cacheKey];
+  const lang = state.lang || 'id';
+
+  // 1. Learning Objectives
+  let objectives = [];
+  if (savedReport && Array.isArray(savedReport.learning_objectives) && savedReport.learning_objectives.length > 0) {
+    objectives = savedReport.learning_objectives;
+  } else if (student.learningObjectives) {
+    objectives = (lang === 'id' ? student.learningObjectives.id : student.learningObjectives.en) || student.learningObjectives || [];
+  }
+
+  // 2. Skill Ratings
+  let skillRatings = {};
+  if (savedReport && savedReport.skill_ratings && typeof savedReport.skill_ratings === 'object') {
+    skillRatings = savedReport.skill_ratings;
+  } else {
+    skillRatings = student.skillRatings || {};
+  }
+
+  // 3. Development Notes
+  let developmentNotes = '';
+  if (savedReport && typeof savedReport.development_notes === 'string') {
+    developmentNotes = savedReport.development_notes;
+  } else if (student.narrativeFeedback) {
+    developmentNotes = (lang === 'id' ? student.narrativeFeedback.id : student.narrativeFeedback.en) || student.narrativeFeedback || '';
+  }
+
+  // 4. Attendance
+  let attendanceDisplay = '';
+  if (savedReport && savedReport.attendance_percentage) {
+    attendanceDisplay = savedReport.attendance_percentage;
+  } else if (student.attendance) {
+    const note = lang === 'id' ? student.attendance.note_id : student.attendance.note_en;
+    attendanceDisplay = `${student.attendance.percent}% (${note || ''})`;
+  } else {
+    attendanceDisplay = '100% (12 dari 12 Pertemuan)';
+  }
+
+  // 5. Umur & Pengampu (Customizable per report in skill_ratings._custom_age & _custom_tutors)
+  let studentAge = '';
+  if (savedReport && savedReport.skill_ratings && savedReport.skill_ratings._custom_age) {
+    studentAge = savedReport.skill_ratings._custom_age;
+  } else {
+    studentAge = (lang === 'id' ? student.age_id : student.age_en) || student.age || '5 Tahun';
+  }
+
+  let facilitators = '';
+  if (savedReport && savedReport.skill_ratings && savedReport.skill_ratings._custom_tutors) {
+    facilitators = savedReport.skill_ratings._custom_tutors;
+  } else {
+    // Automatically retrieve from teaching schedule (Request 1)
+    facilitators = getScheduledFacilitators(student);
+  }
+
+  return {
+    objectives,
+    skillRatings,
+    developmentNotes,
+    attendanceDisplay,
+    studentAge,
+    facilitators,
+    savedReport
+  };
+}
+
+async function loadStudentReportFromSupabase(studentId, term) {
+  const studentUuid = resolveStudentUuid(studentId);
+  const selectedTerm = term || state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+  const cacheKey = `${studentUuid}_${selectedTerm}`;
+
+  if (!state.studentReportsCache) state.studentReportsCache = {};
+
+  if (typeof sb !== 'undefined' && sb) {
+    try {
+      const { data, error } = await sb
+        .from('student_reports')
+        .select('*')
+        .eq('student_id', studentUuid)
+        .eq('term', selectedTerm)
+        .maybeSingle();
+
+      if (!error && data) {
+        state.studentReportsCache[cacheKey] = data;
+        // Trigger live re-render if matches currently active view
+        const currentActiveUuid = resolveStudentUuid(state.reportSelectedStudentId);
+        if (currentActiveUuid === studentUuid && state.reportSelectedTerm === selectedTerm) {
+          renderStudentReportContent();
+        }
+      }
+    } catch (err) {
+      console.warn('[studentReport] Supabase select warning:', err);
+    }
+  }
+
+  return state.studentReportsCache[cacheKey] || null;
+}
+
+function subscribeStudentReportsRealtime() {
+  if (typeof sb === 'undefined' || !sb || state.studentReportsSubscribed) return;
+  try {
+    sb.channel('student_reports_realtime_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'student_reports' }, payload => {
+        const record = payload.new;
+        if (record && record.student_id && record.term) {
+          const cacheKey = `${record.student_id}_${record.term}`;
+          if (!state.studentReportsCache) state.studentReportsCache = {};
+          state.studentReportsCache[cacheKey] = record;
+
+          const currentStudentUuid = resolveStudentUuid(state.reportSelectedStudentId);
+          const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+          if (record.student_id === currentStudentUuid && record.term === currentTerm) {
+            renderStudentReportContent();
+          }
+        }
+      })
+      .subscribe();
+    state.studentReportsSubscribed = true;
+  } catch (err) {
+    console.warn('[studentReport] realtime subscribe warning:', err);
+  }
+}
+
+function renderEditReportSkillMatrix(currentRatings = {}) {
+  const tbody = document.getElementById('edit-report-skills-tbody');
+  if (!tbody) return;
+  const lang = state.lang || 'id';
+
+  tbody.innerHTML = SKILL_LEVEL_ROWS.map(row => `
+    <tr class="hover:bg-sand-50/70 transition">
+      <td class="p-2.5 font-bold text-forest text-xs bg-sand-50/50">
+        ${escapeHTML(lang === 'id' ? row.label_id : row.label_en)}
+      </td>
+      ${SKILL_COLUMNS.map(col => {
+        const isChecked = currentRatings[col.key] === row.key;
+        return `
+          <td class="p-2 text-center align-middle border-l border-sand-200">
+            <label class="inline-flex items-center justify-center p-1.5 cursor-pointer rounded-lg hover:bg-emerald-50 transition">
+              <input type="radio" name="skill_${col.key}" value="${row.key}"
+                ${isChecked ? 'checked' : ''}
+                class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer">
+            </label>
+          </td>
+        `;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+function openEditReportModal() {
+  const isParent = state.currentUser?.role === 'parent';
+  if (isParent) {
+    showToast(state.lang === 'id' ? 'Akses dibatasi. Hanya Admin dan Tutor yang dapat mengedit rapor.' : 'Access restricted to Admin and Tutor.', '🔒');
+    return;
+  }
+
+  const student = findReportStudent(state.reportSelectedStudentId);
+  const school = SCHOOL_REPORT_PRESETS[state.reportSelectedSchool] || SCHOOL_REPORT_PRESETS.early_step;
+  const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+
+  // 1. Set Modal Meta Information
+  const nameEl = document.getElementById('edit-report-student-name');
+  if (nameEl) nameEl.textContent = `${student.name} (${school.shortName || school.name})`;
+
+  const termEl = document.getElementById('edit-report-term-label');
+  if (termEl) termEl.textContent = currentTerm;
+
+  // 2. Fetch Active Data (from DB cache or student presets)
+  const activeData = getActiveReportValues(student, currentTerm);
+
+  // 3. Fill Learning Objectives Textarea
+  const objInput = document.getElementById('edit-report-objectives');
+  if (objInput) {
+    objInput.value = Array.isArray(activeData.objectives) ? activeData.objectives.join('\n') : '';
+  }
+
+  // 4. Render and Populate Skill Matrix Table
+  renderEditReportSkillMatrix(activeData.skillRatings);
+
+  // 5. Fill Development Notes Textarea
+  const notesInput = document.getElementById('edit-report-notes');
+  if (notesInput) {
+    notesInput.value = activeData.developmentNotes || '';
+  }
+
+  // 6. Fill Attendance Input
+  const attInput = document.getElementById('edit-report-attendance');
+  if (attInput) {
+    attInput.value = activeData.attendanceDisplay || '100%';
+  }
+
+  // Show Modal
+  openModal('modal-edit-report');
+}
+
+async function handleSaveStudentReportSubmit(event) {
+  if (event) event.preventDefault();
+
+  const isParent = state.currentUser?.role === 'parent';
+  if (isParent) {
+    showToast(state.lang === 'id' ? 'Akses dibatasi.' : 'Access restricted.', '🔒');
+    return;
+  }
+
+  const student = findReportStudent(state.reportSelectedStudentId);
+  const studentUuid = resolveStudentUuid(student.id);
+  const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+
+  // 1. Objectives array
+  const rawObj = document.getElementById('edit-report-objectives')?.value || '';
+  const learning_objectives = rawObj
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
+  if (learning_objectives.length === 0) {
+    showToast(state.lang === 'id' ? 'Mohon cantumkan minimal satu poin objektif pembelajaran.' : 'Please enter at least one learning objective.', '⚠️');
+    return;
+  }
+
+  // 2. Skill ratings matrix
+  const skill_ratings = {};
+  SKILL_COLUMNS.forEach(col => {
+    const checked = document.querySelector(`input[name="skill_${col.key}"]:checked`);
+    skill_ratings[col.key] = checked ? checked.value : 'mandiri';
+  });
+
+  // 3. Development notes
+  const development_notes = (document.getElementById('edit-report-notes')?.value || '').trim();
+
+  // 4. Attendance percentage
+  const attendance_percentage = (document.getElementById('edit-report-attendance')?.value || '').trim() || '100%';
+
+  // Build Payload according to student_reports schema
+  const payload = {
+    student_id: studentUuid,
+    term: currentTerm,
+    learning_objectives: learning_objectives,
+    skill_ratings: skill_ratings,
+    development_notes: development_notes,
+    attendance_percentage: attendance_percentage,
+    updated_at: new Date().toISOString()
+  };
+
+  const cacheKey = `${studentUuid}_${currentTerm}`;
+  const existingRecord = state.studentReportsCache?.[cacheKey];
+  if (existingRecord && existingRecord.id && !String(existingRecord.id).startsWith('local-')) {
+    payload.id = existingRecord.id;
+  }
+
+  // Visual loading state
+  const saveBtn = document.getElementById('btn-save-report');
+  const spinner = document.getElementById('save-report-spinner');
+  const btnText = document.getElementById('save-report-btn-text');
+  if (saveBtn) saveBtn.disabled = true;
+  if (spinner) spinner.classList.remove('hidden');
+  if (btnText) btnText.textContent = state.lang === 'id' ? 'Menyimpan...' : 'Saving...';
+
+  try {
+    let savedData = null;
+
+    if (typeof sb !== 'undefined' && sb) {
+      // Upsert query to Supabase student_reports table
+      let { data, error } = await sb
+        .from('student_reports')
+        .upsert(payload)
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('[Supabase] student_reports upsert error:', error);
+        if (error.code === 'PGRST205' || error.message?.includes('not find the table') || error.message?.includes('does not exist')) {
+          showToast(state.lang === 'id' 
+            ? 'Tabel student_reports belum dibuat di Supabase. Silakan jalankan student_reports.sql di SQL Editor.' 
+            : 'student_reports table not found. Please run student_reports.sql in Supabase SQL Editor.', '⚠️');
+        } else {
+          showToast(`Error Supabase: ${error.message || 'Gagal menyimpan'}`, '❌');
+        }
+        // Fallback local save to guarantee no data loss for tutor
+        savedData = { ...payload, id: payload.id || 'local-' + Date.now() };
+      } else {
+        savedData = data;
+        showToast(state.lang === 'id' ? 'Jurnal Belajar berhasil disimpan ke Supabase!' : 'Learning Journal successfully saved to Supabase!', '✅');
+      }
+    } else {
+      savedData = { ...payload, id: payload.id || 'local-' + Date.now() };
+      showToast(state.lang === 'id' ? 'Tersimpan lokal (database offline)' : 'Saved locally (offline)', 'ℹ️');
+    }
+
+    // Update in-memory cache
+    if (!state.studentReportsCache) state.studentReportsCache = {};
+    state.studentReportsCache[cacheKey] = savedData;
+
+    // Close Modal
+    closeModal('modal-edit-report');
+
+    // Requirement 4: Sinkronisasi Real-Time
+    // Immediately reflect changes on preview and printable sheet
+    renderStudentReportContent();
+
+  } catch (err) {
+    console.error('[studentReport] Error during save:', err);
+    showToast(state.lang === 'id' ? 'Terjadi kesalahan saat menyimpan data.' : 'An error occurred while saving.', '❌');
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+    if (spinner) spinner.classList.add('hidden');
+    if (btnText) btnText.textContent = state.lang === 'id' ? 'Simpan Perubahan' : 'Save Changes';
+  }
+}
+
+
 
 window.switchReportSchool = switchReportSchool;
 window.switchReportStudent = switchReportStudent;
