@@ -836,7 +836,7 @@ async function handleParentLoginSubmit(e) {
         try {
           const { data: directStudents } = await sb
             .from('students')
-            .select('id, full_name, nickname, class_id, classes(id, name, school_id, schools(name))')
+            .select('id, full_name, nickname, class_id, school_id, classes(id, name, school_id, schools(id, name))')
             .in('id', rawStudentIds);
 
           if (directStudents && directStudents.length > 0) {
@@ -5176,26 +5176,150 @@ const DUMMY_REPORT_STUDENTS = [
   }
 ];
 
-function switchReportSchool(schoolId) {
-  if (SCHOOL_REPORT_PRESETS[schoolId]) {
-    state.reportSelectedSchool = schoolId;
-    const defaultStudentForSchool = DUMMY_REPORT_STUDENTS.find(s => s.schoolId === schoolId);
-    if (defaultStudentForSchool) {
-      state.reportSelectedStudentId = defaultStudentForSchool.id;
-    }
-    renderStudentReport();
+/* =====================================================================
+   REAL-DATA REPORT MAPPING & DYNAMIC SCHOOL FILTERING
+   ===================================================================== */
+function resolveStudentUuid(studentId) {
+  if (!studentId) return '';
+  return String(studentId).trim();
+}
+
+function getStudentSchoolKey(student) {
+  if (!student) return 'other';
+  const clsName = String(student.className || student.class_name || student.classes?.name || '').toLowerCase();
+  const schName = String(student.schoolName || student.school_name || student.classes?.schools?.name || '').toLowerCase();
+  const schId = String(student.schoolId || student.school_id || student.classes?.school_id || '').toLowerCase();
+
+  // Azhari
+  if (clsName.includes('azhari') || schName.includes('azhari') || schId === 'cad815e1-84e8-4b89-87a5-0e927f345af6') {
+    return 'azhari';
   }
+  // Masa Kecil (In Supabase: Masa Kecil - Green assigned to school_id 6b73bd45-cba2-46b8-95f9-199108be69e7 or d26923b7-8737-42b1-92af-b0baff7e9063)
+  if (clsName.includes('masa kecil') || schName.includes('masa kecil') || schId === 'd26923b7-8737-42b1-92af-b0baff7e9063' || (schId === '6b73bd45-cba2-46b8-95f9-199108be69e7' && clsName.includes('green'))) {
+    return 'masa_kecil';
+  }
+  // Early Step
+  if (clsName.includes('early step') || schName.includes('early step') || schId === 'e944af7e-2c78-4fd3-88b9-9039b2a33baf') {
+    return 'early_step';
+  }
+  // Citra Alam
+  if (clsName.includes('citra alam') || schName.includes('citra alam') || schId === '25894778-cb3c-403f-8ea4-61b186d20bb4') {
+    return 'citra_alam';
+  }
+  return 'other';
+}
+
+function findReportStudent(studentId) {
+  if (!studentId) return null;
+  const currentSchoolId = state.reportSelectedSchool || 'masa_kecil';
+
+  // 1. Look up in state.allStudents by ID or UUID
+  if (state.allStudents && state.allStudents.length > 0) {
+    const found = state.allStudents.find(s => s.id === studentId || s.id === resolveStudentUuid(studentId));
+    if (found) {
+      const schKey = getStudentSchoolKey(found);
+      const isYellow = String(found.className || '').toLowerCase().includes('yellow');
+      const defaultAge = isYellow ? '6 Tahun' : '5 Tahun';
+      const defaultAgeEn = isYellow ? '6 Years' : '5 Years';
+
+      return {
+        id: found.id,
+        name: found.name,
+        nickname: found.nickname || found.name.split(' ')[0],
+        schoolId: schKey,
+        className: found.className || 'Kelas STEM',
+        age: defaultAge,
+        age_id: defaultAge,
+        age_en: defaultAgeEn,
+        learningObjectives: {
+          id: [
+            'Mengenal tombol dan sensor sederhana (sensor cahaya & sensor gerak).',
+            'Mengenal alat penanda sederhana, seperti lampu LED, suara buzzer, dan dinamo penggerak.',
+            'Belajar cara kerja sensor miring (tilt sensor) untuk menyalakan lampu atau suara saat posisinya dimiringkan.',
+            'Menggunakan dinamo kecil (motor DC) untuk membuat rakitan bisa berputar dan bergerak.',
+            'Belajar menyambungkan sensor dan alat penggerak sederhana agar rakitan bisa bekerja otomatis.'
+          ],
+          en: [
+            'Recognize simple buttons and sensors (light sensor & motion sensor).',
+            'Recognize simple signaling tools such as LED lights, buzzer sound, and drive motor.',
+            'Learn how tilt sensors trigger sound or lights when tilted.',
+            'Use small DC motors to make assembled models rotate and move.',
+            'Connect sensors with motorized components to create automated actions.'
+          ]
+        },
+        skillRatings: {
+          keterlibatan_aktif: 'mandiri_berinisiatif',
+          kreatif: 'mandiri',
+          digital_innovation: 'mandiri',
+          problem_solving: 'mandiri',
+          collaboration: 'dengan_pendampingan'
+        },
+        narrativeFeedback: {
+          id: `${found.nickname || found.name.split(' ')[0]} menunjukkan kematangan konsentrasi dan penalaran sensori yang sangat menonjol. Ia memiliki inisiatif tinggi dalam mengeksplorasi polaritas magnetik dan mampu menyelesaikan seluruh siklus kerja secara tenang. Sikap mandiri dan ketertiban ${found.nickname || found.name.split(' ')[0]} saat merapikan aparatus patut diapresiasi.`,
+          en: `${found.nickname || found.name.split(' ')[0]} demonstrated excellent concentration and sensory reasoning. Showing proactive initiative in exploring magnetic polarities and completing work cycles calmly. Independent apparatus cleanup habits are highly commendable.`
+        },
+        attendance: {
+          percent: 100,
+          note_id: '12 dari 12 Pertemuan',
+          note_en: '12 of 12 Sessions'
+        },
+        gallery: []
+      };
+    }
+  }
+
+  // 2. Check fallback to DUMMY_REPORT_STUDENTS only if no DB students loaded at all
+  if (!state.allStudents || state.allStudents.length === 0) {
+    const dummy = DUMMY_REPORT_STUDENTS.find(s => s.id === studentId || s.id === resolveStudentUuid(studentId));
+    if (dummy) return dummy;
+    return DUMMY_REPORT_STUDENTS[0];
+  }
+
+  // 3. Fallback to first student of current school
+  const schoolStudents = (state.allStudents || []).filter(s => getStudentSchoolKey(s) === currentSchoolId);
+  if (schoolStudents.length > 0) {
+    return findReportStudent(schoolStudents[0].id);
+  }
+
+  return null;
+}
+
+async function switchReportSchool(schoolId) {
+  state.reportSelectedSchool = schoolId;
+  if (!state.allStudents || state.allStudents.length === 0) {
+    if (typeof loadStudentsFromSupabase === 'function') {
+      await loadStudentsFromSupabase().catch(() => {});
+    }
+  }
+  const schoolStudents = (state.allStudents || []).filter(s => getStudentSchoolKey(s) === schoolId);
+  if (schoolStudents.length > 0) {
+    state.reportSelectedStudentId = schoolStudents[0].id;
+  } else {
+    state.reportSelectedStudentId = null;
+  }
+  // If active top class selector is from a different school, reset it so all students of this school are shown
+  if (state.activeClassId) {
+    const activeClsStudent = (state.allStudents || []).find(s => s.classId === state.activeClassId);
+    if (activeClsStudent && getStudentSchoolKey(activeClsStudent) !== schoolId) {
+      state.activeClassId = null;
+      state.students = state.allStudents;
+      renderClassSelector();
+    }
+  }
+  renderStudentReport();
 }
 
 function switchReportStudent(studentId) {
-  const student = DUMMY_REPORT_STUDENTS.find(s => s.id === studentId);
-  if (student) {
-    state.reportSelectedStudentId = studentId;
-    if (student.schoolId && SCHOOL_REPORT_PRESETS[student.schoolId]) {
-      state.reportSelectedSchool = student.schoolId;
+  if (!studentId) return;
+  state.reportSelectedStudentId = studentId;
+  const found = (state.allStudents || []).find(s => s.id === studentId || s.id === resolveStudentUuid(studentId));
+  if (found) {
+    const schKey = getStudentSchoolKey(found);
+    if (schKey && schKey !== 'other') {
+      state.reportSelectedSchool = schKey;
     }
-    renderStudentReport();
   }
+  renderStudentReport();
 }
 
 function switchReportTerm(termName) {
@@ -5213,6 +5337,7 @@ function printStudentReport() {
 
 function renderStudentReport() {
   const isParent = state.currentUser?.role === 'parent';
+  const canEdit = state.currentUser?.role === 'admin' || state.currentUser?.role === 'tutor' || state.currentUser?.role === 'teacher';
   const lang = state.lang || 'id';
 
   // 1. Sync Toolbar Labels with Language
@@ -5232,6 +5357,9 @@ function renderStudentReport() {
   const printBtnText = document.getElementById('report-print-btn-text');
   if (printBtnText) printBtnText.textContent = t('report.print') || (lang === 'id' ? 'Cetak / Unduh PDF' : 'Print / Download PDF');
 
+  const editBtnText = document.getElementById('report-edit-btn-text');
+  if (editBtnText) editBtnText.textContent = lang === 'id' ? 'Edit Jurnal' : 'Edit Journal';
+
   const labelSchool = document.getElementById('label-report-school');
   if (labelSchool) labelSchool.textContent = t('report.school') || (lang === 'id' ? 'Sekolah:' : 'School:');
 
@@ -5241,28 +5369,43 @@ function renderStudentReport() {
   const labelSemester = document.getElementById('label-report-semester');
   if (labelSemester) labelSemester.textContent = t('report.semester') || (lang === 'id' ? 'Semester:' : 'Semester:');
 
-  // 2. Hide Staff-Only Controls for Parent
+  // 2. Hide Staff-Only Controls for Parent & Toggle Edit Button
   const staffControls = document.getElementById('report-staff-controls');
   if (staffControls) {
     staffControls.classList.toggle('hidden', isParent);
   }
 
-  if (isParent) {
-    const parentChildName = state.currentUser.childName || '';
-    const matched = DUMMY_REPORT_STUDENTS.find(s =>
-      (parentChildName && s.name.toLowerCase().includes(parentChildName.toLowerCase())) ||
-      (state.currentUser.childStudentIds && state.currentUser.childStudentIds.includes(s.id))
-    ) || DUMMY_REPORT_STUDENTS[1]; // default to Aileen
-    state.reportSelectedStudentId = matched.id;
-    state.reportSelectedSchool = matched.schoolId;
+  const allSt = state.allStudents || [];
+
+  // Count real students per school from Supabase
+  const counts = {
+    early_step: allSt.filter(s => getStudentSchoolKey(s) === 'early_step').length,
+    azhari: allSt.filter(s => getStudentSchoolKey(s) === 'azhari').length,
+    masa_kecil: allSt.filter(s => getStudentSchoolKey(s) === 'masa_kecil').length,
+    citra_alam: allSt.filter(s => getStudentSchoolKey(s) === 'citra_alam').length,
+  };
+
+  // Default to a school that actually has registered students if none or empty
+  if (!state.reportSelectedSchool) {
+    if (counts.masa_kecil > 0) state.reportSelectedSchool = 'masa_kecil';
+    else if (counts.azhari > 0) state.reportSelectedSchool = 'azhari';
+    else state.reportSelectedSchool = 'early_step';
   }
 
-  const currentSchoolId = state.reportSelectedSchool || 'early_step';
+  const currentSchoolId = state.reportSelectedSchool;
 
-  // 3. Sync School Switcher Buttons
+  // 3. Sync School Switcher Buttons with real student count badges!
+  const schoolLabels = {
+    early_step: `Early Step (${counts.early_step})`,
+    azhari: `Azhari (${counts.azhari})`,
+    masa_kecil: `Masa Kecil (${counts.masa_kecil})`,
+    citra_alam: `Citra Alam (${counts.citra_alam})`,
+  };
+
   ['early_step', 'azhari', 'masa_kecil', 'citra_alam'].forEach(id => {
     const btn = document.getElementById(`btn-school-${id}`);
     if (btn) {
+      btn.textContent = schoolLabels[id] || id;
       if (id === currentSchoolId) {
         btn.className = 'report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition bg-forest text-white shadow-xs';
       } else {
@@ -5271,17 +5414,52 @@ function renderStudentReport() {
     }
   });
 
-  // 4. Sync Student Select Dropdown
-  const studentSelect = document.getElementById('report-student-select');
-  if (studentSelect) {
-    studentSelect.innerHTML = DUMMY_REPORT_STUDENTS.map(s => `
-      <option value="${s.id}" ${s.id === state.reportSelectedStudentId ? 'selected' : ''}>
-        ${escapeHTML(s.name)} (${SCHOOL_REPORT_PRESETS[s.schoolId]?.shortName || 'Siswa'})
-      </option>
-    `).join('');
+  // 4. Get students for currently selected school only
+  const schoolStudents = allSt.filter(s => getStudentSchoolKey(s) === currentSchoolId);
+
+  // If active selected student doesn't belong to current school, pick the first one
+  if (schoolStudents.length > 0) {
+    const isCurrentInSchool = schoolStudents.some(s => s.id === state.reportSelectedStudentId);
+    if (!isCurrentInSchool) {
+      state.reportSelectedStudentId = schoolStudents[0].id;
+    }
+  } else {
+    state.reportSelectedStudentId = null;
   }
 
-  // 5. Sync Semester Select Dropdown (Bilingual)
+  // 5. Sync Student Select Dropdown (ONLY students of this selected school!)
+  const studentSelect = document.getElementById('report-student-select');
+  if (studentSelect) {
+    if (schoolStudents.length === 0) {
+      studentSelect.innerHTML = `<option value="" disabled selected>(Belum ada siswa di sekolah ini)</option>`;
+      studentSelect.disabled = true;
+    } else {
+      studentSelect.disabled = false;
+      studentSelect.innerHTML = schoolStudents.map(s => {
+        const isSelected = s.id === state.reportSelectedStudentId;
+        const clsBadge = s.className ? ` [${escapeHTML(s.className)}]` : '';
+        return `
+          <option value="${s.id}" ${isSelected ? 'selected' : ''}>
+            ${escapeHTML(s.name)}${clsBadge}
+          </option>
+        `;
+      }).join('');
+    }
+  }
+
+  // 6. Toggle Edit & Print buttons availability
+  const editBtn = document.getElementById('report-edit-btn');
+  const printBtn = document.getElementById('report-print-btn');
+  if (editBtn) {
+    editBtn.classList.toggle('hidden', !canEdit || schoolStudents.length === 0);
+  }
+  if (printBtn) {
+    printBtn.disabled = schoolStudents.length === 0;
+    printBtn.classList.toggle('opacity-50', schoolStudents.length === 0);
+    printBtn.classList.toggle('cursor-not-allowed', schoolStudents.length === 0);
+  }
+
+  // 7. Sync Semester Select Dropdown (Bilingual)
   const termSelect = document.getElementById('report-term-select');
   if (termSelect) {
     const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
@@ -5292,7 +5470,13 @@ function renderStudentReport() {
     `).join('');
   }
 
-  // 6. Render the Full Printable Report Document
+  // 8. Subscribe Realtime and Load Supabase Report in Background
+  if (state.reportSelectedStudentId) {
+    subscribeStudentReportsRealtime();
+    loadStudentReportFromSupabase(state.reportSelectedStudentId, state.reportSelectedTerm);
+  }
+
+  // 9. Render the Full Printable Report Document
   renderStudentReportContent();
 }
 
@@ -5301,21 +5485,69 @@ function renderStudentReportContent() {
   if (!container) return;
 
   const lang = state.lang || 'id';
-  const school = SCHOOL_REPORT_PRESETS[state.reportSelectedSchool] || SCHOOL_REPORT_PRESETS.early_step;
-  const student = DUMMY_REPORT_STUDENTS.find(s => s.id === state.reportSelectedStudentId) || DUMMY_REPORT_STUDENTS[0];
+  const student = findReportStudent(state.reportSelectedStudentId);
+  const schoolKey = (student && student.schoolId) || state.reportSelectedSchool || 'masa_kecil';
+  const school = SCHOOL_REPORT_PRESETS[schoolKey] || SCHOOL_REPORT_PRESETS.masa_kecil || SCHOOL_REPORT_PRESETS.early_step;
+
+  // If this school currently has 0 registered students (e.g. Early Step or Citra Alam)
+  if (!student) {
+    container.innerHTML = `
+      <div class="py-16 px-6 text-center bg-sand-50 rounded-3xl border border-sand-300">
+        <div class="w-16 h-16 rounded-full bg-sand-200 text-forest mx-auto flex items-center justify-center text-3xl mb-3 shadow-2xs">
+          🏫
+        </div>
+        <h3 class="text-lg font-bold text-forest mb-1.5">
+          ${lang === 'id' ? `Belum Ada Siswa Terdaftar di ${escapeHTML(school.displayName)}` : `No Students Registered in ${escapeHTML(school.displayName)}`}
+        </h3>
+        <p class="text-xs sm:text-sm text-forest-light max-w-lg mx-auto leading-relaxed mb-5">
+          ${lang === 'id'
+            ? 'Saat ini siswa yang sudah terdaftar di database baru Sekolah <b>Azhari (9 Siswa)</b> dan <b>Masa Kecil (10 Siswa)</b>. Silakan klik tombol di bawah untuk melihat jurnal belajar siswa.'
+            : 'Currently, registered students in the database are only at <b>Azhari (9 Students)</b> and <b>Masa Kecil (10 Students)</b>. Click below to view learning journals.'}
+        </p>
+        <div class="flex items-center justify-center gap-2.5 flex-wrap">
+          <button type="button" onclick="switchReportSchool('masa_kecil')"
+            class="px-4 py-2.5 rounded-xl bg-forest hover:bg-forest/90 text-white font-bold text-xs shadow-soft transition">
+            Lihat Masa Kecil (10 Siswa) ➔
+          </button>
+          <button type="button" onclick="switchReportSchool('azhari')"
+            class="px-4 py-2.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs transition">
+            Lihat Azhari (9 Siswa) ➔
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
 
   const activeSemester = SEMESTER_PRESETS.find(s => s.id === state.reportSelectedTerm) || SEMESTER_PRESETS[0];
   const termDisplayName = lang === 'id' ? activeSemester.label_id : activeSemester.label_en;
 
-  const studentAge = lang === 'id' ? student.age_id : student.age_en;
-  const learningObjs = lang === 'id' ? student.learningObjectives.id : student.learningObjectives.en;
-  const narrativeText = lang === 'id' ? student.narrativeFeedback.id : student.narrativeFeedback.en;
-  const attendanceNote = lang === 'id' ? student.attendance.note_id : student.attendance.note_en;
+  // Retrieve active values from DB cache or defaults
+  const activeData = getActiveReportValues(student, state.reportSelectedTerm);
+
+  const studentAge = activeData.studentAge || student.age || (student.className?.includes('Yellow') ? '6 Tahun' : '5 Tahun');
+  const learningObjs = activeData.objectives || [];
+  const narrativeText = activeData.developmentNotes || '';
+  const attendanceDisplay = activeData.attendanceDisplay || '100% (12 dari 12 Pertemuan)';
+  const facilitatorsText = (Array.isArray(activeData.facilitators) && activeData.facilitators.length > 0)
+    ? activeData.facilitators.join(' · ')
+    : (typeof activeData.facilitators === 'string' && activeData.facilitators.trim().length > 0)
+      ? activeData.facilitators.trim()
+      : school.defaultTutors;
+  const leadTutor = ((Array.isArray(activeData.facilitators) && activeData.facilitators.length > 0)
+    ? activeData.facilitators[0]
+    : (typeof activeData.facilitators === 'string' && activeData.facilitators.trim().length > 0)
+      ? activeData.facilitators.split(/[,·]/)[0]
+      : (school.defaultTutors || '').split(/[,·]/)[0]
+  ).trim();
+
+  // Documentation photos from observations
+  const photos = activeData.photos || student.gallery || [];
 
   container.innerHTML = `
     <div class="space-y-6 font-sans text-slate-900">
 
-      <!-- ================= 1. HEADER SEKOLAH DINAMIS & LOGO (IMAGE 3 REPLICA) ================= -->
+      <!-- ================= 1. HEADER SEKOLAH DINAMIS & LOGO ================= -->
       <header class="pb-4 border-b border-slate-200 report-break-avoid">
         <div class="flex items-start justify-between gap-4">
           
@@ -5337,18 +5569,18 @@ function renderStudentReportContent() {
             </div>
           </div>
 
-          <!-- Top Right: Official Plego Logo (Clean without page number) -->
+          <!-- Top Right: Official Plego Logo -->
           <div class="flex items-center flex-shrink-0 pt-1">
             <img src="src/logo-plego-tp.png" alt="Logo Plego" class="h-10 sm:h-12 w-auto object-contain">
           </div>
         </div>
 
-        <!-- Student Identity Block (Aligned Colons format) -->
+        <!-- Student Identity Block -->
         <div class="mt-5 space-y-1.5 text-xs sm:text-sm text-slate-800 font-medium">
           <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Nama Peserta Didik' : 'Student Name'}</span>
             <span class="font-bold text-slate-900">:</span>
-            <span class="font-bold text-slate-900">${escapeHTML(student.name)}</span>
+            <span class="font-bold text-slate-900">${escapeHTML(student.name)} ${student.className ? `<span class="text-slate-500 font-normal text-xs">(${escapeHTML(student.className)})</span>` : ''}</span>
           </div>
           <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Umur' : 'Age'}</span>
@@ -5358,7 +5590,7 @@ function renderStudentReportContent() {
           <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Pengampu' : 'Facilitators'}</span>
             <span class="font-bold text-slate-900">:</span>
-            <span class="leading-relaxed">${escapeHTML(school.defaultTutors)}</span>
+            <span class="leading-relaxed">${escapeHTML(facilitatorsText)}</span>
           </div>
         </div>
       </header>
@@ -5375,7 +5607,7 @@ function renderStudentReportContent() {
         </ul>
       </section>
 
-      <!-- ================= 3. BLOK SKILL / KEMAMPUAN (EXACT TABLE GRID FROM IMAGE 3) ================= -->
+      <!-- ================= 3. BLOK SKILL / KEMAMPUAN ================= -->
       <section class="rounded-2xl border-2 ${school.borderClass} p-4 sm:p-5 relative report-break-avoid">
         <div class="inline-block ${school.badgeBgClass} text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3 shadow-2xs">
           ${lang === 'id' ? 'SKILL / KEMAMPUAN' : 'SKILLS &amp; ABILITIES'}
@@ -5402,7 +5634,7 @@ function renderStudentReportContent() {
                     ${escapeHTML(lang === 'id' ? row.label_id : row.label_en)}
                   </td>
                   ${SKILL_COLUMNS.map(col => {
-                    const studentLevel = student.skillRatings?.[col.key];
+                    const studentLevel = activeData.skillRatings?.[col.key];
                     const isMatch = studentLevel === row.key;
                     return `
                       <td class="border ${school.borderClass} p-2 text-center align-middle bg-white h-11 sm:h-12">
@@ -5430,7 +5662,7 @@ function renderStudentReportContent() {
         <div class="inline-block ${school.badgeBgClass} text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-2.5 shadow-2xs">
           ${lang === 'id' ? 'CATATAN PERKEMBANGAN SISWA' : 'STUDENT PROGRESS NOTES'}
         </div>
-        <p class="text-xs text-slate-800 leading-relaxed font-normal">
+        <p class="text-xs text-slate-800 leading-relaxed font-normal whitespace-pre-line">
           ${escapeHTML(narrativeText)}
         </p>
       </section>
@@ -5442,28 +5674,42 @@ function renderStudentReportContent() {
             ${lang === 'id' ? 'KEHADIRAN &amp; DOKUMENTASI PEMBELAJARAN' : 'ATTENDANCE &amp; LEARNING DOCUMENTATION'}
           </div>
           <div class="text-xs font-bold text-slate-800">
-            ${lang === 'id' ? 'Kehadiran' : 'Attendance'}: <span class="text-emerald-700 font-extrabold">${student.attendance.percent}%</span> (${escapeHTML(attendanceNote)})
+            ${lang === 'id' ? 'Kehadiran' : 'Attendance'}: <span class="text-emerald-700 font-extrabold">${escapeHTML(attendanceDisplay)}</span>
           </div>
         </div>
 
         <!-- Documentation Photos Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
-          ${student.gallery.map(item => `
-            <div class="rounded-xl border ${school.borderClass}/40 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-2xs transition">
-              <div>
-                <div class="w-full h-32 rounded-lg bg-gradient-to-br ${item.bgGradient} border border-slate-200 flex flex-col items-center justify-center p-2 text-center relative overflow-hidden">
-                  <div class="w-8 h-8 rounded-full bg-white shadow-2xs flex items-center justify-center text-lg mb-1">
-                    🔬
+        <div class="mt-2">
+          ${photos && photos.length > 0 ? `
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              ${photos.map(item => `
+                <div class="rounded-xl border ${school.borderClass}/40 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition cursor-pointer"
+                  onclick="openPhotoModal('${escapeHTML(item.url)}', '${escapeHTML(item.title || 'Dokumentasi STEM')}', '${escapeHTML(item.caption || '')}', '${escapeHTML(item.date || '')}')">
+                  <div>
+                    <div class="w-full h-36 rounded-lg bg-sand-100 border border-slate-200 overflow-hidden relative">
+                      <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
+                        class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                    </div>
+                    <span class="block text-xs font-bold text-slate-900 mt-2">${escapeHTML(item.title || 'Momen Pembelajaran')}</span>
+                    <span class="block text-[10px] text-slate-500 mt-0.5">${escapeHTML(item.date || '')}</span>
+                    <p class="text-[11px] text-slate-700 mt-1.5 leading-snug line-clamp-2">
+                      ${escapeHTML(item.caption || '')}
+                    </p>
                   </div>
-                  <span class="text-xs font-bold text-slate-900">${escapeHTML(lang === 'id' ? item.title_id : item.title_en)}</span>
-                  <span class="text-[10px] text-slate-500 mt-0.5">${escapeHTML(item.date)}</span>
                 </div>
-                <p class="text-[11px] text-slate-700 mt-2 leading-snug">
-                  ${escapeHTML(lang === 'id' ? item.caption_id : item.caption_en)}
-                </p>
-              </div>
+              `).join('')}
             </div>
-          `).join('')}
+          ` : `
+            <div class="py-8 px-4 text-center bg-sand-50/60 rounded-xl border border-dashed border-sand-300">
+              <span class="text-2xl block mb-1">📷</span>
+              <p class="text-xs font-bold text-forest">
+                ${lang === 'id' ? 'Belum Ada Foto Observasi yang Diunggah' : 'No Observation Photos Uploaded Yet'}
+              </p>
+              <p class="text-[11px] text-forest-light mt-0.5">
+                ${lang === 'id' ? 'Foto dokumentasi observasi siswa akan otomatis tersinkronisasi di sini saat tutor menambahkan foto pada menu Observasi &amp; Ceklis.' : 'Student observation documentation photos will automatically sync here once uploaded in the Observations menu.'}
+              </p>
+            </div>
+          `}
         </div>
       </section>
 
@@ -5478,7 +5724,7 @@ function renderStudentReportContent() {
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Pengampu STEM' : 'STEM Facilitator'}</span>
             <div class="w-28 border-b border-slate-400 my-2"></div>
             <div>
-              <span class="font-bold block text-slate-900">${escapeHTML(school.defaultTutors.split(',')[0].split('·')[0].trim())}</span>
+              <span class="font-bold block text-slate-900">${escapeHTML(leadTutor)}</span>
               <span class="text-[10px] text-slate-500">${lang === 'id' ? 'Tutor Plego STEM' : 'Plego STEM Tutor'}</span>
             </div>
           </div>
@@ -5510,6 +5756,7 @@ function renderStudentReportContent() {
     </div>
   `;
 }
+
 
 function handleAttendanceSessionChange() {
   const attendedInput = document.getElementById('edit-report-attended-sessions');
@@ -5914,7 +6161,12 @@ function openEditReportModal() {
   }
 
   const student = findReportStudent(state.reportSelectedStudentId);
-  const school = SCHOOL_REPORT_PRESETS[state.reportSelectedSchool] || SCHOOL_REPORT_PRESETS.early_step;
+  if (!student) {
+    showToast(state.lang === 'id' ? 'Pilih siswa terlebih dahulu untuk mengedit rapor.' : 'Please select a student first to edit report.', '⚠️');
+    return;
+  }
+  const schoolKey = (student && student.schoolId) || state.reportSelectedSchool || 'masa_kecil';
+  const school = SCHOOL_REPORT_PRESETS[schoolKey] || SCHOOL_REPORT_PRESETS.masa_kecil || SCHOOL_REPORT_PRESETS.early_step;
   const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
 
   // 1. Set Modal Meta Information
@@ -5926,6 +6178,18 @@ function openEditReportModal() {
 
   // 2. Fetch Active Data (from DB cache or student presets)
   const activeData = getActiveReportValues(student, currentTerm);
+
+  // 0. Fill Student Age & Facilitators
+  const ageInput = document.getElementById('edit-report-student-age');
+  if (ageInput) ageInput.value = activeData.studentAge || student.age || '5 Tahun';
+
+  const facInput = document.getElementById('edit-report-facilitators');
+  if (facInput) {
+    const facVal = (typeof activeData.facilitators === 'string' ? activeData.facilitators : (Array.isArray(activeData.facilitators) ? activeData.facilitators.join(' · ') : '')) || school.defaultTutors;
+    facInput.value = facVal;
+  }
+  populateFacilitatorDropdown();
+  renderFacilitatorPills();
 
   // 3. Fill Learning Objectives Textarea
   const objInput = document.getElementById('edit-report-objectives');
@@ -5942,11 +6206,15 @@ function openEditReportModal() {
     notesInput.value = activeData.developmentNotes || '';
   }
 
-  // 6. Fill Attendance Input
-  const attInput = document.getElementById('edit-report-attendance');
-  if (attInput) {
-    attInput.value = activeData.attendanceDisplay || '100%';
-  }
+  // 6. Fill Attendance Sessions
+  const attMatch = String(activeData.attendanceDisplay || '').match(/(\d+)\s*dari\s*(\d+)/i);
+  const attended = attMatch ? parseInt(attMatch[1], 10) : 12;
+  const total = attMatch ? parseInt(attMatch[2], 10) : 12;
+  const attendedInput = document.getElementById('edit-report-attended-sessions');
+  const totalInput = document.getElementById('edit-report-total-sessions');
+  if (attendedInput) attendedInput.value = attended;
+  if (totalInput) totalInput.value = total;
+  handleAttendanceSessionChange();
 
   // Show Modal
   openModal('modal-edit-report');
@@ -5962,6 +6230,10 @@ async function handleSaveStudentReportSubmit(event) {
   }
 
   const student = findReportStudent(state.reportSelectedStudentId);
+  if (!student) {
+    showToast(state.lang === 'id' ? 'Pilih siswa terlebih dahulu.' : 'Please select a student first.', '⚠️');
+    return;
+  }
   const studentUuid = resolveStudentUuid(student.id);
   const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
 
@@ -5987,8 +6259,19 @@ async function handleSaveStudentReportSubmit(event) {
   // 3. Development notes
   const development_notes = (document.getElementById('edit-report-notes')?.value || '').trim();
 
-  // 4. Attendance percentage
-  const attendance_percentage = (document.getElementById('edit-report-attendance')?.value || '').trim() || '100%';
+  // 4. Attendance percentage from session inputs
+  const attendedInput = document.getElementById('edit-report-attended-sessions');
+  const totalInput = document.getElementById('edit-report-total-sessions');
+  const attended = attendedInput ? parseInt(attendedInput.value, 10) || 12 : 12;
+  const total = totalInput ? parseInt(totalInput.value, 10) || 12 : 12;
+  const percent = Math.round((attended / total) * 100);
+  const attendance_percentage = `${percent}% (${attended} dari ${total} Pertemuan)`;
+
+  // 5. Custom Student Age & Facilitators inside skill_ratings
+  const customAge = (document.getElementById('edit-report-student-age')?.value || '').trim();
+  const customFacilitators = (document.getElementById('edit-report-facilitators')?.value || '').trim();
+  if (customAge) skill_ratings._custom_age = customAge;
+  if (customFacilitators) skill_ratings._custom_tutors = customFacilitators;
 
   // Build Payload according to student_reports schema
   const payload = {
@@ -6069,6 +6352,9 @@ async function handleSaveStudentReportSubmit(event) {
 
 
 
+window.resolveStudentUuid = resolveStudentUuid;
+window.getStudentSchoolKey = getStudentSchoolKey;
+window.findReportStudent = findReportStudent;
 window.switchReportSchool = switchReportSchool;
 window.switchReportStudent = switchReportStudent;
 window.switchReportTerm = switchReportTerm;
@@ -6151,7 +6437,21 @@ async function setActiveClass(classId) {
   state.students = state.allStudents.filter(student =>
     !state.activeClassId || student.classId === state.activeClassId
   );
+
+  // Sync reportSelectedSchool and student if activeClassId is selected
+  if (state.activeClassId) {
+    const studentInClass = (state.allStudents || []).find(s => s.classId === state.activeClassId);
+    if (studentInClass) {
+      const schKey = getStudentSchoolKey(studentInClass);
+      if (schKey && schKey !== 'other') {
+        state.reportSelectedSchool = schKey;
+        state.reportSelectedStudentId = studentInClass.id;
+      }
+    }
+  }
+
   renderClassSelector();
+  if (state.currentView === "studentReport") renderStudentReport();
   applyDatabaseObservations();
   await Promise.all([loadScheduleFromSupabase(), loadObservationsFromSupabase()]);
   renderView();
