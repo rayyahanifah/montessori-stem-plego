@@ -1136,7 +1136,7 @@
 
         <!-- Official Report Card Sheet Container -->
         <div id="student-report-document"
-          class="max-w-4xl mx-auto bg-white rounded-3xl border border-sand-300 shadow-xl p-6 md:p-10 font-sans print:p-0 print:border-none print:shadow-none print:max-w-none text-forest">
+          class="max-w-4xl mx-auto bg-white rounded-3xl border border-sand-300 shadow-xl p-4 sm:p-6 md:p-10 font-sans print:p-0 print:border-none print:shadow-none print:max-w-none text-forest">
           <!-- Rendered dynamically by renderStudentReportContent() in app.js -->
         </div>
 
@@ -1676,7 +1676,7 @@
     <div id="modal-photo-container" class="max-w-4xl w-full bg-cream rounded-3xl overflow-hidden shadow-float fade-enter flex flex-col max-h-[95vh]">
       
       <!-- Photo Viewer Header Toolbar -->
-      <div class="px-5 py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-3 flex-shrink-0">
+      <div class="px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
         <div class="min-w-0">
           <h3 id="modal-photo-title" class="text-xs sm:text-sm font-bold text-forest truncate">Dokumentasi Pembelajaran STEM</h3>
           <p id="modal-photo-meta" class="text-[11px] text-forest-light truncate">—</p>
@@ -1697,7 +1697,7 @@
 
           <!-- Fullscreen Button -->
           <button type="button" onclick="togglePhotoFullscreen()" title="Layar Penuh"
-            class="px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition flex items-center gap-1">
+            class="hidden sm:flex px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition items-center gap-1">
             <span id="photo-fullscreen-icon">⛶</span>
             <span class="hidden sm:inline text-[11px]" id="photo-fullscreen-text">Layar Penuh</span>
           </button>

@@ -5624,17 +5624,17 @@ function renderStudentReportContent() {
 
         <!-- Student Identity Block -->
         <div class="mt-5 space-y-1.5 text-xs sm:text-sm text-slate-800 font-medium">
-          <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
+          <div class="grid grid-cols-[115px_8px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Nama Peserta Didik' : 'Student Name'}</span>
             <span class="font-bold text-slate-900">:</span>
             <span class="font-bold text-slate-900">${escapeHTML(student.name)} ${student.className ? `<span class="text-slate-500 font-normal text-xs">(${escapeHTML(student.className)})</span>` : ''}</span>
           </div>
-          <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
+          <div class="grid grid-cols-[115px_8px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Umur' : 'Age'}</span>
             <span class="font-bold text-slate-900">:</span>
             <span>${escapeHTML(studentAge)}</span>
           </div>
-          <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
+          <div class="grid grid-cols-[115px_8px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
             <span class="font-bold text-slate-900">${lang === 'id' ? 'Pengampu' : 'Facilitators'}</span>
             <span class="font-bold text-slate-900">:</span>
             <span class="leading-relaxed">${escapeHTML(facilitatorsText)}</span>
