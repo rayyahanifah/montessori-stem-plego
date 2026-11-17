@@ -589,7 +589,7 @@
               </div>
               <div class="flex items-center flex-wrap gap-2 mt-1.5">
                 <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="planner.title">Rencana Belajar</h1>
-                <span class="planner-period-pill" id="planner-period-label">16 – 20 Nov 2026</span>
+                <span class="planner-period-pill text-xs md:text-sm font-extrabold px-3 py-1 rounded-full bg-sand-200/90 text-forest border border-sand-300 shadow-2xs" id="planner-period-label">November 2026</span>
               </div>
               <p class="text-xs md:text-sm text-forest-light mt-1.5" data-i18n="planner.subtitle">Atur aktivitas, kelas,
                 dan pendidik dalam satu tampilan.</p>
@@ -610,7 +610,7 @@
                 </button>
               </div>
 
-              <!-- Day / Week / Month Segmented Switch -->
+              <!-- Day / Week / Month / Year Segmented Switch -->
               <div class="planner-view-switch" role="group" aria-label="Tampilan kalender">
                 <button onclick="setPlannerLayout('day')" id="planner-btn-day" aria-pressed="false"
                   data-i18n="planner.view.day" class="planner-view-button">Hari</button>
@@ -618,6 +618,8 @@
                   data-i18n="planner.view.week" class="planner-view-button is-active">Minggu</button>
                 <button onclick="setPlannerLayout('month')" id="planner-btn-month" aria-pressed="false"
                   data-i18n="planner.view.month" class="planner-view-button">Bulan</button>
+                <button onclick="setPlannerLayout('year')" id="planner-btn-year" aria-pressed="false"
+                  data-i18n="planner.view.year" class="planner-view-button">1 Tahun</button>
               </div>
 
               <!-- Quick action buttons -->
@@ -631,13 +633,43 @@
 
           <!-- Date Navigation Bar -->
           <div class="planner-date-toolbar flex flex-wrap items-center justify-between gap-3">
-            <div class="planner-date-navigation">
+            <div class="planner-date-navigation flex items-center flex-wrap gap-2">
               <button onclick="changePlannerWeek(-1)" class="planner-arrow-button garden-interactive-btn"
                 aria-label="Periode sebelumnya">‹</button>
               <button onclick="resetPlannerWeek()" class="planner-today-button garden-interactive-btn"
                 data-i18n="planner.today">Hari Ini</button>
               <button onclick="changePlannerWeek(1)" class="planner-arrow-button garden-interactive-btn"
                 aria-label="Periode berikutnya">›</button>
+
+              <!-- Interactive Month & Year Quick Selector -->
+              <div class="flex items-center gap-1 bg-white p-1 rounded-2xl border border-sand-300 shadow-2xs">
+                <select id="planner-month-select" onchange="handlePlannerMonthYearChange()" aria-label="Pilih Bulan"
+                  class="bg-transparent font-black text-xs sm:text-sm text-forest focus:outline-none cursor-pointer py-1 px-2 rounded-xl hover:bg-sand-100 transition">
+                  <option value="0">Januari (Bulan 1)</option>
+                  <option value="1">Februari (Bulan 2)</option>
+                  <option value="2">Maret (Bulan 3)</option>
+                  <option value="3">April (Bulan 4)</option>
+                  <option value="4">Mei (Bulan 5)</option>
+                  <option value="5">Juni (Bulan 6)</option>
+                  <option value="6">Juli (Bulan 7)</option>
+                  <option value="7">Agustus (Bulan 8)</option>
+                  <option value="8">September (Bulan 9)</option>
+                  <option value="9">Oktober (Bulan 10)</option>
+                  <option value="10">November (Bulan 11)</option>
+                  <option value="11">Desember (Bulan 12)</option>
+                </select>
+                <span class="text-sand-400 font-bold">/</span>
+                <select id="planner-year-select" onchange="handlePlannerMonthYearChange()" aria-label="Pilih Tahun"
+                  class="bg-transparent font-black text-xs sm:text-sm text-forest focus:outline-none cursor-pointer py-1 px-2 rounded-xl hover:bg-sand-100 transition">
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+              </div>
             </div>
             <div class="flex items-center gap-2">
               <span id="planner-filter-indicator"
@@ -1502,6 +1534,7 @@
               <input type="tel" id="new-student-parent-phone" name="parent_phone" required
                 placeholder="Contoh: 081234567890"
                 class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
+              <p id="parent-phone-sibling-hint" class="text-[11px] text-emerald-700 font-bold mt-1.5 hidden flex items-center gap-1"></p>
             </div>
             <div>
               <label for="new-student-parent-pin" class="block text-xs font-bold text-forest mb-1.5"

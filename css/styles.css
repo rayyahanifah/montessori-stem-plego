@@ -883,13 +883,13 @@ body {
     }
 
     #view-planner .planner-period-pill {
-      padding: 0.38rem 0.7rem;
-      border: 1px solid #e4d9c8;
+      padding: 0.45rem 1rem;
+      border: 1px solid #d4c5b0;
       border-radius: 999px;
-      background: rgba(250, 246, 237, 0.85);
-      color: #607464;
-      font-size: 0.72rem;
-      font-weight: 700;
+      background: rgba(250, 246, 237, 0.95);
+      color: #1e3a2f;
+      font-size: 0.92rem;
+      font-weight: 800;
     }
 
     #view-planner .planner-header-actions {

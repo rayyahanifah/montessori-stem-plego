@@ -429,6 +429,7 @@ const i18n = {
     'planner.view.day': 'Hari',
     'planner.view.week': 'Minggu',
     'planner.view.month': 'Bulan',
+    'planner.view.year': '1 Tahun',
     'planner.print': 'Cetak PDF',
     'planner.todayBadge': 'HARI INI',
     'planner.materialsTitle': 'Material Minggu Ini',
@@ -595,6 +596,7 @@ const i18n = {
     'planner.view.day': 'Day',
     'planner.view.week': 'Week',
     'planner.view.month': 'Month',
+    'planner.view.year': 'Year',
     'planner.print': 'Print PDF',
     'planner.todayBadge': 'TODAY',
     'planner.materialsTitle': 'Materials This Week',
@@ -2023,15 +2025,43 @@ function assignActivityToPlannerPrompt() {
   openScheduleSlotModal(toLocalDateKey(state.plannerDate));
 }
 
-/* FLOW 4: OVERHAULED INTERACTIVE LESSON PLANNER (DAY / WEEK / MONTH) */
+/* FLOW 4: OVERHAULED INTERACTIVE LESSON PLANNER (DAY / WEEK / MONTH / YEAR) */
 function setPlannerLayout(layout) {
   state.plannerLayout = layout;
-  ['day', 'week', 'month'].forEach(l => {
+  ['day', 'week', 'month', 'year'].forEach(l => {
     const btn = document.getElementById(`planner-btn-${l}`);
-    btn.classList.toggle('is-active', l === layout);
-    btn.setAttribute('aria-pressed', String(l === layout));
+    if (btn) {
+      btn.classList.toggle('is-active', l === layout);
+      btn.setAttribute('aria-pressed', String(l === layout));
+    }
   });
   renderPlanner();
+}
+
+function handlePlannerMonthYearChange() {
+  const monthSelect = document.getElementById('planner-month-select');
+  const yearSelect = document.getElementById('planner-year-select');
+  if (!monthSelect || !yearSelect) return;
+
+  const month = parseInt(monthSelect.value, 10);
+  const year = parseInt(yearSelect.value, 10);
+
+  const d = new Date(state.plannerDate);
+  d.setDate(1);
+  d.setFullYear(year);
+  d.setMonth(month);
+  state.plannerDate = d;
+
+  renderPlanner();
+}
+
+function jumpToMonth(monthIdx, year = null) {
+  const d = new Date(state.plannerDate);
+  if (year !== null) d.setFullYear(year);
+  d.setDate(1);
+  d.setMonth(monthIdx);
+  state.plannerDate = d;
+  setPlannerLayout('month');
 }
 
 function printPlanner() {
@@ -2222,13 +2252,50 @@ function renderPlanner() {
   const locale = state.lang === 'id' ? 'id-ID' : 'en-US';
   const dayLabel = date => date.toLocaleDateString(locale, { weekday: 'long' });
   const dateLabel = date => date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
-  const monthLabel = activeDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  const monthName = activeDate.toLocaleDateString(locale, { month: 'long' });
+  const yearNum = activeDate.getFullYear();
+  const monthLabel = `${monthName} ${yearNum}`;
 
-  periodLabel.textContent = state.plannerLayout === 'month'
-    ? monthLabel
-    : state.plannerLayout === 'day'
-      ? activeDate.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-      : `${dateLabel(weekdays[0])}${weekdays[0].getFullYear() !== weekdays[4].getFullYear() ? ` ${weekdays[0].getFullYear()}` : ''} – ${dateLabel(weekdays[4])} ${weekdays[4].getFullYear()}`;
+  const weekStartMonth = weekdays[0].toLocaleDateString(locale, { month: 'long' });
+  const weekEndMonth = weekdays[4].toLocaleDateString(locale, { month: 'long' });
+  const weekStartYear = weekdays[0].getFullYear();
+  const weekEndYear = weekdays[4].getFullYear();
+
+  let formattedPeriod = '';
+  if (state.plannerLayout === 'year') {
+    formattedPeriod = `${state.lang === 'id' ? 'Tahun' : 'Year'} ${yearNum}`;
+  } else if (state.plannerLayout === 'month') {
+    formattedPeriod = monthLabel; // e.g. "November 2026"
+  } else if (state.plannerLayout === 'day') {
+    formattedPeriod = activeDate.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); // e.g. "Senin, 17 November 2026"
+  } else {
+    // Week view: always include full month and year!
+    if (weekStartYear === weekEndYear) {
+      if (weekStartMonth === weekEndMonth) {
+        formattedPeriod = `${weekdays[0].getDate()} – ${weekdays[4].getDate()} ${weekEndMonth} ${weekEndYear}`;
+      } else {
+        formattedPeriod = `${weekdays[0].getDate()} ${weekStartMonth} – ${weekdays[4].getDate()} ${weekEndMonth} ${weekEndYear}`;
+      }
+    } else {
+      formattedPeriod = `${weekdays[0].getDate()} ${weekStartMonth} ${weekStartYear} – ${weekdays[4].getDate()} ${weekEndMonth} ${weekEndYear}`;
+    }
+  }
+
+  periodLabel.textContent = formattedPeriod;
+  const calTitle = document.getElementById('planner-calendar-title');
+  if (calTitle) {
+    calTitle.textContent = formattedPeriod;
+  }
+
+  // Sync toolbar Month & Year dropdown selectors
+  const monthSelect = document.getElementById('planner-month-select');
+  if (monthSelect) {
+    monthSelect.value = String(activeDate.getMonth());
+  }
+  const yearSelect = document.getElementById('planner-year-select');
+  if (yearSelect) {
+    yearSelect.value = String(activeDate.getFullYear());
+  }
 
   // Filter schedule items based on quick filter (Global vs My Schedule)
   const displayedScheduleItems = (state.scheduleItems || []).filter(item => {
@@ -2301,6 +2368,92 @@ function renderPlanner() {
 
   if (!state.databaseStatus.schedule) {
     container.innerHTML = `<p class="planner-empty-state is-error">${state.lang === 'id' ? 'Jadwal belum terhubung ke database.' : 'The schedule could not be loaded from the database.'}</p>`;
+  } else if (state.plannerLayout === 'year') {
+    const currentYear = activeDate.getFullYear();
+    const monthsData = Array.from({ length: 12 }, (_, monthIdx) => {
+      const monthDate = new Date(currentYear, monthIdx, 1);
+      const monthName = monthDate.toLocaleDateString(locale, { month: 'long' });
+      const monthPrefix = `${currentYear}-${String(monthIdx + 1).padStart(2, '0')}`;
+      const monthActivities = displayedScheduleItems.filter(item => item.date && item.date.startsWith(monthPrefix));
+
+      const firstDay = new Date(currentYear, monthIdx, 1);
+      const lastDay = new Date(currentYear, monthIdx + 1, 0);
+      const totalDays = lastDay.getDate();
+      const startingDay = (firstDay.getDay() + 6) % 7;
+
+      return {
+        monthIdx,
+        monthName,
+        totalDays,
+        startingDay,
+        activitiesCount: monthActivities.length,
+        monthPrefix
+      };
+    });
+
+    container.innerHTML = `
+      <div class="planner-year-view space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-sand-200">
+          <div>
+            <h3 class="text-base font-extrabold text-forest">${state.lang === 'id' ? `Kalender Rencana Belajar Tahun ${currentYear}` : `Lesson Planning Calendar Year ${currentYear}`}</h3>
+            <p class="text-xs text-forest-light">
+              ${state.lang === 'id' ? 'Pilih salah satu bulan (misal: Agustus) untuk langsung membuka &amp; mengisi jadwal di bulan tersebut:' : 'Click on any month to view and schedule activities:'}
+            </p>
+          </div>
+          <span class="text-xs font-black px-3.5 py-1.5 bg-forest text-cream rounded-full shadow-2xs">${currentYear}</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          ${monthsData.map(m => {
+            const isCurrentMonth = (new Date().getFullYear() === currentYear && new Date().getMonth() === m.monthIdx);
+            const isSelectedMonth = (activeDate.getMonth() === m.monthIdx);
+            return `
+              <div onclick="jumpToMonth(${m.monthIdx}, ${currentYear})"
+                class="bg-white rounded-2xl border-2 p-3.5 hover:shadow-soft hover:border-sage transition cursor-pointer flex flex-col justify-between ${
+                  isSelectedMonth ? 'border-forest bg-sand-50/70 ring-2 ring-forest/20' : isCurrentMonth ? 'border-sage bg-sage-50/20' : 'border-sand-200'
+                }">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-extrabold text-sm text-forest">${escapeHTML(m.monthName)}</h4>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    m.activitiesCount > 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sand-100 text-forest-light'
+                  }">
+                    ${m.activitiesCount} ${state.lang === 'id' ? 'aktivitas' : 'acts'}
+                  </span>
+                </div>
+
+                <!-- Mini Days Header -->
+                <div class="grid grid-cols-7 gap-1 text-[9px] text-center text-forest-light font-bold mb-1 select-none">
+                  <span>S</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>M</span>
+                </div>
+
+                <!-- Mini Days Number Grid -->
+                <div class="grid grid-cols-7 gap-1 text-[9px] text-center font-medium select-none">
+                  ${Array.from({ length: m.startingDay }, () => `<span class="text-transparent">—</span>`).join('')}
+                  ${Array.from({ length: m.totalDays }, (_, d) => {
+                    const dayNum = d + 1;
+                    const dateStr = `${m.monthPrefix}-${String(dayNum).padStart(2, '0')}`;
+                    const hasActs = displayedScheduleItems.some(item => item.date === dateStr);
+                    const isToday = toLocalDateKey(new Date()) === dateStr;
+                    return `
+                      <span class="w-5 h-5 mx-auto flex items-center justify-center rounded-full ${
+                        isToday ? 'bg-forest text-cream font-bold' : hasActs ? 'bg-emerald-600 text-white font-bold' : 'text-forest hover:bg-sand-100'
+                      }">
+                        ${dayNum}
+                      </span>
+                    `;
+                  }).join('')}
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-sand-100 flex items-center justify-between text-[11px] font-bold text-sage hover:text-forest">
+                  <span>${state.lang === 'id' ? 'Buka Bulan Ini' : 'Open Month'}</span>
+                  <span>➔</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
   } else if (state.plannerLayout === 'month') {
     const firstMonth = activeDate.getMonth();
     container.innerHTML = `
@@ -2702,7 +2855,9 @@ async function deletePlanItem(id) {
 
 function changePlannerWeek(delta) {
   const nextDate = new Date(state.plannerDate);
-  if (state.plannerLayout === 'month') {
+  if (state.plannerLayout === 'year') {
+    nextDate.setFullYear(nextDate.getFullYear() + delta);
+  } else if (state.plannerLayout === 'month') {
     const dayOfMonth = nextDate.getDate();
     nextDate.setDate(1);
     nextDate.setMonth(nextDate.getMonth() + delta);
@@ -3056,6 +3211,56 @@ function openAddStudentModal() {
   document.getElementById('add-student-form').reset();
   const parentPinInput = document.getElementById('new-student-parent-pin');
   if (parentPinInput) parentPinInput.value = '1234';
+  const siblingHint = document.getElementById('parent-phone-sibling-hint');
+  if (siblingHint) {
+    siblingHint.classList.add('hidden');
+    siblingHint.innerHTML = '';
+  }
+
+  const phoneInput = document.getElementById('new-student-parent-phone');
+  if (phoneInput && !phoneInput.dataset.siblingBound) {
+    phoneInput.dataset.siblingBound = 'true';
+    let timer;
+    phoneInput.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const raw = phoneInput.value.trim();
+        const clean = normalizePhoneNumber(raw);
+        const hint = document.getElementById('parent-phone-sibling-hint');
+        const nameInput = document.getElementById('new-student-parent-name');
+        const pinInput = document.getElementById('new-student-parent-pin');
+        if (!clean || clean.length < 9) {
+          if (hint) hint.classList.add('hidden');
+          return;
+        }
+        if (typeof sb !== 'undefined' && sb) {
+          try {
+            const { data } = await sb.from('parents')
+              .select('parent_name, pin')
+              .or(`phone_number.eq.${clean},phone_number.eq.${raw}`)
+              .limit(1);
+            if (data && data.length > 0) {
+              if (hint) {
+                hint.classList.remove('hidden');
+                hint.innerHTML = `<span>👨‍👩‍👧‍👦</span> <span>Nomor terdaftar atas nama <b>${escapeHTML(data[0].parent_name)}</b>. Anak baru akan otomatis ditautkan ke akun orang tua yang sama!</span>`;
+              }
+              if (nameInput && !nameInput.value.trim()) {
+                nameInput.value = data[0].parent_name;
+              }
+              if (pinInput && data[0].pin) {
+                pinInput.value = data[0].pin;
+              }
+              return;
+            }
+          } catch (e) {
+            console.warn('[parentLookup]', e);
+          }
+        }
+        if (hint) hint.classList.add('hidden');
+      }, 350);
+    });
+  }
+
   if (state.activeClassId && state.classes.some(classItem => classItem.id === state.activeClassId)) {
     classSelect.value = state.activeClassId;
   }
@@ -3073,12 +3278,15 @@ async function saveNewStudent(event) {
     return;
   }
   const nameInput = document.getElementById('new-student-name');
+  const nicknameInput = document.getElementById('new-student-nickname');
   const classSelect = document.getElementById('new-student-class');
   const parentNameInput = document.getElementById('new-student-parent-name');
   const parentPhoneInput = document.getElementById('new-student-parent-phone');
   const parentPinInput = document.getElementById('new-student-parent-pin');
 
   const fullName = nameInput.value.trim();
+  const rawNickname = nicknameInput ? nicknameInput.value.trim() : '';
+  const finalNickname = rawNickname || fullName.split(' ')[0];
   const classId = classSelect.value;
   const rawPhone = parentPhoneInput ? parentPhoneInput.value.trim() : '';
   const pin = parentPinInput ? parentPinInput.value.trim() : '';
@@ -3109,15 +3317,16 @@ async function saveNewStudent(event) {
   submitButton.disabled = true;
   submitButton.textContent = state.lang === 'id' ? 'Menyimpan...' : 'Saving...';
   try {
-    // 1. Insert new student into 'students' table
+    // 1. Insert new student into 'students' table with nickname
     const { data: newStudent, error: studentError } = await sb.from('students').insert([{
       full_name: fullName,
+      nickname: finalNickname,
       class_id: classId,
       school_id: selectedClass.school_id,
     }]).select().single();
     if (studentError) throw studentError;
 
-    // 2. Automatically link or register in 'parents' table
+    // 2. Automatically link or register in 'parents' table (Supports siblings / multiple children per parent phone)
     const { data: existingParents, error: parentCheckError } = await sb.from('parents')
       .select('id, student_id, parent_name, phone_number, pin')
       .or(`phone_number.eq.${cleanPhone},phone_number.eq.${rawPhone}`);
@@ -3127,20 +3336,26 @@ async function saveNewStudent(event) {
     }
 
     if (existingParents && existingParents.length > 0) {
+      const effectivePin = pin || existingParents[0].pin;
+      const effectiveName = parentName || existingParents[0].parent_name;
       const unlinked = existingParents.find(p => !p.student_id);
       if (unlinked) {
         await sb.from('parents').update({
           student_id: newStudent.id,
-          parent_name: parentName || unlinked.parent_name,
-          pin: pin || unlinked.pin,
+          parent_name: effectiveName,
+          pin: effectivePin,
         }).eq('id', unlinked.id);
       } else {
         await sb.from('parents').insert([{
           student_id: newStudent.id,
-          parent_name: parentName || existingParents[0].parent_name,
+          parent_name: effectiveName,
           phone_number: cleanPhone,
-          pin: pin || existingParents[0].pin,
+          pin: effectivePin,
         }]);
+      }
+      // Synchronize PIN across all sibling entries so mom can log in to view all children with one PIN
+      if (pin) {
+        await sb.from('parents').update({ pin: pin }).eq('phone_number', cleanPhone);
       }
     } else {
       await sb.from('parents').insert([{
@@ -5190,6 +5405,28 @@ window.switchReportTerm = switchReportTerm;
 window.printStudentReport = printStudentReport;
 window.renderStudentReport = renderStudentReport;
 window.renderStudentReportContent = renderStudentReportContent;
+window.openEditReportModal = openEditReportModal;
+window.renderEditReportSkillMatrix = renderEditReportSkillMatrix;
+window.handleSaveStudentReportSubmit = handleSaveStudentReportSubmit;
+window.handleAttendanceSessionChange = handleAttendanceSessionChange;
+window.handleAttendancePercentDirectChange = handleAttendancePercentDirectChange;
+window.setAttendancePreset = setAttendancePreset;
+window.syncFacilitatorsFromSchedule = syncFacilitatorsFromSchedule;
+window.handleSelectFacilitatorFromDropdown = handleSelectFacilitatorFromDropdown;
+window.addFacilitatorName = addFacilitatorName;
+window.toggleFacilitatorName = toggleFacilitatorName;
+window.populateFacilitatorDropdown = populateFacilitatorDropdown;
+window.renderFacilitatorPills = renderFacilitatorPills;
+window.openPhotoModal = openPhotoModal;
+window.setPhotoZoom = setPhotoZoom;
+window.zoomPhoto = zoomPhoto;
+window.resetPhotoZoom = resetPhotoZoom;
+window.togglePhotoZoomClick = togglePhotoZoomClick;
+window.togglePhotoFullscreen = togglePhotoFullscreen;
+window.downloadCurrentPhoto = downloadCurrentPhoto;
+window.handlePlannerMonthYearChange = handlePlannerMonthYearChange;
+window.jumpToMonth = jumpToMonth;
+window.setPlannerLayout = setPlannerLayout;
 
 // ============================================================
 // SUPABASE INTEGRATION
@@ -5341,6 +5578,23 @@ async function loadStudentsFromSupabase() {
     }
     const { data, error } = await query;
     if (error) throw error;
+
+    // Auto-heal / backfill missing nicknames in Supabase students table
+    if (isAdminUser() && typeof sb !== 'undefined' && sb && Array.isArray(data)) {
+      const missingNicknames = data.filter(s => !s.nickname && s.full_name);
+      if (missingNicknames.length > 0) {
+        missingNicknames.forEach(async (row) => {
+          const autoNick = row.full_name.trim().split(' ')[0];
+          row.nickname = autoNick;
+          try {
+            await sb.from('students').update({ nickname: autoNick }).eq('id', row.id);
+            console.log(`[Supabase] auto-healed nickname for ${row.full_name}: ${autoNick}`);
+          } catch (e) {
+            console.warn('[Supabase] nickname backfill warning:', e);
+          }
+        });
+      }
+    }
 
     const loadedStudents = (data || []).map(row => ({
       id: row.id,
