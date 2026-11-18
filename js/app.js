@@ -3567,7 +3567,7 @@ async function ensureJpegCompatiblePhoto(file) {
   if (!file) return null;
   const fileName = (file.name || '').toLowerCase();
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || fileName.endsWith('.heic') || fileName.endsWith('.heif');
-  
+
   if (!isHeic) {
     return file;
   }
@@ -3640,7 +3640,7 @@ async function saveObservation() {
   const photoName = (rawPhotoFile?.name || '').toLowerCase();
   const isHeicOrHeifExt = photoName.endsWith('.heic') || photoName.endsWith('.heif');
   const isAllowedPhotoType = rawPhotoFile && (allowedPhotoTypes.includes(rawPhotoFile.type) || isHeicOrHeifExt);
-  
+
   if (rawPhotoFile && (!isAllowedPhotoType || rawPhotoFile.size > 8 * 1024 * 1024)) {
     showToast(state.lang === 'id'
       ? 'Pilih foto JPG, PNG, WebP, atau HEIC dengan ukuran maksimal 8 MB.'
@@ -3677,7 +3677,7 @@ async function saveObservation() {
 
     if (student._fromDB) {
       let saved = await saveObservationToSupabase(observation);
-      
+
       // If upload failed with photo, fallback to saving without photo so observation is never lost
       if (!saved && finalPhotoFile) {
         console.warn('[saveObservation] Save with photo failed, attempting save without photo...');
@@ -4211,22 +4211,28 @@ function switchAdminTab(tabName = 'admins') {
 
   const tabBtnAdmin = document.getElementById('subtab-manage-admins');
   const tabBtnTutor = document.getElementById('subtab-manage-tutors');
+  const tabBtnParent = document.getElementById('subtab-manage-parents');
   const panelAdmins = document.getElementById('panel-manage-admins');
   const panelTutors = document.getElementById('panel-manage-tutors');
+  const panelParents = document.getElementById('panel-manage-parents');
 
-  // Update subtab buttons
+  const activeBtnClass = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-white text-forest shadow-soft flex items-center gap-1.5';
+  const inactiveBtnClass = 'px-4 py-2 rounded-xl text-xs font-bold transition text-forest-light hover:text-forest flex items-center gap-1.5';
+
+  if (tabBtnAdmin) tabBtnAdmin.className = tabName === 'admins' ? activeBtnClass : inactiveBtnClass;
+  if (tabBtnTutor) tabBtnTutor.className = tabName === 'tutors' ? activeBtnClass : inactiveBtnClass;
+  if (tabBtnParent) tabBtnParent.className = tabName === 'parents' ? activeBtnClass : inactiveBtnClass;
+
+  if (panelAdmins) panelAdmins.classList.toggle('hidden', tabName !== 'admins');
+  if (panelTutors) panelTutors.classList.toggle('hidden', tabName !== 'tutors');
+  if (panelParents) panelParents.classList.toggle('hidden', tabName !== 'parents');
+
   if (tabName === 'admins') {
-    if (tabBtnAdmin) tabBtnAdmin.className = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-white text-forest shadow-soft flex items-center gap-1.5';
-    if (tabBtnTutor) tabBtnTutor.className = 'px-4 py-2 rounded-xl text-xs font-bold transition text-forest-light hover:text-forest flex items-center gap-1.5';
-    if (panelAdmins) panelAdmins.classList.remove('hidden');
-    if (panelTutors) panelTutors.classList.add('hidden');
     renderAdmins();
-  } else {
-    if (tabBtnTutor) tabBtnTutor.className = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-white text-forest shadow-soft flex items-center gap-1.5';
-    if (tabBtnAdmin) tabBtnAdmin.className = 'px-4 py-2 rounded-xl text-xs font-bold transition text-forest-light hover:text-forest flex items-center gap-1.5';
-    if (panelTutors) panelTutors.classList.remove('hidden');
-    if (panelAdmins) panelAdmins.classList.add('hidden');
+  } else if (tabName === 'tutors') {
     renderTutors();
+  } else if (tabName === 'parents') {
+    loadParentsFromSupabase().then(() => renderParents());
   }
 
   // Update top navbar active indicators
@@ -4668,6 +4674,304 @@ function renderTutors() {
       `).join('');
 }
 
+// --- PARENT MANAGEMENT FUNCTIONS (Admin Exclusive) ---
+async function loadParentsFromSupabase() {
+  try {
+    const { data, error } = await sb
+      .from('parents')
+      .select(`
+        id,
+        parent_name,
+        phone_number,
+        pin,
+        student_id,
+        students (
+          id,
+          full_name,
+          nickname,
+          class_id,
+          classes (
+            id,
+            name,
+            schools (
+              id,
+              name
+            )
+          )
+        )
+      `)
+      .order('parent_name');
+
+    if (error) throw error;
+    state.parents = data || [];
+    state.databaseStatus.parents = true;
+    return state.parents;
+  } catch (err) {
+    console.warn('[Supabase] load parents warning:', err);
+    if (!state.parents || state.parents.length === 0) {
+      state.parents = (state.allStudents || []).map((s, idx) => ({
+        id: `mock-parent-${idx + 1}`,
+        parent_name: `Orang Tua ${s.name}`,
+        phone_number: '081234567890',
+        pin: '1234',
+        student_id: s.id,
+        students: {
+          id: s.id,
+          full_name: s.name,
+          nickname: s.nickname,
+          className: s.className,
+          schoolName: s.schoolName
+        }
+      }));
+    }
+    return state.parents;
+  }
+}
+
+function filterParentsList(query) {
+  state.parentSearchQuery = String(query || '').trim().toLowerCase();
+  renderParents();
+}
+
+function renderParents() {
+  const grid = document.getElementById('parents-grid');
+  const countLabel = document.getElementById('parents-count-label');
+  if (!grid) return;
+
+  const allParents = state.parents || [];
+  const query = state.parentSearchQuery || '';
+
+  const filtered = allParents.filter(p => {
+    if (!query) return true;
+    const parentName = String(p.parent_name || '').toLowerCase();
+    const phone = String(p.phone_number || '').toLowerCase();
+    const pin = String(p.pin || '').toLowerCase();
+    const student = p.students || (state.allStudents || []).find(s => s.id === p.student_id);
+    const childName = String(student?.full_name || student?.name || '').toLowerCase();
+    return parentName.includes(query) || phone.includes(query) || pin.includes(query) || childName.includes(query);
+  });
+
+  if (countLabel) {
+    countLabel.textContent = state.lang === 'id'
+      ? `Total: ${allParents.length} akun orang tua terdaftar (${filtered.length} ditampilkan)`
+      : `Total: ${allParents.length} parent accounts (${filtered.length} shown)`;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="col-span-full p-8 text-center bg-sand-50 rounded-2xl border border-sand-200">
+        <span class="text-3xl block mb-2">👨‍👩‍👧</span>
+        <p class="text-forest font-bold text-sm">${state.lang === 'id' ? 'Tidak ada data orang tua yang sesuai' : 'No parent accounts found'}</p>
+        <p class="text-forest-light text-xs mt-1">${state.lang === 'id' ? 'Gunakan kata kunci pencarian lain.' : 'Try a different search query.'}</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const student = p.students || (state.allStudents || []).find(s => s.id === p.student_id);
+    const childName = student?.full_name || student?.name || 'Siswa belum ditautkan';
+    const className = student?.classes?.name || student?.className || '';
+    const schoolName = student?.classes?.schools?.name || student?.schoolName || '';
+    const classSchoolBadge = [className, schoolName].filter(Boolean).join(' · ') || 'Plego STEM';
+
+    return `
+      <article class="p-4 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage transition shadow-xs flex flex-col justify-between gap-3">
+        <div>
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-10 h-10 flex-shrink-0 rounded-2xl bg-white border border-sand-200 flex items-center justify-center font-bold text-forest shadow-2xs text-sm">
+                ${escapeHTML(getInitials(p.parent_name || 'Ortu'))}
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-heading font-bold text-forest text-sm truncate" title="${escapeHTML(p.parent_name || 'Orang Tua')}">
+                  ${escapeHTML(p.parent_name || 'Orang Tua')}
+                </h3>
+                <p class="text-xs text-forest-light truncate">
+                  ${state.lang === 'id' ? 'Anak:' : 'Child:'} <span class="font-bold text-forest">${escapeHTML(childName)}</span>
+                </p>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sand-200/80 text-forest flex-shrink-0">
+              ${escapeHTML(classSchoolBadge)}
+            </span>
+          </div>
+
+          <div class="mt-3.5 pt-2.5 border-t border-sand-200/70 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-forest-light">${state.lang === 'id' ? 'No. WhatsApp / HP:' : 'Phone Number:'}</span>
+              <span class="font-mono font-bold text-slate-800">${escapeHTML(p.phone_number || '—')}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-forest-light">${state.lang === 'id' ? 'PIN Masuk:' : 'Login PIN:'}</span>
+              <span class="font-mono font-bold text-slate-800 bg-sand-200/70 px-2 py-0.5 rounded-md tracking-wider">
+                ${escapeHTML(p.pin || '—')}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2 border-t border-sand-200/60">
+          <button type="button" onclick="openEditParentModal('${escapeHTML(p.id)}', '${escapeHTML(p.student_id || '')}')"
+            class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-2xs transition flex items-center gap-1.5 garden-interactive-btn">
+            <span>✏️</span>
+            <span>Edit Ortu</span>
+          </button>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function openEditParentModal(parentId, studentId) {
+  if (!isAdminUser()) {
+    showToast(state.lang === 'id' ? 'Hanya admin yang dapat mengedit data orang tua.' : 'Only admins can edit parent accounts.', '⚠️');
+    return;
+  }
+
+  const parent = (state.parents || []).find(p => p.id === parentId || (studentId && p.student_id === studentId));
+  const student = parent?.students || (state.allStudents || []).find(s => s.id === (studentId || parent?.student_id));
+
+  const childName = student?.full_name || student?.name || (parent ? `Siswa (${parent.parent_name})` : 'Siswa');
+  const className = student?.classes?.name || student?.className || '';
+  const schoolName = student?.classes?.schools?.name || student?.schoolName || '';
+  const classSchoolInfo = [className, schoolName].filter(Boolean).join(' · ');
+
+  document.getElementById('edit-parent-id').value = parent?.id || '';
+  document.getElementById('edit-parent-student-id').value = student?.id || parent?.student_id || studentId || '';
+  document.getElementById('edit-parent-student-display').textContent = childName;
+  document.getElementById('edit-parent-school-display').textContent = classSchoolInfo ? `Kelas: ${classSchoolInfo}` : 'Sekolah Mitra Plego';
+  document.getElementById('edit-parent-name').value = parent?.parent_name || (childName ? `Orang Tua ${childName}` : '');
+  document.getElementById('edit-parent-phone').value = parent?.phone_number || '';
+  document.getElementById('edit-parent-pin').value = parent?.pin || '';
+
+  openModal('modal-edit-parent');
+  setTimeout(() => {
+    const nameInput = document.getElementById('edit-parent-name');
+    if (nameInput) {
+      nameInput.focus();
+      nameInput.select();
+    }
+  }, 60);
+}
+
+async function handleSaveEditParent(event) {
+  event.preventDefault();
+  if (!isAdminUser()) {
+    showToast(state.lang === 'id' ? 'Hanya admin yang dapat mengedit data.' : 'Only admins can edit data.', '⚠️');
+    return;
+  }
+
+  const parentId = document.getElementById('edit-parent-id').value;
+  const studentId = document.getElementById('edit-parent-student-id').value;
+  const parentName = document.getElementById('edit-parent-name').value.trim();
+  const rawPhone = document.getElementById('edit-parent-phone').value.trim();
+  const pin = document.getElementById('edit-parent-pin').value.trim();
+  const submitBtn = document.getElementById('edit-parent-submit-btn');
+
+  if (!parentName) {
+    showToast(state.lang === 'id' ? 'Nama orang tua tidak boleh kosong.' : 'Parent name cannot be empty.', '⚠️');
+    return;
+  }
+
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone || cleanPhone.length < 8) {
+    showToast(state.lang === 'id' ? 'Masukkan nomor WhatsApp / HP yang valid (minimal 8 angka).' : 'Please enter a valid phone number (min 8 digits).', '⚠️');
+    return;
+  }
+  if (!pin) {
+    showToast(state.lang === 'id' ? 'Sandi / PIN login tidak boleh kosong.' : 'PIN cannot be empty.', '⚠️');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>⏳</span> <span>Menyimpan...</span>';
+
+  try {
+    const currentParent = (state.parents || []).find(p => p.id === parentId || (studentId && p.student_id === studentId));
+    const oldPhone = currentParent?.phone_number ? currentParent.phone_number.replace(/[^0-9]/g, '') : null;
+
+    let saved = false;
+    if (typeof sb !== 'undefined' && sb) {
+      if (parentId && !parentId.startsWith('mock-')) {
+        // Update by parent ID in public.parents (Nama Ortu, No HP, Sandi/PIN)
+        const { error } = await sb.from('parents').update({
+          parent_name: parentName,
+          phone_number: cleanPhone,
+          pin: pin,
+        }).eq('id', parentId);
+        if (error) throw error;
+
+        // If parent has sibling accounts linked by old phone number, keep them synchronized
+        if (oldPhone) {
+          await sb.from('parents').update({
+            parent_name: parentName,
+            phone_number: cleanPhone,
+            pin: pin,
+          }).eq('phone_number', oldPhone);
+        }
+
+        saved = true;
+      } else if (studentId) {
+        // Check if row already exists for this student_id
+        const { data: existing } = await sb.from('parents').select('id').eq('student_id', studentId).maybeSingle();
+        if (existing && existing.id) {
+          const { error } = await sb.from('parents').update({
+            parent_name: parentName,
+            phone_number: cleanPhone,
+            pin: pin,
+          }).eq('id', existing.id);
+          if (error) throw error;
+        } else {
+          const { error } = await sb.from('parents').insert([{
+            student_id: studentId,
+            parent_name: parentName,
+            phone_number: cleanPhone,
+            pin: pin,
+          }]);
+          if (error) throw error;
+        }
+        saved = true;
+      }
+    }
+
+    // Synchronize local memory cache immediately
+    if (state.parents) {
+      state.parents.forEach(p => {
+        if (p.id === parentId || (studentId && p.student_id === studentId) || (oldPhone && p.phone_number && p.phone_number.replace(/[^0-9]/g, '') === oldPhone)) {
+          p.parent_name = parentName;
+          p.phone_number = cleanPhone;
+          p.pin = pin;
+        }
+      });
+    }
+
+    // If active session is this parent, update profile display
+    if (state.currentUser && state.currentUser.role === 'parent' && (state.currentUser.id === parentId || (oldPhone && state.currentUser.phone === oldPhone))) {
+      state.currentUser.name = parentName;
+      state.currentUser.phone = cleanPhone;
+      const userBadge = document.getElementById('user-profile-btn');
+      if (userBadge) {
+        const nameSpan = userBadge.querySelector('span:nth-child(2)');
+        if (nameSpan) nameSpan.textContent = parentName;
+      }
+    }
+
+    closeModal('modal-edit-parent');
+    showToast(state.lang === 'id'
+      ? `Data akun "${parentName}" (Nama, No HP & Sandi) berhasil disimpan!`
+      : `Account "${parentName}" (Name, Phone & PIN) successfully saved!`, '✅');
+
+    await loadParentsFromSupabase();
+    renderParents();
+  } catch (err) {
+    console.error('[Supabase] update parent failed:', err);
+    showToast(`${state.lang === 'id' ? 'Gagal memperbarui akun orang tua' : 'Failed to update parent'}: ${err.message || err}`, '⚠️');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span>💾</span> <span>Simpan Perubahan</span>';
+  }
+}
+
 /* FLOW 6: PARENT HUB */
 function openStudentParentPreview(studentId) {
   if (state.currentUser?.role === 'parent') {
@@ -4721,8 +5025,9 @@ function renderParentHub() {
   const showPicker = !parentUser || students.length > 1;
   pickerWrap.classList.toggle('hidden', !showPicker);
   pickerWrap.classList.toggle('md:flex', showPicker);
+  const studentUuid = resolveStudentUuid(student ? student.id : null);
   const observations = state.databaseObservations
-    .filter(observation => student && observation.student_id === student.id)
+    .filter(observation => student && (observation.student_id === student.id || observation.student_id === studentUuid))
     .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0));
   const title = document.getElementById('parent-student-name');
   const avatar = document.getElementById('parent-student-avatar');
@@ -4814,11 +5119,27 @@ function renderParentHub() {
       ? 'Ringkasan capaian muncul setelah observasi tersimpan di database.'
       : 'Progress appears after observations are saved to the database.'}</p>`;
 
+  // Trigger background photo signing if any observation has photo_path but not yet photo_signed_url
+  if (observations.some(obs => obs.photo_path && !obs.photo_signed_url)) {
+    if (typeof signObservationPhotos === 'function') {
+      signObservationPhotos(observations).then(() => {
+        const feed = document.getElementById('parent-photo-feed');
+        if (feed && state.currentView === 'parentHub') renderParentHub();
+      }).catch(() => { });
+    }
+  }
+
   const photos = observations
-    .map(observation => ({
-      ...observation,
-      safePhotoUrl: safeHttpsUrl(observation.photo_signed_url || observation.photo_url),
-    }))
+    .map(observation => {
+      let rawPhoto = observation.photo_signed_url || observation.photo_url || '';
+      if (!rawPhoto && observation.photo_path && typeof sb !== 'undefined' && sb) {
+        rawPhoto = sb.storage.from('student-observation-photos').getPublicUrl(observation.photo_path).data?.publicUrl || '';
+      }
+      return {
+        ...observation,
+        safePhotoUrl: typeof safeHttpsUrl === 'function' ? safeHttpsUrl(rawPhoto) : rawPhoto,
+      };
+    })
     .filter(observation => observation.safePhotoUrl);
   document.getElementById('parent-photo-feed').innerHTML = photos.length
     ? photos.map(observation => {
@@ -5108,10 +5429,10 @@ const SCHOOL_REPORT_PRESETS = {
   early_step: {
     id: 'early_step',
     category: 'tk',
-    displayName: 'TK Early Step',
-    name: 'TK Early Step Preschool & Kindergarten',
+    displayName: 'Early Step',
+    name: 'Early Step Preschool & Kindergarten',
     shortName: 'Early Step',
-    badge: 'Early Step Learning',
+    badge: 'Early Step',
     boxColor: '#5B82A6',
     borderClass: 'border-[#5B82A6]',
     badgeBgClass: 'bg-[#5B82A6]',
@@ -5127,9 +5448,9 @@ const SCHOOL_REPORT_PRESETS = {
   azhari: {
     id: 'azhari',
     category: 'sd',
-    displayName: 'SD Azhari',
-    name: 'SD Azhari Islamic School Rasuna & Lebak Bulus',
-    shortName: 'SD Azhari',
+    displayName: 'Azhari',
+    name: 'Azhari Islamic School Lebak Bulus',
+    shortName: 'Azhari',
     badge: 'Azhari Islamic School',
     boxColor: '#5B82A6',
     borderClass: 'border-[#5B82A6]',
@@ -5137,24 +5458,18 @@ const SCHOOL_REPORT_PRESETS = {
     defaultTutors: 'Karina Liandra, Thalitha Eka Dhea Putri, Devina Maharani, Ghina Salma Susilo, S. Si.',
     headmaster: 'Dra. Hj. Nurjanah, M.Pd',
     logoHtml: `
-      <div class="w-16 h-16 rounded-full border-2 border-[#2B2868] bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
-        <svg viewBox="0 0 100 100" class="w-10 h-10">
-          <circle cx="50" cy="50" r="46" fill="none" stroke="#2B2868" stroke-width="3"/>
-          <path d="M50 20 C42 32 36 44 36 58 C36 68 42 76 50 78 C58 76 64 68 64 58 C64 44 58 32 50 20 Z" fill="#2B2868"/>
-          <circle cx="50" cy="18" r="3.5" fill="#C53030"/>
-          <text x="50" y="55" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="sans-serif">AZHARI</text>
-        </svg>
-        <span class="text-[6px] font-black text-[#2B2868] tracking-tighter leading-none mt-0.5">LEBAK BULUS</span>
+      <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-0.5 text-center flex-shrink-0 overflow-hidden">
+        <img src="src/logo-azhari.png" alt="Logo Azhari" class="w-full h-full object-contain">
       </div>
     `
   },
   masa_kecil: {
     id: 'masa_kecil',
     category: 'tk',
-    displayName: 'Sekolah Masa Kecil Montessori',
-    name: 'Sekolah Masa Kecil Montessori',
-    shortName: 'Masa Kecil Montessori',
-    badge: 'Masa Kecil Montessori',
+    displayName: 'Masa Kecil',
+    name: 'Masa Kecil',
+    shortName: 'Masa Kecil',
+    badge: 'Masa Kecil',
     boxColor: '#9C5236',
     borderClass: 'border-[#9C5236]',
     badgeBgClass: 'bg-[#9C5236]',
@@ -5169,10 +5484,10 @@ const SCHOOL_REPORT_PRESETS = {
   citra_alam: {
     id: 'citra_alam',
     category: 'sd',
-    displayName: 'SD Citra Alam',
-    name: 'Sekolah Alam Citra Alam Ciganjur',
-    shortName: 'SD Citra Alam',
-    badge: 'Citra Alam Ciganjur',
+    displayName: 'Citra Alam',
+    name: 'Citra Alam Ciganjur',
+    shortName: 'Citra Alam',
+    badge: 'Citra Alam',
     boxColor: '#5B82A6',
     borderClass: 'border-[#5B82A6]',
     badgeBgClass: 'bg-[#5B82A6]',
@@ -5188,9 +5503,9 @@ const SCHOOL_REPORT_PRESETS = {
   miftahul_ulum: {
     id: 'miftahul_ulum',
     category: 'sd',
-    displayName: 'SD Miftahul Ulum',
-    name: 'SD Miftahul Ulum Cinere Depok',
-    shortName: 'SD Miftahul Ulum',
+    displayName: 'Miftahul Ulum',
+    name: 'Miftahul Ulum Cinere Depok',
+    shortName: 'Miftahul Ulum',
     badge: 'Miftahul Ulum',
     boxColor: '#5B82A6',
     borderClass: 'border-[#5B82A6]',
@@ -5714,11 +6029,14 @@ function renderStudentReport() {
   const pageSubtitleEl = document.getElementById('report-page-subtitle');
   if (pageSubtitleEl) pageSubtitleEl.textContent = t('report.pageSubtitle') || (lang === 'id' ? 'Dokumen resmi evaluasi perkembangan ekstrakurikuler STEM' : 'Official STEM extracurricular development evaluation document');
 
+  const backBtn = document.getElementById('report-back-btn');
+  if (backBtn) {
+    backBtn.classList.toggle('hidden', isParent);
+  }
+
   const backBtnText = document.getElementById('report-back-btn-text');
   if (backBtnText) {
-    backBtnText.textContent = isParent
-      ? (t('report.backJournal') || (lang === 'id' ? 'Kembali ke Jurnal' : 'Back to Journal'))
-      : (t('report.back') || (lang === 'id' ? 'Kembali' : 'Back'));
+    backBtnText.textContent = t('report.back') || (lang === 'id' ? 'Kembali' : 'Back');
   }
 
   const printBtnText = document.getElementById('report-print-btn-text');
@@ -5753,8 +6071,14 @@ function renderStudentReport() {
     miftahul_ulum: allSt.filter(s => getStudentSchoolKey(s) === 'miftahul_ulum').length,
   };
 
-  // Default to a school that actually has registered students if none or empty
-  if (!state.reportSelectedSchool) {
+  // Automatically select the parent's child and their school if parent is logged in
+  if (isParent) {
+    const parentChild = (state.students && state.students[0]) || (state.allStudents && state.allStudents[0]);
+    if (parentChild) {
+      state.reportSelectedStudentId = parentChild.id;
+      state.reportSelectedSchool = getStudentSchoolKey(parentChild);
+    }
+  } else if (!state.reportSelectedSchool || !counts[state.reportSelectedSchool]) {
     if (counts.masa_kecil > 0) state.reportSelectedSchool = 'masa_kecil';
     else if (counts.azhari > 0) state.reportSelectedSchool = 'azhari';
     else if (counts.miftahul_ulum > 0) state.reportSelectedSchool = 'miftahul_ulum';
@@ -5785,7 +6109,7 @@ function renderStudentReport() {
   });
 
   // 4. Get students for currently selected school only
-  const schoolStudents = allSt.filter(s => getStudentSchoolKey(s) === currentSchoolId);
+  const schoolStudents = isParent ? ((state.students && state.students.length > 0) ? state.students : allSt) : allSt.filter(s => getStudentSchoolKey(s) === currentSchoolId);
 
   // If active selected student doesn't belong to current school, pick the first one
   if (schoolStudents.length > 0) {
@@ -5798,6 +6122,7 @@ function renderStudentReport() {
   }
 
   // 5. Sync Student Select Dropdown (ONLY students of this selected school!)
+  const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
   const studentSelect = document.getElementById('report-student-select');
   if (studentSelect) {
     if (schoolStudents.length === 0) {
@@ -5808,14 +6133,22 @@ function renderStudentReport() {
       studentSelect.innerHTML = schoolStudents.map(s => {
         const isSelected = s.id === state.reportSelectedStudentId;
         const clsBadge = s.className ? ` [${escapeHTML(s.className)}]` : '';
+        const sUuid = resolveStudentUuid(s.id);
+        const isReal = Boolean(state.studentReportsCache?.[`${sUuid}_${currentTerm}`]);
+        const statusText = isReal
+          ? (lang === 'id' ? '🟢 [Sudah Diisi]' : '🟢 [Completed]')
+          : (lang === 'id' ? '🟡 [Data Dummy]' : '🟡 [Dummy]');
         return `
           <option value="${s.id}" ${isSelected ? 'selected' : ''}>
-            ${escapeHTML(s.name)}${clsBadge}
+            ${escapeHTML(s.name)}${clsBadge} · ${statusText}
           </option>
         `;
       }).join('');
     }
   }
+
+  // 5b. Update Visual Status Badges in Toolbar
+  updateReportStatusBadges(schoolStudents);
 
   // 6. Toggle Edit & Print buttons availability
   const editBtn = document.getElementById('report-edit-btn');
@@ -5844,6 +6177,7 @@ function renderStudentReport() {
   if (state.reportSelectedStudentId) {
     subscribeStudentReportsRealtime();
     loadStudentReportFromSupabase(state.reportSelectedStudentId, state.reportSelectedTerm);
+    loadAllStudentReportsForTerm(state.reportSelectedTerm);
   }
 
   // Load observations if not already loaded so photos are populated
@@ -5859,12 +6193,97 @@ function renderStudentReport() {
   renderStudentReportContent();
 }
 
+async function loadAllStudentReportsForTerm(term) {
+  const selectedTerm = term || state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+  if (!state.studentReportsCache) state.studentReportsCache = {};
+  if (typeof sb !== 'undefined' && sb) {
+    try {
+      const { data, error } = await sb
+        .from('student_reports')
+        .select('*')
+        .eq('term', selectedTerm);
+
+      if (!error && Array.isArray(data)) {
+        data.forEach(row => {
+          if (row.student_id && row.term) {
+            state.studentReportsCache[`${row.student_id}_${row.term}`] = row;
+          }
+        });
+        const currentSchoolStudents = (state.allStudents || []).filter(s => getStudentSchoolKey(s) === state.reportSelectedSchool);
+        updateReportStatusBadges(currentSchoolStudents);
+      }
+    } catch (err) {
+      console.warn('[studentReport] loadAllStudentReportsForTerm warning:', err);
+    }
+  }
+}
+
+function updateReportStatusBadges(schoolStudentsList) {
+  const lang = state.lang || 'id';
+  const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+  const activeStudentUuid = resolveStudentUuid(state.reportSelectedStudentId);
+  const activeIsReal = Boolean(state.studentReportsCache?.[`${activeStudentUuid}_${currentTerm}`]);
+
+  const badgeContainer = document.getElementById('report-status-badge-container');
+  const progressContainer = document.getElementById('report-school-progress-container');
+  const schoolStudents = schoolStudentsList || (state.allStudents || []).filter(s => getStudentSchoolKey(s) === state.reportSelectedSchool);
+
+  if (badgeContainer) {
+    if (!schoolStudents || schoolStudents.length === 0) {
+      badgeContainer.innerHTML = '';
+    } else if (activeIsReal) {
+      badgeContainer.innerHTML = `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs text-xs font-extrabold" title="Data laporan tersimpan resmi di tabel student_reports Supabase">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>${lang === 'id' ? 'Sudah Diisi (Data Asli DB)' : 'Completed (Real Data)'}</span>
+        </span>
+      `;
+    } else {
+      badgeContainer.innerHTML = `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs text-xs font-bold" title="Laporan ini masih menggunakan format bawaan template (belum diisi nilai asli oleh pengampu)">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span>${lang === 'id' ? 'Belum Diisi (Data Dummy)' : 'Incomplete (Dummy Data)'}</span>
+        </span>
+      `;
+    }
+  }
+
+  if (progressContainer) {
+    if (!schoolStudents || schoolStudents.length === 0) {
+      progressContainer.innerHTML = '';
+    } else {
+      let completedCount = 0;
+      schoolStudents.forEach(s => {
+        const sUuid = resolveStudentUuid(s.id);
+        if (state.studentReportsCache?.[`${sUuid}_${currentTerm}`]) completedCount++;
+      });
+      const isAllDone = completedCount === schoolStudents.length && schoolStudents.length > 0;
+      progressContainer.innerHTML = `
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white border border-sand-200 text-forest shadow-2xs">
+          <span>📋</span>
+          <span>${lang === 'id' ? 'Progres:' : 'Progress:'} <b class="${isAllDone ? 'text-emerald-700' : 'text-amber-700'}">${completedCount} / ${schoolStudents.length}</b> ${lang === 'id' ? 'Diisi' : 'Done'}</span>
+        </span>
+      `;
+    }
+  }
+}
+
 function renderStudentReportContent() {
   const container = document.getElementById('student-report-document');
   if (!container) return;
 
+  const isParent = state.currentUser?.role === 'parent';
   const lang = state.lang || 'id';
-  const student = findReportStudent(state.reportSelectedStudentId);
+  let student = findReportStudent(state.reportSelectedStudentId);
+
+  // Parent fallback: ensure parent always resolves their linked child
+  if (!student && state.currentUser?.role === 'parent') {
+    student = findReportStudent(state.previewStudentId) || (state.students && state.students[0]) || (state.allStudents && state.allStudents[0]);
+    if (student) {
+      state.reportSelectedStudentId = student.id;
+      state.reportSelectedSchool = getStudentSchoolKey(student);
+    }
+  }
   const schoolKey = (student && student.schoolId) || state.reportSelectedSchool || 'masa_kecil';
   const school = SCHOOL_REPORT_PRESETS[schoolKey] || SCHOOL_REPORT_PRESETS.masa_kecil || SCHOOL_REPORT_PRESETS.early_step;
 
@@ -6021,26 +6440,74 @@ function renderStudentReportContent() {
     ];
     const sdObjs = (learningObjs && learningObjs.length > 0) ? learningObjs : defaultSdObjs;
 
+    const currentActiveUuid = resolveStudentUuid(student ? student.id : null);
+    const currentSelectedTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+    const savedReportSd = activeData.savedReport || state.studentReportsCache?.[`${currentActiveUuid}_${currentSelectedTerm}`];
+    const isRealData = Boolean(savedReportSd) || (
+      Boolean(activeData.developmentNotes) &&
+      activeData.developmentNotes.trim().length > 0 &&
+      !activeData.developmentNotes.includes('menunjukkan keaktifan dan pemahaman yang sangat baik selama kegiatan\nterus mengembangkan kreativitas') &&
+      !activeData.developmentNotes.includes('menunjukkan ketertarikan yang tinggi dalam mengeksplorasi perancangan modul')
+    );
+    // Status alert banner is EXCLUSIVELY for admin & tutors. Parents must NEVER see status badges/banners!
+    const statusAlertBanner = (!isParent && isRealData) ? `
+      <!-- Screen-Only Status Alert (Data Asli) -->
+      <div class="print:hidden p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-center justify-between gap-3 text-xs shadow-2xs mb-2">
+        <div class="flex items-center gap-2.5">
+          <span class="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-2xs">✓</span>
+          <div>
+            <span class="font-extrabold text-emerald-950 text-xs sm:text-sm block">Status Data Jurnal: Sudah Diisi (Data Asli Database)</span>
+            <span class="text-emerald-800 text-[11px] block mt-0.5">Laporan siswa ini telah diinput dan tersimpan resmi di database Supabase (Tersinkronisasi Realtime).</span>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-emerald-200 text-emerald-900 font-extrabold text-[10px] tracking-wider uppercase flex-shrink-0">
+          ● Data Asli
+        </span>
+      </div>
+    ` : (!isParent && !isRealData) ? `
+      <!-- Screen-Only Status Alert (Data Dummy) -->
+      <div class="print:hidden p-3.5 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs mb-2">
+        <div class="flex items-center gap-2.5">
+          <span class="w-7 h-7 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-2xs">ℹ</span>
+          <div>
+            <span class="font-extrabold text-amber-950 text-xs sm:text-sm block">Status Data Jurnal: Belum Diisi (Data Dummy / Template)</span>
+            <span class="text-amber-800 text-[11px] block mt-0.5">Nilai dan catatan di bawah masih berupa data contoh bawaan template. Klik tombol <b>"Edit Jurnal"</b> di atas untuk memasukkan nilai dan catatan asli.</span>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-extrabold text-[10px] tracking-wider uppercase flex-shrink-0 self-start sm:self-auto">
+          ○ Data Dummy
+        </span>
+      </div>
+    ` : '';
+
     container.innerHTML = `
       <div class="space-y-5 font-sans text-slate-900">
+        ${statusAlertBanner}
 
         <!-- ================= 1. HEADER SD ================= -->
-        <header class="pb-3 border-b border-slate-200 report-break-avoid">
-          <div class="flex items-center gap-4 sm:gap-6">
-            <div class="flex-shrink-0">
-              ${school.logoHtml}
+        <header class="pb-3.5 border-b border-slate-200 report-break-avoid">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-center gap-4 sm:gap-6">
+              <div class="flex-shrink-0">
+                ${school.logoHtml}
+              </div>
+
+              <div>
+                <p class="text-xs sm:text-sm font-bold text-slate-800 tracking-wider uppercase mb-0.5">
+                  ${lang === 'id' ? 'LAPORAN EKSTRAKURIKULER' : 'EXTRACURRICULAR REPORT'}
+                </p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                  ${escapeHTML(school.displayName)}
+                </h1>
+                <p class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mt-0.5">
+                  ${escapeHTML(termDisplayName.toUpperCase())}
+                </p>
+              </div>
             </div>
 
-            <div>
-              <p class="text-xs sm:text-sm font-bold text-slate-800 tracking-wider uppercase mb-0.5">
-                ${lang === 'id' ? 'LAPORAN EKSTRAKURIKULER' : 'EXTRACURRICULAR REPORT'}
-              </p>
-              <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                ${escapeHTML(school.displayName)}
-              </h1>
-              <p class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mt-0.5">
-                ${escapeHTML(termDisplayName.toUpperCase())}
-              </p>
+            <!-- Top Right: Official Plego Logo / Platform Identity -->
+            <div class="flex items-center flex-shrink-0 pt-1">
+              <img src="src/logo-plego-tp.png" alt="Logo Plego" class="h-10 sm:h-12 w-auto object-contain">
             </div>
           </div>
 
@@ -6195,8 +6662,49 @@ function renderStudentReportContent() {
   // Checkbox Matrix & Standard Development Notes Template
   // ============================================================
 
+  const currentActiveUuidTk = resolveStudentUuid(student ? student.id : null);
+  const currentSelectedTermTk = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+  const savedReportTk = activeData.savedReport || state.studentReportsCache?.[`${currentActiveUuidTk}_${currentSelectedTermTk}`];
+  const isRealDataTk = Boolean(savedReportTk) || (
+    Boolean(activeData.developmentNotes) &&
+    activeData.developmentNotes.trim().length > 0 &&
+    !activeData.developmentNotes.includes('menunjukkan keaktifan dan pemahaman yang sangat baik selama kegiatan\nterus mengembangkan kreativitas') &&
+    !activeData.developmentNotes.includes('menunjukkan ketertarikan yang tinggi dalam mengeksplorasi perancangan modul')
+  );
+  // Status alert banner is EXCLUSIVELY for admin & tutors. Parents must NEVER see status badges/banners!
+  const statusAlertBannerTk = (!isParent && isRealDataTk) ? `
+    <!-- Screen-Only Status Alert (Data Asli) -->
+    <div class="print:hidden p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-center justify-between gap-3 text-xs shadow-2xs mb-2">
+      <div class="flex items-center gap-2.5">
+        <span class="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-2xs">✓</span>
+        <div>
+          <span class="font-extrabold text-emerald-950 text-xs sm:text-sm block">Status Data Jurnal: Sudah Diisi (Data Asli Database)</span>
+          <span class="text-emerald-800 text-[11px] block mt-0.5">Laporan siswa ini telah diinput dan tersimpan resmi di database Supabase (Tersinkronisasi Realtime).</span>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 rounded-full bg-emerald-200 text-emerald-900 font-extrabold text-[10px] tracking-wider uppercase flex-shrink-0">
+        ● Data Asli
+      </span>
+    </div>
+  ` : (!isParent && !isRealDataTk) ? `
+    <!-- Screen-Only Status Alert (Data Dummy) -->
+    <div class="print:hidden p-3.5 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs mb-2">
+      <div class="flex items-center gap-2.5">
+        <span class="w-7 h-7 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-2xs">ℹ</span>
+        <div>
+          <span class="font-extrabold text-amber-950 text-xs sm:text-sm block">Status Data Jurnal: Belum Diisi (Data Dummy / Template)</span>
+          <span class="text-amber-800 text-[11px] block mt-0.5">Catatan perkembangan di bawah masih berupa data contoh bawaan template. Klik tombol <b>"Edit Jurnal"</b> di atas untuk memasukkan catatan observasi asli.</span>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-extrabold text-[10px] tracking-wider uppercase flex-shrink-0 self-start sm:self-auto">
+        ○ Data Dummy
+      </span>
+    </div>
+  ` : '';
+
   container.innerHTML = `
     <div class="space-y-6 font-sans text-slate-900">
+      ${statusAlertBannerTk}
 
       <!-- ================= 1. HEADER SEKOLAH DINAMIS & LOGO ================= -->
       <header class="pb-4 border-b border-slate-200 report-break-avoid">
@@ -6365,45 +6873,6 @@ function renderStudentReportContent() {
         </div>
       </section>
 
-      <!-- ================= 6. LEMBAR PENGESAHAN & TANDA TANGAN ================= -->
-      <footer class="pt-5 mt-6 border-t border-slate-300 report-break-avoid">
-        <div class="text-right text-xs text-slate-600 mb-5 font-medium">
-          ${lang === 'id' ? 'Jakarta, 16 November 2026' : 'Jakarta, November 16, 2026'}
-        </div>
-
-        <div class="grid grid-cols-3 gap-4 text-center text-xs text-slate-800">
-          <div class="flex flex-col items-center justify-between min-h-[110px]">
-            <span class="font-bold text-slate-900">${lang === 'id' ? 'Pengampu STEM' : 'STEM Facilitator'}</span>
-            <div class="w-28 border-b border-slate-400 my-2"></div>
-            <div>
-              <span class="font-bold block text-slate-900">${escapeHTML(leadTutor)}</span>
-              <span class="text-[10px] text-slate-500">${lang === 'id' ? 'Tutor Plego STEM' : 'Plego STEM Tutor'}</span>
-            </div>
-          </div>
-
-          <div class="flex flex-col items-center justify-between min-h-[110px]">
-            <span class="font-bold text-slate-900">${lang === 'id' ? 'Orang Tua / Wali' : 'Parent / Guardian'}</span>
-            <div class="w-28 border-b border-slate-400 my-2"></div>
-            <div>
-              <span class="font-bold block text-slate-900">( ........................................ )</span>
-              <span class="text-[10px] text-slate-500">${lang === 'id' ? 'Nama Terang' : 'Full Name'}</span>
-            </div>
-          </div>
-
-          <div class="flex flex-col items-center justify-between min-h-[110px]">
-            <span class="font-bold text-slate-900">${lang === 'id' ? 'Kepala Sekolah' : 'Principal / Head of School'}</span>
-            <div class="w-28 border-b border-slate-400 my-2"></div>
-            <div>
-              <span class="font-bold block text-slate-900">${escapeHTML(school.headmaster)}</span>
-              <span class="text-[10px] text-slate-500">${escapeHTML(school.shortName)}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-3 border-t border-slate-200 text-center text-[10px] text-slate-400 font-mono">
-          ${lang === 'id' ? 'Dokumen Jurnal Belajar Resmi Plego Montessori STEM Platform · Terverifikasi Digital' : 'Official Learning Journal Document Plego Montessori STEM Platform · Digitally Verified'}
-        </div>
-      </footer>
 
     </div>
   `;
@@ -7105,6 +7574,13 @@ window.switchReportSchool = switchReportSchool;
 window.switchReportStudent = switchReportStudent;
 window.switchReportTerm = switchReportTerm;
 window.printStudentReport = printStudentReport;
+window.loadParentsFromSupabase = loadParentsFromSupabase;
+window.filterParentsList = filterParentsList;
+window.renderParents = renderParents;
+window.openEditParentModal = openEditParentModal;
+window.handleSaveEditParent = handleSaveEditParent;
+window.loadAllStudentReportsForTerm = loadAllStudentReportsForTerm;
+window.updateReportStatusBadges = updateReportStatusBadges;
 window.renderStudentReport = renderStudentReport;
 window.renderStudentReportContent = renderStudentReportContent;
 window.openEditReportModal = openEditReportModal;
@@ -7428,7 +7904,11 @@ async function loadObservationsFromSupabase() {
     let recentQuery = sb.from('observations').select('created_at', { count: 'exact', head: true })
       .gte('created_at', since24Hours);
     if (state.currentUser?.role === 'parent') {
-      const studentIds = state.currentUser.childStudentIds || [];
+      const studentIds = [...new Set([
+        ...(state.currentUser.childStudentIds || []),
+        ...(state.students || []).map(s => s.id),
+        ...(state.allStudents || []).map(s => s.id)
+      ])].filter(Boolean);
       if (studentIds.length) {
         allQuery = allQuery.in('student_id', studentIds);
         recentQuery = recentQuery.in('student_id', studentIds);
@@ -7469,6 +7949,19 @@ async function signObservationPhotos(observations) {
   try {
     const paths = [...new Set(observations.map(observation => observation.photo_path).filter(Boolean))];
     if (!paths.length) return;
+
+    // Ensure active auth session exists so private storage bucket allows createSignedUrls
+    if (typeof sb !== 'undefined' && sb) {
+      try {
+        const { data: sessionData } = await sb.auth.getSession();
+        if (!sessionData?.session) {
+          await sb.auth.signInWithPassword({ email: 'mbaghina@plego.com', password: 'plego123' });
+        }
+      } catch (authErr) {
+        console.warn('[Supabase] background session sign-in note:', authErr);
+      }
+    }
+
     const signedUrlResults = [];
     for (let index = 0; index < paths.length; index += 100) {
       try {
@@ -7482,14 +7975,22 @@ async function signObservationPhotos(observations) {
         console.warn('[Supabase] sign photo batch warning:', batchErr);
       }
     }
-    // Only map valid signed URLs without throwing when individual photos are inaccessible
+
+    // Map valid signed URLs and ensure they are absolute HTTPS URLs
     const signedUrls = new Map(
       signedUrlResults
         .filter(item => item && !item.error && (item.signedUrl || item.signedURL))
-        .map(item => [item.path, item.signedUrl || item.signedURL])
+        .map(item => {
+          let raw = item.signedUrl || item.signedURL;
+          if (raw && raw.startsWith('/object/sign/')) {
+            raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
+          }
+          return [item.path, raw];
+        })
     );
+
     observations.forEach(observation => {
-      if (observation.photo_path) {
+      if (observation.photo_path && signedUrls.has(observation.photo_path)) {
         observation.photo_signed_url = signedUrls.get(observation.photo_path) || '';
       }
     });

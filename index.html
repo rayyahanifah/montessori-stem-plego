@@ -983,6 +983,10 @@
                 class="px-4 py-2 rounded-xl text-xs font-bold transition text-forest-light hover:text-forest flex items-center gap-1.5">
                 <span>👩‍🏫</span> <span>Data Tutor</span>
               </button>
+              <button type="button" id="subtab-manage-parents" onclick="switchAdminTab('parents')"
+                class="px-4 py-2 rounded-xl text-xs font-bold transition text-forest-light hover:text-forest flex items-center gap-1.5">
+                <span>👨‍👩‍👧</span> <span>Data Orang Tua</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1053,6 +1057,34 @@
             </div>
           </div>
         </div>
+
+        <!-- PANEL 3: PARENTS MANAGEMENT PANEL -->
+        <div id="panel-manage-parents" class="space-y-6 hidden">
+          <div class="bg-cream rounded-3xl p-5 md:p-7 border border-sand-200 shadow-soft space-y-6">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-sand-200/80 pb-5">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">👨‍👩‍👧</span>
+                <div>
+                  <h2 class="text-lg font-heading font-bold text-forest">Daftar Akun Orang Tua Siswa</h2>
+                  <p class="text-xs text-forest-light" id="parents-count-label">Memuat data akun orang tua dari database...</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="w-full sm:w-72">
+                  <input type="text" id="parents-search-input" oninput="filterParentsList(this.value)"
+                    placeholder="Cari nama ortu, siswa, atau nomor HP..."
+                    class="w-full text-xs bg-sand-50 border border-sand-200 text-forest rounded-2xl py-2.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-sage transition shadow-inner">
+                </div>
+              </div>
+            </div>
+
+            <!-- Parents Grid -->
+            <div id="parents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" aria-live="polite">
+              <!-- Rendered dynamically by renderParents() in app.js -->
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- FLOW 8: STUDENT REPORT / JURNAL BELAJAR PREVIEW & CETAK -->
@@ -1064,6 +1096,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-sand-200/80">
             <div class="flex items-center gap-3">
               <button type="button"
+                id="report-back-btn"
                 onclick="navigateTo(state.currentUser?.role === 'parent' ? 'parentHub' : 'dashboard')"
                 class="px-3.5 py-2 rounded-xl bg-white hover:bg-sand-100 text-forest text-xs font-bold transition flex items-center gap-1.5 border border-sand-200 shadow-2xs garden-interactive-btn">
                 <span>←</span> <span id="report-back-btn-text">Kembali</span>
@@ -1125,6 +1158,12 @@
                   class="px-3 py-1.5 rounded-xl bg-white border border-sand-200 text-xs font-bold text-forest shadow-2xs focus:ring-2 focus:ring-sage focus:outline-none">
                 </select>
               </div>
+
+              <!-- Visual Status Badge Container (Sudah Diisi vs Belum / Dummy) -->
+              <div id="report-status-badge-container" class="flex items-center"></div>
+
+              <!-- School Progress Badge Container -->
+              <div id="report-school-progress-container" class="flex items-center"></div>
             </div>
 
             <!-- Semester / Term Selector (Accessible for BOTH Staff AND Parents) -->
@@ -2019,6 +2058,73 @@
 
         </form>
 
+      </div>
+    </div>
+
+    <!-- MODAL: EDIT PARENT ACCOUNT (Admin Exclusive) -->
+    <div id="modal-edit-parent"
+      class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
+      <div
+        class="bg-cream w-full max-w-md rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
+        <div class="p-5 border-b border-sand-200 flex items-center justify-between bg-sand-50">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">👨‍👩‍👧</span>
+            <div>
+              <h2 class="font-heading font-bold text-forest text-base">Edit Akun Orang Tua</h2>
+              <p class="text-xs text-forest-light">Perbarui nama orang tua, nomor HP/WhatsApp, dan sandi/PIN</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeModal('modal-edit-parent')"
+            class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
+        </div>
+
+        <form id="edit-parent-form" onsubmit="handleSaveEditParent(event)" class="p-6 space-y-4 text-xs text-forest">
+          <input type="hidden" id="edit-parent-id">
+          <input type="hidden" id="edit-parent-student-id">
+
+          <!-- Info Siswa Terhubung -->
+          <div class="p-3.5 rounded-2xl bg-sand-100/80 border border-sand-200 space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-forest-light block">Siswa / Anak Terhubung:</span>
+            <p id="edit-parent-student-display" class="font-bold text-forest text-sm leading-tight">—</p>
+            <p id="edit-parent-school-display" class="text-[11px] text-forest-light leading-none mt-0.5">—</p>
+          </div>
+
+          <!-- Nama Orang Tua / Wali -->
+          <div>
+            <label for="edit-parent-name" class="block font-bold mb-1 text-forest">Nama Orang Tua / Wali:</label>
+            <input type="text" id="edit-parent-name" required placeholder="Contoh: Mama Abrar / Bunda Davin"
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+            <p class="text-[10px] text-forest-light mt-1">Nama ini akan tampil pada kartu akun orang tua dan profil portal ortu.</p>
+          </div>
+
+          <!-- Nomor WhatsApp / HP -->
+          <div>
+            <label for="edit-parent-phone" class="block font-bold mb-1 text-forest">Nomor WhatsApp / HP (Username Login):</label>
+            <input type="tel" id="edit-parent-phone" required placeholder="08xxxxxxxxxx"
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold font-mono text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+            <p class="text-[10px] text-forest-light mt-1">Gunakan format angka standar Indonesia (misal: 08123456789).</p>
+          </div>
+
+          <!-- PIN Sandi -->
+          <div>
+            <label for="edit-parent-pin" class="block font-bold mb-1 text-forest">Sandi / PIN Masuk (4-12 Angka/Karakter):</label>
+            <input type="text" id="edit-parent-pin" required maxlength="12" placeholder="1234"
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold font-mono text-forest tracking-widest focus:ring-2 focus:ring-sage focus:outline-none">
+            <p class="text-[10px] text-forest-light mt-1">Sandi/PIN digunakan orang tua untuk masuk ke Portal Orang Tua.</p>
+          </div>
+
+          <div class="pt-3 border-t border-sand-200 flex items-center justify-end gap-2.5">
+            <button type="button" onclick="closeModal('modal-edit-parent')"
+              class="px-4 py-2.5 rounded-xl border border-sand-300 text-forest font-bold hover:bg-sand-100 transition">
+              Batal
+            </button>
+            <button type="submit" id="edit-parent-submit-btn"
+              class="px-5 py-2.5 rounded-xl bg-forest hover:bg-forest-light text-white font-bold shadow-soft transition flex items-center gap-1.5 garden-interactive-btn">
+              <span>💾</span>
+              <span>Simpan Perubahan</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
