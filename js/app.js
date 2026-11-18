@@ -3025,6 +3025,15 @@ function renderObservations() {
               </div>
               <p class="observation-feed-milestone">${escapeHTML(obs.milestone)}</p>
               <p class="observation-feed-note">${escapeHTML(obs.anecdote)}</p>
+              ${obs.photoUrl ? `
+                <div class="mt-2.5">
+                  <button type="button" onclick="openPhotoModal('${escapeHTML(obs.photoUrl)}', '${escapeHTML(obs.milestone)}', '${escapeHTML(obs.anecdote)}', '${escapeHTML(obs.studentName)} · ${escapeHTML(obs.time)}')"
+                    class="inline-flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-sand-100 hover:bg-sand-200 border border-sand-300 transition text-xs font-semibold text-forest shadow-2xs group">
+                    <img src="${escapeHTML(obs.photoUrl)}" alt="Foto Observasi" class="w-8 h-8 rounded-lg object-cover border border-sand-300 group-hover:scale-105 transition">
+                    <span>📸 ${state.lang === 'id' ? 'Lihat Foto Dokumentasi' : 'View Documentation Photo'}</span>
+                  </button>
+                </div>
+              ` : ''}
             </div>
             <span class="observation-mastery-pill">${getMasteryLabel(obs.level)}</span>
           </article>
@@ -4812,14 +4821,30 @@ function renderParentHub() {
     }))
     .filter(observation => observation.safePhotoUrl);
   document.getElementById('parent-photo-feed').innerHTML = photos.length
-    ? photos.map(observation => `<button type="button" data-parent-photo="${escapeHTML(observation.safePhotoUrl)}" class="rounded-2xl overflow-hidden aspect-video bg-sand-200">
-            <img src="${escapeHTML(observation.safePhotoUrl)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" class="w-full h-full object-cover">
-          </button>`).join('')
+    ? photos.map(observation => {
+      const createdDate = observation.created_at ? new Date(observation.created_at).toLocaleDateString(state.lang === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      return `
+        <button type="button" data-parent-photo="${escapeHTML(observation.safePhotoUrl)}"
+          data-photo-title="${escapeHTML(observation.milestone || (state.lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'))}"
+          data-photo-caption="${escapeHTML(observation.anecdote || '')}"
+          data-photo-meta="${escapeHTML(createdDate || observation.time || '')}"
+          class="rounded-2xl overflow-hidden aspect-video bg-sand-200 hover:opacity-95 transition shadow-2xs group relative">
+          <img src="${escapeHTML(observation.safePhotoUrl)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+        </button>
+      `;
+    }).join('')
     : `<p class="parent-photo-empty">${state.lang === 'id'
       ? 'Foto akan tampil setelah pendidik mengunggah dokumentasi observasi.'
       : 'Photos appear after an educator uploads observation documentation.'}</p>`;
   document.querySelectorAll('[data-parent-photo]').forEach(button => {
-    button.addEventListener('click', () => openPhotoModal(button.dataset.parentPhoto));
+    button.addEventListener('click', () => {
+      openPhotoModal(
+        button.dataset.parentPhoto,
+        button.dataset.photoTitle,
+        button.dataset.photoCaption,
+        button.dataset.photoMeta
+      );
+    });
   });
 
   const activity = state.curriculumData.find(item => state.scheduleItems.some(schedule =>
@@ -4852,6 +4877,20 @@ function printParentPortfolio() {
 }
 
 let currentPhotoZoom = 1.0;
+let currentPhotoRotation = 0;
+
+function setPhotoTransform() {
+  const img = document.getElementById('modal-photo-img');
+  const label = document.getElementById('modal-photo-zoom-level');
+  if (img) {
+    img.style.transform = `scale(${currentPhotoZoom}) rotate(${currentPhotoRotation}deg)`;
+    img.classList.toggle('cursor-zoom-out', currentPhotoZoom > 1.05);
+    img.classList.toggle('cursor-zoom-in', currentPhotoZoom <= 1.05);
+  }
+  if (label) {
+    label.textContent = `${Math.round(currentPhotoZoom * 100)}%`;
+  }
+}
 
 function openPhotoModal(imgUrl, title = '', caption = '', meta = '') {
   const safeUrl = safeHttpsUrl(imgUrl);
@@ -4861,10 +4900,21 @@ function openPhotoModal(imgUrl, title = '', caption = '', meta = '') {
   }
 
   state.currentViewingPhotoUrl = safeUrl;
-  resetPhotoZoom();
+  currentPhotoZoom = 1.0;
+  currentPhotoRotation = 0;
 
   const imgEl = document.getElementById('modal-photo-img');
-  if (imgEl) imgEl.src = safeUrl;
+  if (imgEl) {
+    imgEl.src = safeUrl;
+    imgEl.style.transform = 'scale(1) rotate(0deg)';
+    imgEl.classList.remove('cursor-zoom-out');
+    imgEl.classList.add('cursor-zoom-in');
+  }
+
+  const label = document.getElementById('modal-photo-zoom-level');
+  if (label) {
+    label.textContent = '100%';
+  }
 
   const titleEl = document.getElementById('modal-photo-title');
   if (titleEl) {
@@ -4886,24 +4936,22 @@ function openPhotoModal(imgUrl, title = '', caption = '', meta = '') {
 
 function setPhotoZoom(scale) {
   currentPhotoZoom = Math.min(3.0, Math.max(0.5, Math.round(scale * 100) / 100));
-  const img = document.getElementById('modal-photo-img');
-  const label = document.getElementById('modal-photo-zoom-level');
-  if (img) {
-    img.style.transform = `scale(${currentPhotoZoom})`;
-    img.classList.toggle('cursor-zoom-out', currentPhotoZoom > 1.05);
-    img.classList.toggle('cursor-zoom-in', currentPhotoZoom <= 1.05);
-  }
-  if (label) {
-    label.textContent = `${Math.round(currentPhotoZoom * 100)}%`;
-  }
+  setPhotoTransform();
 }
 
 function zoomPhoto(delta) {
   setPhotoZoom(currentPhotoZoom + delta);
 }
 
+function rotatePhoto(deg = 90) {
+  currentPhotoRotation = (currentPhotoRotation + deg) % 360;
+  setPhotoTransform();
+}
+
 function resetPhotoZoom() {
-  setPhotoZoom(1.0);
+  currentPhotoZoom = 1.0;
+  currentPhotoRotation = 0;
+  setPhotoTransform();
 }
 
 function togglePhotoZoomClick() {
@@ -7074,6 +7122,7 @@ window.renderFacilitatorPills = renderFacilitatorPills;
 window.openPhotoModal = openPhotoModal;
 window.setPhotoZoom = setPhotoZoom;
 window.zoomPhoto = zoomPhoto;
+window.rotatePhoto = rotatePhoto;
 window.resetPhotoZoom = resetPhotoZoom;
 window.togglePhotoZoomClick = togglePhotoZoomClick;
 window.togglePhotoFullscreen = togglePhotoFullscreen;

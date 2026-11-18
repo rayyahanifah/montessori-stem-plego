@@ -1693,79 +1693,73 @@
     </div>
   </div>
 
-  <!-- MODAL 5: PHOTO VIEWER (Full ratio, Zoom, Fullscreen & Download) -->
+  <!-- MODAL 5: PHOTO VIEWER (Full ratio, Zoom, Rotate, Fullscreen & Download) -->
   <div id="modal-photo"
     class="fixed inset-0 z-50 bg-forest/90 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4">
     <div id="modal-photo-container"
       class="max-w-4xl w-full bg-cream rounded-3xl overflow-hidden shadow-float fade-enter flex flex-col max-h-[95vh]">
 
-      <!-- Photo Viewer Header Toolbar -->
-      <div
-        class="px-5 py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-3 flex-shrink-0">
-        <div
-          class="px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
-          <div class="min-w-0">
-            <h3 id="modal-photo-title" class="text-xs sm:text-sm font-bold text-forest truncate">Dokumentasi
-              Pembelajaran STEM</h3>
-            <p id="modal-photo-meta" class="text-[11px] text-forest-light truncate">—</p>
-          </div>
-
-          <!-- Action Controls: Zoom, Fullscreen, Download, Close -->
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <!-- Zoom Controls -->
-            <div class="flex items-center bg-sand-200/80 rounded-xl p-0.5 border border-sand-300">
-              <button type="button" onclick="zoomPhoto(-0.25)" title="Zoom Out"
-                class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">－</button>
-              <span id="modal-photo-zoom-level" class="text-[10px] font-mono font-bold text-forest px-1.5">100%</span>
-              <button type="button" onclick="zoomPhoto(0.25)" title="Zoom In"
-                class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">＋</button>
-              <button type="button" onclick="resetPhotoZoom()" title="Reset Zoom"
-                class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">↺</button>
-            </div>
-
-            <!-- Fullscreen Button -->
-            <button type="button" onclick="togglePhotoFullscreen()" title="Layar Penuh"
-              class="px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition flex items-center gap-1">
-              class="hidden sm:flex px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold
-              transition items-center gap-1">
-              <span id="photo-fullscreen-icon">⛶</span>
-              <span class="hidden sm:inline text-[11px]" id="photo-fullscreen-text">Layar Penuh</span>
-            </button>
-
-            <!-- Download Button -->
-            <button type="button" onclick="downloadCurrentPhoto()" title="Unduh Foto Asli"
-              class="px-2.5 py-1.5 rounded-xl bg-forest hover:bg-forest/90 text-white text-xs font-bold transition flex items-center gap-1 shadow-2xs">
-              <span>📥</span>
-              <span class="hidden sm:inline text-[11px]">Unduh</span>
-            </button>
-
-            <!-- Close Button -->
-            <button type="button" onclick="closeModal('modal-photo')" title="Tutup"
-              class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 text-forest font-bold flex items-center justify-center transition ml-1">✕</button>
-          </div>
+      <!-- 1. Header Toolbar -->
+      <div class="px-4 sm:px-6 py-3 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-3 flex-shrink-0">
+        <div class="min-w-0 flex-1">
+          <h3 id="modal-photo-title" class="text-xs sm:text-sm font-bold text-forest truncate">Dokumentasi Pembelajaran STEM</h3>
+          <p id="modal-photo-meta" class="text-[11px] text-forest-light truncate">—</p>
         </div>
 
-        <!-- Photo Stage Area (Preserves exact aspect ratio, allows zoom & pan) -->
-        <div id="modal-photo-stage"
-          class="relative flex-1 bg-slate-950 flex items-center justify-center overflow-auto min-h-[50vh] p-4 select-none">
-          <img id="modal-photo-img" src="" alt="Dokumentasi Pembelajaran" onclick="togglePhotoZoomClick()"
-            class="max-h-[75vh] w-auto max-w-full object-contain transition-transform duration-200 ease-out cursor-zoom-in rounded-lg shadow-2xl">
-        </div>
-
-        <!-- Photo Caption Footer -->
-        <div
-          class="px-5 py-3 border-t border-sand-200 bg-sand-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-forest flex-shrink-0">
-          <p id="modal-photo-caption" class="text-xs text-slate-700 italic flex-1 truncate">Catatan pengamatan observasi
-          </p>
-          <div class="flex items-center gap-3 self-end sm:self-auto">
-            <span class="text-[10px] text-forest-light">Klik gambar untuk zoom cepat</span>
-            <button type="button" onclick="closeModal('modal-photo')"
-              class="px-3 py-1 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs">Tutup</button>
+        <!-- Controls Toolbar: Zoom (-/+/reset), Rotate, Fullscreen, Download, Close -->
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <!-- Zoom & Rotate Controls -->
+          <div class="flex items-center bg-sand-200/80 rounded-xl p-0.5 border border-sand-300">
+            <button type="button" onclick="zoomPhoto(-0.25)" title="Perkecil (Zoom Out)"
+              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">－</button>
+            <span id="modal-photo-zoom-level" class="text-[10px] font-mono font-bold text-forest px-1.5 min-w-8 text-center">100%</span>
+            <button type="button" onclick="zoomPhoto(0.25)" title="Perbesar (Zoom In)"
+              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">＋</button>
+            <button type="button" onclick="rotatePhoto(90)" title="Putar 90° (Rotate)"
+              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">↻</button>
+            <button type="button" onclick="resetPhotoZoom()" title="Reset Tampilan"
+              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">↺</button>
           </div>
-        </div>
 
+          <!-- Fullscreen Button -->
+          <button type="button" onclick="togglePhotoFullscreen()" title="Layar Penuh"
+            class="hidden sm:inline-flex px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition items-center gap-1">
+            <span id="photo-fullscreen-icon">⛶</span>
+            <span class="text-[11px]" id="photo-fullscreen-text">Layar Penuh</span>
+          </button>
+
+          <!-- Download Button -->
+          <button type="button" onclick="downloadCurrentPhoto()" title="Unduh Foto Asli"
+            class="px-2.5 py-1.5 rounded-xl bg-forest hover:bg-forest/90 text-white text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+            <span>📥</span>
+            <span class="hidden sm:inline text-[11px]">Unduh</span>
+          </button>
+
+          <!-- Close Button -->
+          <button type="button" onclick="closeModal('modal-photo')" title="Tutup"
+            class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 text-forest font-bold flex items-center justify-center transition ml-1">✕</button>
+        </div>
       </div>
+
+      <!-- 2. Photo Stage Area (Preserves aspect ratio, full image display, zoom & pan) -->
+      <div id="modal-photo-stage"
+        class="relative flex-1 bg-slate-950 flex items-center justify-center overflow-auto min-h-[50vh] p-4 select-none">
+        <img id="modal-photo-img" src="" alt="Dokumentasi Pembelajaran" onclick="togglePhotoZoomClick()"
+          class="max-h-[72vh] w-auto max-w-full object-contain transition-transform duration-200 ease-out cursor-zoom-in rounded-lg shadow-2xl">
+      </div>
+
+      <!-- 3. Photo Caption Footer -->
+      <div class="px-5 py-3 border-t border-sand-200 bg-sand-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-forest flex-shrink-0">
+        <p id="modal-photo-caption" class="text-xs text-slate-700 italic flex-1 truncate">Catatan pengamatan observasi</p>
+        <div class="flex items-center gap-3 self-end sm:self-auto">
+          <span class="text-[10px] text-forest-light">Klik gambar untuk perbesar/perkecil</span>
+          <button type="button" onclick="closeModal('modal-photo')"
+            class="px-3 py-1 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs">Tutup</button>
+        </div>
+      </div>
+
     </div>
+  </div>
 
     <!-- MODAL: EDIT STUDENT REPORT / JURNAL BELAJAR (Admin & Tutor) -->
     <div id="modal-edit-report"
