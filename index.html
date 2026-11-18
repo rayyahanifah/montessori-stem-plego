@@ -589,7 +589,9 @@
               </div>
               <div class="flex items-center flex-wrap gap-2 mt-1.5">
                 <h1 class="text-2xl md:text-3xl font-bold text-forest" data-i18n="planner.title">Rencana Belajar</h1>
-                <span class="planner-period-pill text-xs md:text-sm font-extrabold px-3 py-1 rounded-full bg-sand-200/90 text-forest border border-sand-300 shadow-2xs" id="planner-period-label">November 2026</span>
+                <span
+                  class="planner-period-pill text-xs md:text-sm font-extrabold px-3 py-1 rounded-full bg-sand-200/90 text-forest border border-sand-300 shadow-2xs"
+                  id="planner-period-label">November 2026</span>
               </div>
               <p class="text-xs md:text-sm text-forest-light mt-1.5" data-i18n="planner.subtitle">Atur aktivitas, kelas,
                 dan pendidik dalam satu tampilan.</p>
@@ -1103,12 +1105,14 @@
                 <span id="label-report-school" class="text-xs font-bold text-forest-light px-2.5">Sekolah:</span>
                 <button type="button" onclick="switchReportSchool('early_step')" id="btn-school-early_step"
                   class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Early Step</button>
-                <button type="button" onclick="switchReportSchool('azhari')" id="btn-school-azhari"
-                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Azhari</button>
                 <button type="button" onclick="switchReportSchool('masa_kecil')" id="btn-school-masa_kecil"
                   class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Masa Kecil</button>
+                <button type="button" onclick="switchReportSchool('azhari')" id="btn-school-azhari"
+                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Azhari</button>
                 <button type="button" onclick="switchReportSchool('citra_alam')" id="btn-school-citra_alam"
                   class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Citra Alam</button>
+                <button type="button" onclick="switchReportSchool('miftahul_ulum')" id="btn-school-miftahul_ulum"
+                  class="report-school-btn px-3 py-1.5 rounded-xl text-xs font-bold transition">Miftahul Ulum</button>
               </div>
 
               <!-- Student Selector -->
@@ -1435,11 +1439,11 @@
             <div class="flex-1">
               <span class="font-bold text-forest block" data-i18n="obsModal.attachPhoto">Lampirkan Foto Hasil
                 Karya</span>
-              <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp"
+              <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 aria-describedby="obs-photo-help"
                 class="mt-1 w-full bg-cream border border-sand-200 rounded-xl px-3 py-2 text-xs">
               <span id="obs-photo-help" class="mt-1 block text-[10px] text-forest-light"
-                data-i18n="obsModal.photoHelp">JPG, PNG, atau WebP, maksimal 8 MB. Foto disimpan privat.</span>
+                data-i18n="obsModal.photoHelp">JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.</span>
             </div>
           </div>
         </div>
@@ -1485,8 +1489,7 @@
           <div>
             <label for="new-student-nickname" class="block text-xs font-bold text-forest mb-1.5"
               id="new-student-nickname-label">Nama panggilan anak</label>
-            <input type="text" id="new-student-nickname" name="nickname" maxlength="60"
-              placeholder="Contoh: Kenzo"
+            <input type="text" id="new-student-nickname" name="nickname" maxlength="60" placeholder="Contoh: Kenzo"
               class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
           </div>
         </div>
@@ -1522,7 +1525,8 @@
               <input type="tel" id="new-student-parent-phone" name="parent_phone" required
                 placeholder="Contoh: 081234567890"
                 class="w-full p-3 rounded-xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-sm text-forest">
-              <p id="parent-phone-sibling-hint" class="text-[11px] text-emerald-700 font-bold mt-1.5 hidden flex items-center gap-1"></p>
+              <p id="parent-phone-sibling-hint"
+                class="text-[11px] text-emerald-700 font-bold mt-1.5 hidden flex items-center gap-1"></p>
             </div>
             <div>
               <label for="new-student-parent-pin" class="block text-xs font-bold text-forest mb-1.5"
@@ -1672,291 +1676,352 @@
   </div>
 
   <!-- MODAL 5: PHOTO VIEWER (Full ratio, Zoom, Fullscreen & Download) -->
-  <div id="modal-photo" class="fixed inset-0 z-50 bg-forest/90 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4">
-    <div id="modal-photo-container" class="max-w-4xl w-full bg-cream rounded-3xl overflow-hidden shadow-float fade-enter flex flex-col max-h-[95vh]">
-      
+  <div id="modal-photo"
+    class="fixed inset-0 z-50 bg-forest/90 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4">
+    <div id="modal-photo-container"
+      class="max-w-4xl w-full bg-cream rounded-3xl overflow-hidden shadow-float fade-enter flex flex-col max-h-[95vh]">
+
       <!-- Photo Viewer Header Toolbar -->
-      <div class="px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
-        <div class="min-w-0">
-          <h3 id="modal-photo-title" class="text-xs sm:text-sm font-bold text-forest truncate">Dokumentasi Pembelajaran STEM</h3>
-          <p id="modal-photo-meta" class="text-[11px] text-forest-light truncate">—</p>
-        </div>
-
-        <!-- Action Controls: Zoom, Fullscreen, Download, Close -->
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-          <!-- Zoom Controls -->
-          <div class="flex items-center bg-sand-200/80 rounded-xl p-0.5 border border-sand-300">
-            <button type="button" onclick="zoomPhoto(-0.25)" title="Zoom Out"
-              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">－</button>
-            <span id="modal-photo-zoom-level" class="text-[10px] font-mono font-bold text-forest px-1.5">100%</span>
-            <button type="button" onclick="zoomPhoto(0.25)" title="Zoom In"
-              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">＋</button>
-            <button type="button" onclick="resetPhotoZoom()" title="Reset Zoom"
-              class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">↺</button>
+      <div
+        class="px-5 py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-3 flex-shrink-0">
+        <div
+          class="px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-b border-sand-200 bg-sand-50 flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
+          <div class="min-w-0">
+            <h3 id="modal-photo-title" class="text-xs sm:text-sm font-bold text-forest truncate">Dokumentasi
+              Pembelajaran STEM</h3>
+            <p id="modal-photo-meta" class="text-[11px] text-forest-light truncate">—</p>
           </div>
 
-          <!-- Fullscreen Button -->
-          <button type="button" onclick="togglePhotoFullscreen()" title="Layar Penuh"
-            class="hidden sm:flex px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition items-center gap-1">
-            <span id="photo-fullscreen-icon">⛶</span>
-            <span class="hidden sm:inline text-[11px]" id="photo-fullscreen-text">Layar Penuh</span>
-          </button>
+          <!-- Action Controls: Zoom, Fullscreen, Download, Close -->
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <!-- Zoom Controls -->
+            <div class="flex items-center bg-sand-200/80 rounded-xl p-0.5 border border-sand-300">
+              <button type="button" onclick="zoomPhoto(-0.25)" title="Zoom Out"
+                class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">－</button>
+              <span id="modal-photo-zoom-level" class="text-[10px] font-mono font-bold text-forest px-1.5">100%</span>
+              <button type="button" onclick="zoomPhoto(0.25)" title="Zoom In"
+                class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">＋</button>
+              <button type="button" onclick="resetPhotoZoom()" title="Reset Zoom"
+                class="w-7 h-7 rounded-lg hover:bg-white text-forest font-bold flex items-center justify-center text-xs transition">↺</button>
+            </div>
 
-          <!-- Download Button -->
-          <button type="button" onclick="downloadCurrentPhoto()" title="Unduh Foto Asli"
-            class="px-2.5 py-1.5 rounded-xl bg-forest hover:bg-forest/90 text-white text-xs font-bold transition flex items-center gap-1 shadow-2xs">
-            <span>📥</span>
-            <span class="hidden sm:inline text-[11px]">Unduh</span>
-          </button>
+            <!-- Fullscreen Button -->
+            <button type="button" onclick="togglePhotoFullscreen()" title="Layar Penuh"
+              class="px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition flex items-center gap-1">
+              class="hidden sm:flex px-2.5 py-1.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold
+              transition items-center gap-1">
+              <span id="photo-fullscreen-icon">⛶</span>
+              <span class="hidden sm:inline text-[11px]" id="photo-fullscreen-text">Layar Penuh</span>
+            </button>
 
-          <!-- Close Button -->
-          <button type="button" onclick="closeModal('modal-photo')" title="Tutup"
-            class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 text-forest font-bold flex items-center justify-center transition ml-1">✕</button>
+            <!-- Download Button -->
+            <button type="button" onclick="downloadCurrentPhoto()" title="Unduh Foto Asli"
+              class="px-2.5 py-1.5 rounded-xl bg-forest hover:bg-forest/90 text-white text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+              <span>📥</span>
+              <span class="hidden sm:inline text-[11px]">Unduh</span>
+            </button>
+
+            <!-- Close Button -->
+            <button type="button" onclick="closeModal('modal-photo')" title="Tutup"
+              class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 text-forest font-bold flex items-center justify-center transition ml-1">✕</button>
+          </div>
         </div>
-      </div>
 
-      <!-- Photo Stage Area (Preserves exact aspect ratio, allows zoom & pan) -->
-      <div id="modal-photo-stage" class="relative flex-1 bg-slate-950 flex items-center justify-center overflow-auto min-h-[50vh] p-4 select-none">
-        <img id="modal-photo-img" src="" alt="Dokumentasi Pembelajaran"
-          onclick="togglePhotoZoomClick()"
-          class="max-h-[75vh] w-auto max-w-full object-contain transition-transform duration-200 ease-out cursor-zoom-in rounded-lg shadow-2xl">
-      </div>
-
-      <!-- Photo Caption Footer -->
-      <div class="px-5 py-3 border-t border-sand-200 bg-sand-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-forest flex-shrink-0">
-        <p id="modal-photo-caption" class="text-xs text-slate-700 italic flex-1 truncate">Catatan pengamatan observasi</p>
-        <div class="flex items-center gap-3 self-end sm:self-auto">
-          <span class="text-[10px] text-forest-light">Klik gambar untuk zoom cepat</span>
-          <button type="button" onclick="closeModal('modal-photo')"
-            class="px-3 py-1 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs">Tutup</button>
+        <!-- Photo Stage Area (Preserves exact aspect ratio, allows zoom & pan) -->
+        <div id="modal-photo-stage"
+          class="relative flex-1 bg-slate-950 flex items-center justify-center overflow-auto min-h-[50vh] p-4 select-none">
+          <img id="modal-photo-img" src="" alt="Dokumentasi Pembelajaran" onclick="togglePhotoZoomClick()"
+            class="max-h-[75vh] w-auto max-w-full object-contain transition-transform duration-200 ease-out cursor-zoom-in rounded-lg shadow-2xl">
         </div>
-      </div>
 
-    </div>
-  </div>
-
-  <!-- MODAL: EDIT STUDENT REPORT / JURNAL BELAJAR (Admin & Tutor) -->
-  <div id="modal-edit-report"
-    class="fixed inset-0 z-50 bg-forest/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
-    <div
-      class="bg-cream w-full max-w-3xl max-h-[92vh] rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
-
-      <!-- Modal Header -->
-      <div class="p-5 border-b border-sand-200 flex items-center justify-between bg-sand-50">
-        <div>
-          <h2 class="font-heading font-bold text-forest text-base sm:text-lg flex items-center gap-2">
-            <span>📝</span> <span>Edit Jurnal Belajar (Rapor Ekstrakurikuler)</span>
-          </h2>
-          <p id="edit-report-student-meta" class="text-xs text-forest-light mt-0.5">
-            Siswa: <span id="edit-report-student-name" class="font-bold text-forest">—</span> · <span
-              id="edit-report-term-label" class="font-medium text-forest">—</span>
+        <!-- Photo Caption Footer -->
+        <div
+          class="px-5 py-3 border-t border-sand-200 bg-sand-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-forest flex-shrink-0">
+          <p id="modal-photo-caption" class="text-xs text-slate-700 italic flex-1 truncate">Catatan pengamatan observasi
           </p>
+          <div class="flex items-center gap-3 self-end sm:self-auto">
+            <span class="text-[10px] text-forest-light">Klik gambar untuk zoom cepat</span>
+            <button type="button" onclick="closeModal('modal-photo')"
+              class="px-3 py-1 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs">Tutup</button>
+          </div>
         </div>
-        <button type="button" onclick="closeModal('modal-edit-report')"
-          class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest font-bold transition">✕</button>
+
       </div>
+    </div>
 
-      <!-- Modal Body (Scrollable Form) -->
-      <form id="form-edit-report" onsubmit="handleSaveStudentReportSubmit(event)"
-        class="p-5 overflow-y-auto space-y-5 text-xs text-forest">
+    <!-- MODAL: EDIT STUDENT REPORT / JURNAL BELAJAR (Admin & Tutor) -->
+    <div id="modal-edit-report"
+      class="fixed inset-0 z-50 bg-forest/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+      <div
+        class="bg-cream w-full max-w-3xl max-h-[92vh] rounded-3xl border border-sand-200 shadow-float overflow-hidden flex flex-col fade-enter">
 
-        <!-- 0. Identitas Rapor Siswa (Umur & Pengampu) -->
-        <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3">
-          <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
-            <span>👤</span> <span>Identitas Rapor (Umur &amp; Pengampu)</span>
-          </label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label for="edit-report-student-age" class="block text-[11px] font-bold text-forest-light mb-1">
-                Umur Siswa:
-              </label>
-              <input type="text" id="edit-report-student-age" required
-                placeholder="Contoh: 5 Tahun atau 4 Tahun 8 Bulan"
-                class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 text-xs font-semibold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
-            </div>
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label for="edit-report-facilitators" class="block text-[11px] font-bold text-forest-light">
-                  Pengampu / Fasilitator:
-                </label>
-                <button type="button" onclick="syncFacilitatorsFromSchedule()"
-                  title="Ambil otomatis nama tutor dari jadwal mengajar kelas"
-                  class="text-[10px] text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md font-bold transition flex items-center gap-1 border border-emerald-200">
-                  <span>🔄</span> <span>Ambil dr Jadwal</span>
-                </button>
-              </div>
-              <input type="text" id="edit-report-facilitators" required
-                placeholder="Contoh: Athiyyah Syifa, S.Pd · Karina Liandra, S.Pd"
-                class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 text-xs font-semibold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
-              
-              <!-- Quick Dropdown for Tutors & Admins -->
-              <div class="mt-2 flex items-center gap-2">
-                <select id="edit-report-facilitator-select" onchange="handleSelectFacilitatorFromDropdown(this)"
-                  class="flex-1 bg-white border border-sand-300 rounded-xl p-1.5 text-[11px] font-bold text-forest focus:ring-2 focus:ring-sage focus:outline-none cursor-pointer">
-                  <option value="">➕ Tambah Tutor / Admin dari daftar...</option>
-                  <optgroup id="optgroup-facilitator-tutors" label="👩‍🏫 Tutor / Pendidik">
-                    <!-- Populated dynamically via populateFacilitatorDropdown() -->
-                  </optgroup>
-                  <optgroup id="optgroup-facilitator-admins" label="🛡️ Administrator">
-                    <!-- Populated dynamically via populateFacilitatorDropdown() -->
-                  </optgroup>
-                </select>
-              </div>
-
-              <!-- Quick Clickable Toggle Pills -->
-              <div id="edit-report-facilitator-pills" class="mt-2 flex flex-wrap items-center gap-1">
-                <!-- Dynamically populated via renderFacilitatorPills() -->
-              </div>
-            </div>
+        <!-- Modal Header -->
+        <div class="p-5 border-b border-sand-200 flex items-center justify-between bg-sand-50">
+          <div>
+            <h2 class="font-heading font-bold text-forest text-base sm:text-lg flex items-center gap-2">
+              <span>📝</span> <span>Edit Jurnal Belajar (Rapor Ekstrakurikuler)</span>
+            </h2>
+            <p id="edit-report-student-meta" class="text-xs text-forest-light mt-0.5">
+              Siswa: <span id="edit-report-student-name" class="font-bold text-forest">—</span> · <span
+                id="edit-report-term-label" class="font-medium text-forest">—</span>
+            </p>
           </div>
-        </div>
-
-        <!-- 1. Objektif Pembelajaran -->
-        <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-2">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
-              <span>🎯</span> <span>Objektif Pembelajaran</span>
-            </label>
-            <span class="text-[10px] text-forest-light">Pisahkan tiap poin dengan baris baru (Enter)</span>
-          </div>
-          <textarea id="edit-report-objectives" rows="5" required
-            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-3 text-xs leading-relaxed focus:ring-2 focus:ring-sage focus:outline-none"
-            placeholder="Tuliskan poin objektif pembelajaran (1 poin per baris)..."></textarea>
-        </div>
-
-        <!-- 2. Matriks Skill / Kemampuan -->
-        <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3">
-          <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
-            <span>⭐</span> <span>Matriks Evaluasi Skill / Kemampuan</span>
-          </label>
-          <p class="text-[11px] text-forest-light">Pilih tingkat capaian perkembangan untuk masing-masing domain
-            kompetensi:</p>
-
-          <div class="overflow-x-auto border border-sand-200 rounded-xl">
-            <table class="w-full border-collapse text-xs">
-              <thead>
-                <tr class="bg-sand-100 text-forest">
-                  <th class="border-b border-sand-200 p-2.5 text-left font-bold w-44">Tingkat Capaian</th>
-                  <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Keterlibatan Aktif</th>
-                  <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Kreatif</th>
-                  <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Digital Innovation</th>
-                  <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Problem Solving</th>
-                  <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Collaboration</th>
-                </tr>
-              </thead>
-              <tbody id="edit-report-skills-tbody" class="divide-y divide-sand-200 bg-white">
-                <!-- Dynamically rendered via renderEditReportSkillMatrix() -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- 3. Catatan Perkembangan Siswa -->
-        <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-2">
-          <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
-            <span>💬</span> <span>Catatan Perkembangan Siswa (Deskriptif)</span>
-          </label>
-          <textarea id="edit-report-notes" rows="4" required
-            class="w-full bg-sand-50 border border-sand-200 rounded-xl p-3 text-xs leading-relaxed focus:ring-2 focus:ring-sage focus:outline-none"
-            placeholder="Tuliskan ulasan naratif mengenai perkembangan fokus, antusiasme, dan kemandirian siswa..."></textarea>
-        </div>
-
-        <!-- 4. Kehadiran (Hitung Persentase Otomatis Sesuai Sesi Hadir) -->
-        <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
-              <span>📅</span> <span>Kehadiran Pertemuan Siswa</span>
-            </label>
-            <span class="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">
-              ⚡ Persentase dihitung &amp; dibuat otomatis
-            </span>
-          </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-            <!-- Sesi Hadir & Total Sesi Input -->
-            <div class="flex items-center gap-2 bg-sand-50 p-2.5 rounded-xl border border-sand-200">
-              <div class="flex items-center gap-1.5">
-                <label for="edit-report-attended-sessions" class="text-xs text-forest-light font-bold">Hadir:</label>
-                <input type="number" id="edit-report-attended-sessions" min="0" max="40" value="12" required
-                  oninput="handleAttendanceSessionChange()"
-                  class="w-16 bg-white border border-sand-300 rounded-lg p-1.5 text-center text-xs font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
-              </div>
-              <span class="text-xs text-forest-light">dari</span>
-              <div class="flex items-center gap-1.5">
-                <input type="number" id="edit-report-total-sessions" min="1" max="40" value="12" required
-                  oninput="handleAttendanceSessionChange()"
-                  class="w-16 bg-white border border-sand-300 rounded-lg p-1.5 text-center text-xs font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
-                <span class="text-xs text-forest-light font-bold">Sesi</span>
-              </div>
-            </div>
-
-            <!-- Persentase Otomatis (Terhitung Otomatis & Read-only Display) -->
-            <div class="flex items-center justify-between bg-sand-50 p-2.5 rounded-xl border border-sand-200">
-              <span class="text-xs text-forest-light font-bold">Persentase:</span>
-              <div class="flex items-center gap-2">
-                <div class="flex items-center bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-lg shadow-2xs">
-                  <span id="edit-report-attendance-percent-display" class="text-xs sm:text-sm font-black text-emerald-800">100%</span>
-                </div>
-                <input type="hidden" id="edit-report-attendance-percent" value="100">
-                <span id="edit-report-attendance-preview-text" class="text-[11px] font-bold text-forest-light">
-                  (12 dari 12 Pertemuan)
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pilihan Cepat Kehadiran (1-Click Presets) -->
-          <div class="flex flex-wrap items-center gap-1.5 pt-1">
-            <span class="text-[10px] text-forest-light font-bold">Pilihan cepat:</span>
-            <button type="button" onclick="setAttendancePreset(12, 12)"
-              class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-emerald-100 hover:text-emerald-800 border border-sand-200 transition">
-              12/12 (100% - Hadir Penuh)
-            </button>
-            <button type="button" onclick="setAttendancePreset(11, 12)"
-              class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-amber-100 hover:text-amber-800 border border-sand-200 transition">
-              11/12 (92% - 1x Absen)
-            </button>
-            <button type="button" onclick="setAttendancePreset(10, 12)"
-              class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-amber-100 hover:text-amber-800 border border-sand-200 transition">
-              10/12 (83% - 2x Absen)
-            </button>
-            <button type="button" onclick="setAttendancePreset(9, 12)"
-              class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-orange-100 hover:text-orange-800 border border-sand-200 transition">
-              9/12 (75% - 3x Absen)
-            </button>
-          </div>
-        </div>
-
-        <!-- Modal Footer Buttons -->
-        <div class="pt-3 border-t border-sand-200 flex items-center justify-end gap-3">
           <button type="button" onclick="closeModal('modal-edit-report')"
-            class="px-4 py-2.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs transition">
-            Batal
-          </button>
-          <button type="submit" id="btn-save-report"
-            class="px-6 py-2.5 rounded-xl bg-forest hover:bg-forest/90 text-white font-bold text-xs shadow-soft transition flex items-center gap-2">
-            <span id="save-report-spinner" class="hidden animate-spin">🌀</span>
-            <span id="save-report-btn-text">Simpan Perubahan</span>
-          </button>
+            class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest font-bold transition">✕</button>
         </div>
 
-      </form>
+        <!-- Modal Body (Scrollable Form) -->
+        <form id="form-edit-report" onsubmit="handleSaveStudentReportSubmit(event)"
+          class="p-5 overflow-y-auto space-y-5 text-xs text-forest">
 
+          <!-- 0. Identitas Rapor Siswa (Umur & Pengampu) -->
+          <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3">
+            <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
+              <span>👤</span> <span>Identitas Rapor (Umur &amp; Pengampu)</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div id="edit-report-age-wrapper">
+                <label for="edit-report-student-age" class="block text-[11px] font-bold text-forest-light mb-1">
+                  Umur Siswa:
+                </label>
+                <input type="text" id="edit-report-student-age"
+                  placeholder="Contoh: 5 Tahun atau 4 Tahun 8 Bulan"
+                  class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 text-xs font-semibold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+              </div>
+              <div id="edit-report-facilitators-wrapper" class="col-span-1">
+                <div class="flex items-center justify-between mb-1">
+                  <label for="edit-report-facilitators" class="block text-[11px] font-bold text-forest-light">
+                    Pengampu / Fasilitator:
+                  </label>
+                  <button type="button" onclick="syncFacilitatorsFromSchedule()"
+                    title="Ambil otomatis nama tutor dari jadwal mengajar kelas"
+                    class="text-[10px] text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md font-bold transition flex items-center gap-1 border border-emerald-200">
+                    <span>🔄</span> <span>Ambil dr Jadwal</span>
+                  </button>
+                </div>
+                <input type="text" id="edit-report-facilitators" required
+                  placeholder="Contoh: Athiyyah Syifa, S.Pd · Karina Liandra, S.Pd"
+                  class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 text-xs font-semibold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+
+                <!-- Quick Dropdown for Tutors & Admins -->
+                <div class="mt-2 flex items-center gap-2">
+                  <select id="edit-report-facilitator-select" onchange="handleSelectFacilitatorFromDropdown(this)"
+                    class="flex-1 bg-white border border-sand-300 rounded-xl p-1.5 text-[11px] font-bold text-forest focus:ring-2 focus:ring-sage focus:outline-none cursor-pointer">
+                    <option value="">➕ Tambah Tutor / Admin dari daftar...</option>
+                    <optgroup id="optgroup-facilitator-tutors" label="👩‍🏫 Tutor / Pendidik">
+                      <!-- Populated dynamically via populateFacilitatorDropdown() -->
+                    </optgroup>
+                    <optgroup id="optgroup-facilitator-admins" label="🛡️ Administrator">
+                      <!-- Populated dynamically via populateFacilitatorDropdown() -->
+                    </optgroup>
+                  </select>
+                </div>
+
+                <!-- Quick Clickable Toggle Pills -->
+                <div id="edit-report-facilitator-pills" class="mt-2 flex flex-wrap items-center gap-1">
+                  <!-- Dynamically populated via renderFacilitatorPills() -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1. Objektif Pembelajaran -->
+          <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
+                <span>🎯</span> <span>Objektif Pembelajaran</span>
+              </label>
+              <span class="text-[10px] text-forest-light">Pisahkan tiap poin dengan baris baru (Enter)</span>
+            </div>
+            <textarea id="edit-report-objectives" rows="5" required
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-3 text-xs leading-relaxed focus:ring-2 focus:ring-sage focus:outline-none"
+              placeholder="Tuliskan poin objektif pembelajaran (1 poin per baris)..."></textarea>
+          </div>
+
+          <!-- 2A. Matriks Skill / Kemampuan (PAUD / TK Template) -->
+          <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3" id="edit-report-skills-tk-section">
+            <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
+              <span>⭐</span> <span>Matriks Evaluasi Skill / Kemampuan (PAUD / TK)</span>
+            </label>
+            <p class="text-[11px] text-forest-light">Pilih tingkat capaian perkembangan untuk masing-masing domain
+              kompetensi:</p>
+
+            <div class="overflow-x-auto border border-sand-200 rounded-xl">
+              <table class="w-full border-collapse text-xs">
+                <thead>
+                  <tr class="bg-sand-100 text-forest">
+                    <th class="border-b border-sand-200 p-2.5 text-left font-bold w-44">Tingkat Capaian</th>
+                    <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Keterlibatan Aktif</th>
+                    <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Kreatif</th>
+                    <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Digital Innovation</th>
+                    <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Problem Solving</th>
+                    <th class="border-b border-l border-sand-200 p-2 text-center font-bold">Collaboration</th>
+                  </tr>
+                </thead>
+                <tbody id="edit-report-skills-tbody" class="divide-y divide-sand-200 bg-white">
+                  <!-- Dynamically rendered via renderEditReportSkillMatrix() -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2B. Nilai & Predikat Skill (SD Template) -->
+          <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3 hidden" id="edit-report-skills-sd-section">
+            <div class="flex items-center justify-between">
+              <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
+                <span>⭐</span> <span>Nilai &amp; Predikat Skill (SD Format)</span>
+              </label>
+              <span class="text-[10px] text-forest-light">Skor 0 - 100 (Predikat otomatis terisi)</span>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <div class="bg-sand-50 p-2.5 rounded-xl border border-sand-200 text-center">
+                <label class="block text-[11px] font-bold text-forest mb-1">Aktif</label>
+                <input type="number" id="edit-report-sd-aktif" min="0" max="100" value="95"
+                  oninput="handleSdScoreChange('aktif')"
+                  class="w-full bg-white border border-sand-300 rounded-lg p-1.5 text-center text-sm font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                <span id="edit-report-sd-pred-aktif" class="block text-[10px] font-bold text-emerald-700 mt-1">Sangat Mahir</span>
+              </div>
+              <div class="bg-sand-50 p-2.5 rounded-xl border border-sand-200 text-center">
+                <label class="block text-[11px] font-bold text-forest mb-1">Kreatif</label>
+                <input type="number" id="edit-report-sd-kreatif" min="0" max="100" value="92"
+                  oninput="handleSdScoreChange('kreatif')"
+                  class="w-full bg-white border border-sand-300 rounded-lg p-1.5 text-center text-sm font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                <span id="edit-report-sd-pred-kreatif" class="block text-[10px] font-bold text-emerald-700 mt-1">Mahir</span>
+              </div>
+              <div class="bg-sand-50 p-2.5 rounded-xl border border-sand-200 text-center">
+                <label class="block text-[11px] font-bold text-forest mb-1">Digital Inov.</label>
+                <input type="number" id="edit-report-sd-digital" min="0" max="100" value="90"
+                  oninput="handleSdScoreChange('digital')"
+                  class="w-full bg-white border border-sand-300 rounded-lg p-1.5 text-center text-sm font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                <span id="edit-report-sd-pred-digital" class="block text-[10px] font-bold text-emerald-700 mt-1">Mahir</span>
+              </div>
+              <div class="bg-sand-50 p-2.5 rounded-xl border border-sand-200 text-center">
+                <label class="block text-[11px] font-bold text-forest mb-1">Problem Solv.</label>
+                <input type="number" id="edit-report-sd-problem" min="0" max="100" value="88"
+                  oninput="handleSdScoreChange('problem')"
+                  class="w-full bg-white border border-sand-300 rounded-lg p-1.5 text-center text-sm font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                <span id="edit-report-sd-pred-problem" class="block text-[10px] font-bold text-emerald-700 mt-1">Mahir</span>
+              </div>
+              <div class="bg-sand-50 p-2.5 rounded-xl border border-sand-200 text-center col-span-2 sm:col-span-1">
+                <label class="block text-[11px] font-bold text-forest mb-1">Collaboration</label>
+                <input type="number" id="edit-report-sd-collab" min="0" max="100" value="90"
+                  oninput="handleSdScoreChange('collab')"
+                  class="w-full bg-white border border-sand-300 rounded-lg p-1.5 text-center text-sm font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                <span id="edit-report-sd-pred-collab" class="block text-[10px] font-bold text-emerald-700 mt-1">Sangat Mahir</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Catatan Perkembangan Siswa / Saran Pengampu -->
+          <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-2">
+            <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
+              <span>💬</span> <span id="edit-report-notes-label">Catatan Perkembangan Siswa (Deskriptif)</span>
+            </label>
+            <textarea id="edit-report-notes" rows="4" required
+              class="w-full bg-sand-50 border border-sand-200 rounded-xl p-3 text-xs leading-relaxed focus:ring-2 focus:ring-sage focus:outline-none"
+              placeholder="Tuliskan ulasan naratif mengenai perkembangan fokus, antusiasme, dan kemandirian siswa..."></textarea>
+          </div>
+
+          <!-- 4. Kehadiran (Hitung Persentase Otomatis Sesuai Sesi Hadir) -->
+          <div class="bg-white p-4 rounded-2xl border border-sand-200 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label class="font-extrabold text-forest text-xs flex items-center gap-1.5">
+                <span>📅</span> <span>Kehadiran Pertemuan Siswa</span>
+              </label>
+              <span
+                class="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">
+                ⚡ Persentase dihitung &amp; dibuat otomatis
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+              <!-- Sesi Hadir & Total Sesi Input -->
+              <div class="flex items-center gap-2 bg-sand-50 p-2.5 rounded-xl border border-sand-200">
+                <div class="flex items-center gap-1.5">
+                  <label for="edit-report-attended-sessions" class="text-xs text-forest-light font-bold">Hadir:</label>
+                  <input type="number" id="edit-report-attended-sessions" min="0" max="40" value="12" required
+                    oninput="handleAttendanceSessionChange()"
+                    class="w-16 bg-white border border-sand-300 rounded-lg p-1.5 text-center text-xs font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                </div>
+                <span class="text-xs text-forest-light">dari</span>
+                <div class="flex items-center gap-1.5">
+                  <input type="number" id="edit-report-total-sessions" min="1" max="40" value="12" required
+                    oninput="handleAttendanceSessionChange()"
+                    class="w-16 bg-white border border-sand-300 rounded-lg p-1.5 text-center text-xs font-extrabold text-forest focus:ring-2 focus:ring-sage focus:outline-none">
+                  <span class="text-xs text-forest-light font-bold">Sesi</span>
+                </div>
+              </div>
+
+              <!-- Persentase Otomatis (Terhitung Otomatis & Read-only Display) -->
+              <div class="flex items-center justify-between bg-sand-50 p-2.5 rounded-xl border border-sand-200">
+                <span class="text-xs text-forest-light font-bold">Persentase:</span>
+                <div class="flex items-center gap-2">
+                  <div
+                    class="flex items-center bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-lg shadow-2xs">
+                    <span id="edit-report-attendance-percent-display"
+                      class="text-xs sm:text-sm font-black text-emerald-800">100%</span>
+                  </div>
+                  <input type="hidden" id="edit-report-attendance-percent" value="100">
+                  <span id="edit-report-attendance-preview-text" class="text-[11px] font-bold text-forest-light">
+                    (12 dari 12 Pertemuan)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pilihan Cepat Kehadiran (1-Click Presets) -->
+            <div class="flex flex-wrap items-center gap-1.5 pt-1">
+              <span class="text-[10px] text-forest-light font-bold">Pilihan cepat:</span>
+              <button type="button" onclick="setAttendancePreset(12, 12)"
+                class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-emerald-100 hover:text-emerald-800 border border-sand-200 transition">
+                12/12 (100% - Hadir Penuh)
+              </button>
+              <button type="button" onclick="setAttendancePreset(11, 12)"
+                class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-amber-100 hover:text-amber-800 border border-sand-200 transition">
+                11/12 (92% - 1x Absen)
+              </button>
+              <button type="button" onclick="setAttendancePreset(10, 12)"
+                class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-amber-100 hover:text-amber-800 border border-sand-200 transition">
+                10/12 (83% - 2x Absen)
+              </button>
+              <button type="button" onclick="setAttendancePreset(9, 12)"
+                class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sand-100 hover:bg-orange-100 hover:text-orange-800 border border-sand-200 transition">
+                9/12 (75% - 3x Absen)
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal Footer Buttons -->
+          <div class="pt-3 border-t border-sand-200 flex items-center justify-end gap-3">
+            <button type="button" onclick="closeModal('modal-edit-report')"
+              class="px-4 py-2.5 rounded-xl bg-sand-200 hover:bg-sand-300 text-forest font-bold text-xs transition">
+              Batal
+            </button>
+            <button type="submit" id="btn-save-report"
+              class="px-6 py-2.5 rounded-xl bg-forest hover:bg-forest/90 text-white font-bold text-xs shadow-soft transition flex items-center gap-2">
+              <span id="save-report-spinner" class="hidden animate-spin">🌀</span>
+              <span id="save-report-btn-text">Simpan Perubahan</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
     </div>
-  </div>
 
-  <!-- FLOATING TOAST NOTIFICATION -->
-  <div id="toast"
-    class="fixed bottom-6 right-6 z-50 pointer-events-none transform translate-y-12 opacity-0 transition-all duration-300">
-    <div
-      class="bg-forest text-cream px-5 py-3 rounded-2xl shadow-float flex items-center gap-3 border border-sand-300 text-xs font-bold">
-      <span class="text-base" id="toast-icon">✨</span>
-      <span id="toast-msg">Perubahan tersimpan!</span>
+    <!-- FLOATING TOAST NOTIFICATION -->
+    <div id="toast"
+      class="fixed bottom-6 right-6 z-50 pointer-events-none transform translate-y-12 opacity-0 transition-all duration-300">
+      <div
+        class="bg-forest text-cream px-5 py-3 rounded-2xl shadow-float flex items-center gap-3 border border-sand-300 text-xs font-bold">
+        <span class="text-base" id="toast-icon">✨</span>
+        <span id="toast-msg">Perubahan tersimpan!</span>
+      </div>
     </div>
-  </div>
 
-  <!-- ================= JAVASCRIPT LOGIC & STATE ================= -->
-  <script src="js/app.js"></script>
+    <!-- ================= JAVASCRIPT LOGIC & STATE ================= -->
+    <script src="js/app.js"></script>
 </body>
 
 </html>

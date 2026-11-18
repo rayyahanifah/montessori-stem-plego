@@ -499,7 +499,7 @@ const i18n = {
     'obsModal.levelLabel': 'Tingkat Capaian (Montessori Mastery Scale):',
     'obsModal.anecdoteLabel': 'Catatan Anekdot & Kutipan Anak:',
     'obsModal.attachPhoto': 'Lampirkan Foto Hasil Karya',
-    'obsModal.photoHelp': 'JPG, PNG, atau WebP, maksimal 8 MB. Foto disimpan privat.',
+    'obsModal.photoHelp': 'JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.',
     'obsModal.markHighlight': 'Tampilkan di Laporan Orang Tua',
     'addCurr.modalTitle': 'Tambah Unit Kurikulum Plego Baru',
     'addCurr.modalSubtitle': 'Integrasi langsung ke Jalur Pembelajaran & Database Lokal',
@@ -666,7 +666,7 @@ const i18n = {
     'obsModal.levelLabel': 'Mastery Level (Montessori Scale):',
     'obsModal.anecdoteLabel': 'Anecdotal Observation & Child Quote:',
     'obsModal.attachPhoto': 'Attach Child Work Photo',
-    'obsModal.photoHelp': 'JPG, PNG, or WebP, up to 8 MB. Photos are stored privately.',
+    'obsModal.photoHelp': 'JPG, PNG, WebP, or HEIC, up to 8 MB. Photos are stored privately.',
     'obsModal.markHighlight': 'Show in Parent Progress Report',
     'addCurr.modalTitle': 'Add New Plego Curriculum Unit',
     'addCurr.modalSubtitle': 'Direct integration into Learning Pathway & Local DB',
@@ -929,7 +929,7 @@ async function handleLoginSubmit(e) {
 
     const userEmail = String(authData.user.email || email).toLowerCase();
     if (!state.admins || state.admins.length === 0) {
-      await loadAdminsFromSupabase().catch(() => {});
+      await loadAdminsFromSupabase().catch(() => { });
     }
     if (isAdminEmail(userEmail)) {
       const { data: adminTutor, error: adminTutorError } = await sb.from('tutors')
@@ -2410,18 +2410,16 @@ function renderPlanner() {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           ${monthsData.map(m => {
-            const isCurrentMonth = (new Date().getFullYear() === currentYear && new Date().getMonth() === m.monthIdx);
-            const isSelectedMonth = (activeDate.getMonth() === m.monthIdx);
-            return `
+      const isCurrentMonth = (new Date().getFullYear() === currentYear && new Date().getMonth() === m.monthIdx);
+      const isSelectedMonth = (activeDate.getMonth() === m.monthIdx);
+      return `
               <div onclick="jumpToMonth(${m.monthIdx}, ${currentYear})"
-                class="bg-white rounded-2xl border-2 p-3.5 hover:shadow-soft hover:border-sage transition cursor-pointer flex flex-col justify-between ${
-                  isSelectedMonth ? 'border-forest bg-sand-50/70 ring-2 ring-forest/20' : isCurrentMonth ? 'border-sage bg-sage-50/20' : 'border-sand-200'
-                }">
+                class="bg-white rounded-2xl border-2 p-3.5 hover:shadow-soft hover:border-sage transition cursor-pointer flex flex-col justify-between ${isSelectedMonth ? 'border-forest bg-sand-50/70 ring-2 ring-forest/20' : isCurrentMonth ? 'border-sage bg-sage-50/20' : 'border-sand-200'
+        }">
                 <div class="flex items-center justify-between mb-2">
                   <h4 class="font-extrabold text-sm text-forest">${escapeHTML(m.monthName)}</h4>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    m.activitiesCount > 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sand-100 text-forest-light'
-                  }">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${m.activitiesCount > 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sand-100 text-forest-light'
+        }">
                     ${m.activitiesCount} ${state.lang === 'id' ? 'aktivitas' : 'acts'}
                   </span>
                 </div>
@@ -2435,18 +2433,17 @@ function renderPlanner() {
                 <div class="grid grid-cols-7 gap-1 text-[9px] text-center font-medium select-none">
                   ${Array.from({ length: m.startingDay }, () => `<span class="text-transparent">—</span>`).join('')}
                   ${Array.from({ length: m.totalDays }, (_, d) => {
-                    const dayNum = d + 1;
-                    const dateStr = `${m.monthPrefix}-${String(dayNum).padStart(2, '0')}`;
-                    const hasActs = displayedScheduleItems.some(item => item.date === dateStr);
-                    const isToday = toLocalDateKey(new Date()) === dateStr;
-                    return `
-                      <span class="w-5 h-5 mx-auto flex items-center justify-center rounded-full ${
-                        isToday ? 'bg-forest text-cream font-bold' : hasActs ? 'bg-emerald-600 text-white font-bold' : 'text-forest hover:bg-sand-100'
-                      }">
+          const dayNum = d + 1;
+          const dateStr = `${m.monthPrefix}-${String(dayNum).padStart(2, '0')}`;
+          const hasActs = displayedScheduleItems.some(item => item.date === dateStr);
+          const isToday = toLocalDateKey(new Date()) === dateStr;
+          return `
+                      <span class="w-5 h-5 mx-auto flex items-center justify-center rounded-full ${isToday ? 'bg-forest text-cream font-bold' : hasActs ? 'bg-emerald-600 text-white font-bold' : 'text-forest hover:bg-sand-100'
+            }">
                         ${dayNum}
                       </span>
                     `;
-                  }).join('')}
+        }).join('')}
                 </div>
 
                 <div class="mt-3 pt-2 border-t border-sand-100 flex items-center justify-between text-[11px] font-bold text-sage hover:text-forest">
@@ -2455,7 +2452,7 @@ function renderPlanner() {
                 </div>
               </div>
             `;
-          }).join('')}
+    }).join('')}
         </div>
       </div>
     `;
@@ -2475,12 +2472,12 @@ function renderPlanner() {
       return `<button type="button" data-planner-date="${dateKey}" aria-label="${escapeHTML(date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }))}${items.length ? `, ${items.length} ${state.lang === 'id' ? 'aktivitas' : 'activities'}` : ''}" class="planner-month-day ${isToday ? 'is-today' : ''} ${inMonth ? '' : 'is-outside-month'}">
                   <span class="planner-month-date">${date.getDate()}</span>
                   ${items.length ? `<span class="planner-month-events">${items.slice(0, 3).map(itm => {
-                    const tTheme = getEntityColorTheme(itm.tutorName || itm.className);
-                    const shortTutor = itm.tutorName && itm.tutorName !== '—' ? `${itm.tutorName.split(' ')[0]}: ` : '';
-                    return `<span class="planner-month-event text-[10px] truncate block px-1 py-0.5 rounded font-semibold ${tTheme.bg} ${tTheme.text} border ${tTheme.border}" style="border-left: 3px solid ${tTheme.barColor};" title="${escapeHTML(itm.tutorName)} · ${escapeHTML(itm.className)}: ${escapeHTML(getItemTitle(itm))}">
+        const tTheme = getEntityColorTheme(itm.tutorName || itm.className);
+        const shortTutor = itm.tutorName && itm.tutorName !== '—' ? `${itm.tutorName.split(' ')[0]}: ` : '';
+        return `<span class="planner-month-event text-[10px] truncate block px-1 py-0.5 rounded font-semibold ${tTheme.bg} ${tTheme.text} border ${tTheme.border}" style="border-left: 3px solid ${tTheme.barColor};" title="${escapeHTML(itm.tutorName)} · ${escapeHTML(itm.className)}: ${escapeHTML(getItemTitle(itm))}">
                       ${escapeHTML(shortTutor)}${escapeHTML(getItemTitle(itm))}
                     </span>`;
-                  }).join('')}${items.length > 3 ? `<span class="planner-month-more text-[10px] text-sage font-bold">+${items.length - 3} ${state.lang === 'id' ? 'lainnya' : 'more'}</span>` : ''}</span>` : ''}
+      }).join('')}${items.length > 3 ? `<span class="planner-month-more text-[10px] text-sage font-bold">+${items.length - 3} ${state.lang === 'id' ? 'lainnya' : 'more'}</span>` : ''}</span>` : ''}
                 </button>`;
     }).join('')}
             </div>
@@ -3463,11 +3460,14 @@ async function saveObservation() {
     return;
   }
   const photoFile = document.getElementById('obs-photo-file').files?.[0] || null;
-  const allowedPhotoTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  if (photoFile && (!allowedPhotoTypes.includes(photoFile.type) || photoFile.size > 8 * 1024 * 1024)) {
+  const allowedPhotoTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+  const photoName = (photoFile?.name || '').toLowerCase();
+  const isHeicOrHeifExt = photoName.endsWith('.heic') || photoName.endsWith('.heif');
+  const isAllowedPhotoType = photoFile && (allowedPhotoTypes.includes(photoFile.type) || isHeicOrHeifExt);
+  if (photoFile && (!isAllowedPhotoType || photoFile.size > 8 * 1024 * 1024)) {
     showToast(state.lang === 'id'
-      ? 'Pilih foto JPG, PNG, atau WebP dengan ukuran maksimal 8 MB.'
-      : 'Choose a JPG, PNG, or WebP photo no larger than 8 MB.', '⚠️');
+      ? 'Pilih foto JPG, PNG, WebP, atau HEIC dengan ukuran maksimal 8 MB.'
+      : 'Choose a JPG, PNG, WebP, or HEIC photo no larger than 8 MB.', '⚠️');
     return;
   }
 
@@ -4142,7 +4142,7 @@ async function saveNewAdmin(event) {
     if (error) {
       console.warn('[Supabase] insert admin table error, saving to session:', error);
     }
-    
+
     ADMIN_IDENTITIES[email] = fullName;
     if (!state.admins.some(a => String(a.email || '').toLowerCase() === email)) {
       state.admins.push(payload);
@@ -4153,8 +4153,8 @@ async function saveNewAdmin(event) {
     await loadAdminsFromSupabase();
     renderAdmins();
     showToast(
-      state.lang === 'id' 
-        ? `Administrator ${fullName} berhasil didaftarkan! Akun siap digunakan untuk login.` 
+      state.lang === 'id'
+        ? `Administrator ${fullName} berhasil didaftarkan! Akun siap digunakan untuk login.`
         : `Admin ${fullName} registered! Account is ready to log in.`,
       '🛡️'
     );
@@ -4362,8 +4362,8 @@ async function saveNewTutor(event) {
     await loadTutorsFromSupabase();
     renderTutors();
     showToast(
-      state.lang === 'id' 
-        ? `Tutor ${fullName} berhasil didaftarkan! Akun siap digunakan untuk login.` 
+      state.lang === 'id'
+        ? `Tutor ${fullName} berhasil didaftarkan! Akun siap digunakan untuk login.`
         : `Tutor ${fullName} registered! Account is ready to log in.`,
       '👩‍🏫'
     );
@@ -4854,6 +4854,7 @@ const SEMESTER_PRESETS = [
 const SCHOOL_REPORT_PRESETS = {
   early_step: {
     id: 'early_step',
+    category: 'tk',
     displayName: 'TK Early Step',
     name: 'TK Early Step Preschool & Kindergarten',
     shortName: 'Early Step',
@@ -4872,24 +4873,31 @@ const SCHOOL_REPORT_PRESETS = {
   },
   azhari: {
     id: 'azhari',
-    displayName: 'SD Azhari Islamic School Rasuna',
-    name: 'SD Azhari Islamic School Rasuna',
-    shortName: 'SD Azhari Rasuna',
+    category: 'sd',
+    displayName: 'SD Azhari',
+    name: 'SD Azhari Islamic School Rasuna & Lebak Bulus',
+    shortName: 'SD Azhari',
     badge: 'Azhari Islamic School',
-    boxColor: '#2D6A4F',
-    borderClass: 'border-[#2D6A4F]',
-    badgeBgClass: 'bg-[#2D6A4F]',
-    defaultTutors: 'Athiyyah Syifa, S.Pd · Astria, S.Si · Karina Liandra, S.Pd · Ghina Salma Susilo, S.Si',
+    boxColor: '#5B82A6',
+    borderClass: 'border-[#5B82A6]',
+    badgeBgClass: 'bg-[#5B82A6]',
+    defaultTutors: 'Karina Liandra, Thalitha Eka Dhea Putri, Devina Maharani, Ghina Salma Susilo, S. Si.',
     headmaster: 'Dra. Hj. Nurjanah, M.Pd',
     logoHtml: `
-      <div class="w-16 h-16 rounded-full border-2 border-emerald-500 bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
-        <span class="text-xl">🕌</span>
-        <span class="text-[8px] font-bold text-emerald-800 leading-tight">SD AZHARI</span>
+      <div class="w-16 h-16 rounded-full border-2 border-[#2B2868] bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
+        <svg viewBox="0 0 100 100" class="w-10 h-10">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#2B2868" stroke-width="3"/>
+          <path d="M50 20 C42 32 36 44 36 58 C36 68 42 76 50 78 C58 76 64 68 64 58 C64 44 58 32 50 20 Z" fill="#2B2868"/>
+          <circle cx="50" cy="18" r="3.5" fill="#C53030"/>
+          <text x="50" y="55" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="sans-serif">AZHARI</text>
+        </svg>
+        <span class="text-[6px] font-black text-[#2B2868] tracking-tighter leading-none mt-0.5">LEBAK BULUS</span>
       </div>
     `
   },
   masa_kecil: {
     id: 'masa_kecil',
+    category: 'tk',
     displayName: 'Sekolah Masa Kecil Montessori',
     name: 'Sekolah Masa Kecil Montessori',
     shortName: 'Masa Kecil Montessori',
@@ -4907,19 +4915,39 @@ const SCHOOL_REPORT_PRESETS = {
   },
   citra_alam: {
     id: 'citra_alam',
-    displayName: 'Sekolah Alam Citra Alam Ciganjur',
+    category: 'sd',
+    displayName: 'SD Citra Alam',
     name: 'Sekolah Alam Citra Alam Ciganjur',
-    shortName: 'Citra Alam Ciganjur',
+    shortName: 'SD Citra Alam',
     badge: 'Citra Alam Ciganjur',
-    boxColor: '#1B7A63',
-    borderClass: 'border-[#1B7A63]',
-    badgeBgClass: 'bg-[#1B7A63]',
+    boxColor: '#5B82A6',
+    borderClass: 'border-[#5B82A6]',
+    badgeBgClass: 'bg-[#5B82A6]',
     defaultTutors: 'Ai Syarifah Maulida · Athiyyah Syifa, S.Pd · Ghina Salma Susilo, S.Si',
     headmaster: 'Ir. Hendra Gunawan',
     logoHtml: `
-      <div class="w-16 h-16 rounded-full border-2 border-teal-600 bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
+      <div class="w-16 h-16 rounded-full border-2 border-[#5B82A6] bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
         <span class="text-xl">🍃</span>
-        <span class="text-[8px] font-bold text-teal-800 leading-tight">CITRA ALAM</span>
+        <span class="text-[7.5px] font-bold text-[#3B6B88] leading-tight">SD CITRA ALAM</span>
+      </div>
+    `
+  },
+  miftahul_ulum: {
+    id: 'miftahul_ulum',
+    category: 'sd',
+    displayName: 'SD Miftahul Ulum',
+    name: 'SD Miftahul Ulum Cinere Depok',
+    shortName: 'SD Miftahul Ulum',
+    badge: 'Miftahul Ulum',
+    boxColor: '#5B82A6',
+    borderClass: 'border-[#5B82A6]',
+    badgeBgClass: 'bg-[#5B82A6]',
+    defaultTutors: 'Karina Liandra, Thalitha Eka Dhea Putri, Devina Maharani, Ghina Salma Susilo, S. Si.',
+    headmaster: 'Drs. H. Ahmad Fauzi, M.Pd',
+    logoHtml: `
+      <div class="w-16 h-16 rounded-full border-2 border-[#5B82A6] bg-white flex flex-col items-center justify-center p-1 text-center shadow-2xs flex-shrink-0">
+        <span class="text-xl">📚</span>
+        <span class="text-[7px] font-bold text-[#3B6B88] leading-tight">MIFTAHUL ULUM</span>
       </div>
     `
   }
@@ -5184,6 +5212,47 @@ function resolveStudentUuid(studentId) {
   return String(studentId).trim();
 }
 
+function isPrimarySchool(schoolKey, student) {
+  const preset = SCHOOL_REPORT_PRESETS[schoolKey];
+  if (preset && preset.category) {
+    return preset.category === 'sd';
+  }
+  const key = String(schoolKey || '').toLowerCase();
+  if (key === 'azhari' || key === 'citra_alam' || key === 'miftahul_ulum') return true;
+  if (key === 'masa_kecil' || key === 'early_step') return false;
+
+  const schName = String(student?.schoolName || student?.school_name || '').toLowerCase();
+  const clsName = String(student?.className || student?.class_name || '').toLowerCase();
+  if (schName.includes('sd') || schName.includes('azhari') || schName.includes('miftahul') || schName.includes('citra alam')) return true;
+  if (clsName.includes('sd') || clsName.includes('1a') || clsName.includes('1b')) return true;
+
+  return false;
+}
+
+function getScorePredicate(score) {
+  const num = parseInt(score, 10);
+  if (isNaN(num)) return 'Mahir';
+  if (num >= 93) return 'Sangat Mahir';
+  if (num >= 85) return 'Mahir';
+  if (num >= 75) return 'Berkembang';
+  return 'Perlu Bimbingan';
+}
+
+function setSdScoreInput(key, val) {
+  const input = document.getElementById(`edit-report-sd-${key}`);
+  const predEl = document.getElementById(`edit-report-sd-pred-${key}`);
+  if (input) input.value = val;
+  if (predEl) predEl.textContent = getScorePredicate(val);
+}
+
+function handleSdScoreChange(fieldKey) {
+  const input = document.getElementById(`edit-report-sd-${fieldKey}`);
+  const label = document.getElementById(`edit-report-sd-pred-${fieldKey}`);
+  if (!input || !label) return;
+  const val = parseInt(input.value, 10);
+  label.textContent = getScorePredicate(val);
+}
+
 function getStudentSchoolKey(student) {
   if (!student) return 'other';
   const clsName = String(student.className || student.class_name || student.classes?.name || '').toLowerCase();
@@ -5194,9 +5263,13 @@ function getStudentSchoolKey(student) {
   if (clsName.includes('azhari') || schName.includes('azhari') || schId === 'cad815e1-84e8-4b89-87a5-0e927f345af6') {
     return 'azhari';
   }
-  // Masa Kecil (In Supabase: Masa Kecil - Green assigned to school_id 6b73bd45-cba2-46b8-95f9-199108be69e7 or d26923b7-8737-42b1-92af-b0baff7e9063)
-  if (clsName.includes('masa kecil') || schName.includes('masa kecil') || schId === 'd26923b7-8737-42b1-92af-b0baff7e9063' || (schId === '6b73bd45-cba2-46b8-95f9-199108be69e7' && clsName.includes('green'))) {
+  // Masa Kecil (Prioritize Masa Kecil check before Miftahul Ulum if class name has masa kecil)
+  if (clsName.includes('masa kecil') || (schName.includes('masa kecil') && !clsName.includes('miftahul')) || schId === 'd26923b7-8737-42b1-92af-b0baff7e9063' || (schId === '6b73bd45-cba2-46b8-95f9-199108be69e7' && clsName.includes('green'))) {
     return 'masa_kecil';
+  }
+  // Miftahul Ulum
+  if (clsName.includes('miftahul') || schName.includes('miftahul') || schId === '6b73bd45-cba2-46b8-95f9-199108be69e7') {
+    return 'miftahul_ulum';
   }
   // Early Step
   if (clsName.includes('early step') || schName.includes('early step') || schId === 'e944af7e-2c78-4fd3-88b9-9039b2a33baf') {
@@ -5221,47 +5294,88 @@ function findReportStudent(studentId) {
       const isYellow = String(found.className || '').toLowerCase().includes('yellow');
       const defaultAge = isYellow ? '6 Tahun' : '5 Tahun';
       const defaultAgeEn = isYellow ? '6 Years' : '5 Years';
+      const isSdStudent = isPrimarySchool(schKey, found);
+
+      const defaultObjectives = isSdStudent ? {
+        id: [
+          'mengenali berbagai jenis input sederhana, seperti tombol, sensor cahaya, dan sensor gerak',
+          'mengenali berbagai jenis output sederhana, seperti LED, buzzer, dan motor',
+          'menunjukkan pemahaman cara kerja Tilt Sensor sebagai input untuk mengaktifkan output',
+          'mencoba menggunakan Motor DC sebagai aktuator untuk menghasilkan gerakan',
+          'membuat rangkaian sederhana yang menghubungkan sensor sebagai input dan aktuator sebagai output'
+        ],
+        en: [
+          'recognize various types of simple inputs, such as buttons, light sensors, and motion sensors',
+          'recognize various types of simple outputs, such as LEDs, buzzers, and motors',
+          'demonstrate understanding of how Tilt Sensors work as inputs to trigger outputs',
+          'experiment using DC Motors as actuators to generate movement',
+          'create simple circuits connecting sensors as inputs and actuators as outputs'
+        ]
+      } : {
+        id: [
+          'Mengenal tombol dan sensor sederhana (sensor cahaya & sensor gerak).',
+          'Mengenal alat penanda sederhana, seperti lampu LED, suara buzzer, dan dinamo penggerak.',
+          'Belajar cara kerja sensor miring (tilt sensor) untuk menyalakan lampu atau suara saat posisinya dimiringkan.',
+          'Menggunakan dinamo kecil (motor DC) untuk membuat rakitan bisa berputar dan bergerak.',
+          'Belajar menyambungkan sensor dan alat penggerak sederhana agar rakitan bisa bekerja otomatis.'
+        ],
+        en: [
+          'Recognize simple buttons and sensors (light sensor & motion sensor).',
+          'Recognize simple signaling tools such as LED lights, buzzer sound, and drive motor.',
+          'Learn how tilt sensors trigger sound or lights when tilted.',
+          'Use small DC motors to make assembled models rotate and move.',
+          'Connect sensors with motorized components to create automated actions.'
+        ]
+      };
+
+      const defaultSkillRatings = isSdStudent ? {
+        _format: 'sd',
+        scores: {
+          keterlibatan_aktif: 95,
+          kreatif: 92,
+          digital_innovation: 90,
+          problem_solving: 88,
+          collaboration: 90
+        },
+        predicates: {
+          keterlibatan_aktif: 'Sangat Mahir',
+          kreatif: 'Mahir',
+          digital_innovation: 'Mahir',
+          problem_solving: 'Mahir',
+          collaboration: 'Sangat Mahir'
+        }
+      } : {
+        keterlibatan_aktif: 'mandiri_berinisiatif',
+        kreatif: 'mandiri',
+        digital_innovation: 'mandiri',
+        problem_solving: 'mandiri',
+        collaboration: 'dengan_pendampingan'
+      };
+
+      const defaultNarrative = isSdStudent ? {
+        id: 'menunjukkan keaktifan dan pemahaman yang sangat baik selama kegiatan\nterus mengembangkan kreativitas melalui berbagai proyek sederhana',
+        en: 'demonstrates active engagement and excellent understanding throughout the activities\ncontinues to develop creativity through various simple hands-on projects'
+      } : {
+        id: `${found.nickname || found.name.split(' ')[0]} menunjukkan kematangan konsentrasi dan penalaran sensori yang sangat menonjol. Ia memiliki inisiatif tinggi dalam mengeksplorasi polaritas magnetik dan mampu menyelesaikan seluruh siklus kerja secara tenang. Sikap mandiri dan ketertiban ${found.nickname || found.name.split(' ')[0]} saat merapikan aparatus patut diapresiasi.`,
+        en: `${found.nickname || found.name.split(' ')[0]} demonstrated excellent concentration and sensory reasoning. Showing proactive initiative in exploring magnetic polarities and completing work cycles calmly. Independent apparatus cleanup habits are highly commendable.`
+      };
 
       return {
         id: found.id,
         name: found.name,
         nickname: found.nickname || found.name.split(' ')[0],
         schoolId: schKey,
-        className: found.className || 'Kelas STEM',
+        className: found.className || (isSdStudent ? '1A' : 'Kelas STEM'),
         age: defaultAge,
         age_id: defaultAge,
         age_en: defaultAgeEn,
-        learningObjectives: {
-          id: [
-            'Mengenal tombol dan sensor sederhana (sensor cahaya & sensor gerak).',
-            'Mengenal alat penanda sederhana, seperti lampu LED, suara buzzer, dan dinamo penggerak.',
-            'Belajar cara kerja sensor miring (tilt sensor) untuk menyalakan lampu atau suara saat posisinya dimiringkan.',
-            'Menggunakan dinamo kecil (motor DC) untuk membuat rakitan bisa berputar dan bergerak.',
-            'Belajar menyambungkan sensor dan alat penggerak sederhana agar rakitan bisa bekerja otomatis.'
-          ],
-          en: [
-            'Recognize simple buttons and sensors (light sensor & motion sensor).',
-            'Recognize simple signaling tools such as LED lights, buzzer sound, and drive motor.',
-            'Learn how tilt sensors trigger sound or lights when tilted.',
-            'Use small DC motors to make assembled models rotate and move.',
-            'Connect sensors with motorized components to create automated actions.'
-          ]
-        },
-        skillRatings: {
-          keterlibatan_aktif: 'mandiri_berinisiatif',
-          kreatif: 'mandiri',
-          digital_innovation: 'mandiri',
-          problem_solving: 'mandiri',
-          collaboration: 'dengan_pendampingan'
-        },
-        narrativeFeedback: {
-          id: `${found.nickname || found.name.split(' ')[0]} menunjukkan kematangan konsentrasi dan penalaran sensori yang sangat menonjol. Ia memiliki inisiatif tinggi dalam mengeksplorasi polaritas magnetik dan mampu menyelesaikan seluruh siklus kerja secara tenang. Sikap mandiri dan ketertiban ${found.nickname || found.name.split(' ')[0]} saat merapikan aparatus patut diapresiasi.`,
-          en: `${found.nickname || found.name.split(' ')[0]} demonstrated excellent concentration and sensory reasoning. Showing proactive initiative in exploring magnetic polarities and completing work cycles calmly. Independent apparatus cleanup habits are highly commendable.`
-        },
+        learningObjectives: defaultObjectives,
+        skillRatings: defaultSkillRatings,
+        narrativeFeedback: defaultNarrative,
         attendance: {
-          percent: 100,
-          note_id: '12 dari 12 Pertemuan',
-          note_en: '12 of 12 Sessions'
+          percent: isSdStudent ? 92 : 100,
+          note_id: isSdStudent ? '11 dari 12 Pertemuan' : '12 dari 12 Pertemuan',
+          note_en: isSdStudent ? '11 of 12 Sessions' : '12 of 12 Sessions'
         },
         gallery: []
       };
@@ -5288,7 +5402,7 @@ async function switchReportSchool(schoolId) {
   state.reportSelectedSchool = schoolId;
   if (!state.allStudents || state.allStudents.length === 0) {
     if (typeof loadStudentsFromSupabase === 'function') {
-      await loadStudentsFromSupabase().catch(() => {});
+      await loadStudentsFromSupabase().catch(() => { });
     }
   }
   const schoolStudents = (state.allStudents || []).filter(s => getStudentSchoolKey(s) === schoolId);
@@ -5383,12 +5497,14 @@ function renderStudentReport() {
     azhari: allSt.filter(s => getStudentSchoolKey(s) === 'azhari').length,
     masa_kecil: allSt.filter(s => getStudentSchoolKey(s) === 'masa_kecil').length,
     citra_alam: allSt.filter(s => getStudentSchoolKey(s) === 'citra_alam').length,
+    miftahul_ulum: allSt.filter(s => getStudentSchoolKey(s) === 'miftahul_ulum').length,
   };
 
   // Default to a school that actually has registered students if none or empty
   if (!state.reportSelectedSchool) {
     if (counts.masa_kecil > 0) state.reportSelectedSchool = 'masa_kecil';
     else if (counts.azhari > 0) state.reportSelectedSchool = 'azhari';
+    else if (counts.miftahul_ulum > 0) state.reportSelectedSchool = 'miftahul_ulum';
     else state.reportSelectedSchool = 'early_step';
   }
 
@@ -5400,9 +5516,10 @@ function renderStudentReport() {
     azhari: `Azhari (${counts.azhari})`,
     masa_kecil: `Masa Kecil (${counts.masa_kecil})`,
     citra_alam: `Citra Alam (${counts.citra_alam})`,
+    miftahul_ulum: `Miftahul Ulum (${counts.miftahul_ulum})`,
   };
 
-  ['early_step', 'azhari', 'masa_kecil', 'citra_alam'].forEach(id => {
+  ['early_step', 'azhari', 'masa_kecil', 'citra_alam', 'miftahul_ulum'].forEach(id => {
     const btn = document.getElementById(`btn-school-${id}`);
     if (btn) {
       btn.textContent = schoolLabels[id] || id;
@@ -5481,7 +5598,7 @@ function renderStudentReport() {
     if (typeof loadObservationsFromSupabase === 'function') {
       loadObservationsFromSupabase().then(() => {
         renderStudentReportContent();
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }
 
@@ -5510,8 +5627,8 @@ function renderStudentReportContent() {
         </h3>
         <p class="text-xs sm:text-sm text-forest-light max-w-lg mx-auto leading-relaxed mb-5">
           ${lang === 'id'
-            ? 'Saat ini siswa yang sudah terdaftar di database baru Sekolah <b>Azhari (9 Siswa)</b> dan <b>Masa Kecil (10 Siswa)</b>. Silakan klik tombol di bawah untuk melihat jurnal belajar siswa.'
-            : 'Currently, registered students in the database are only at <b>Azhari (9 Students)</b> and <b>Masa Kecil (10 Students)</b>. Click below to view learning journals.'}
+        ? 'Saat ini siswa yang sudah terdaftar di database baru Sekolah <b>Azhari (9 Siswa)</b> dan <b>Masa Kecil (10 Siswa)</b>. Silakan klik tombol di bawah untuk melihat jurnal belajar siswa.'
+        : 'Currently, registered students in the database are only at <b>Azhari (9 Students)</b> and <b>Masa Kecil (10 Students)</b>. Click below to view learning journals.'}
         </p>
         <div class="flex items-center justify-center gap-2.5 flex-wrap">
           <button type="button" onclick="switchReportSchool('masa_kecil')"
@@ -5550,7 +5667,7 @@ function renderStudentReportContent() {
       : (school.defaultTutors || '').split(/[,·]/)[0]
   ).trim();
 
-  // Documentation photos from observations
+  // Documentation photos from observations (shared for both TK & SD)
   const studentUuid = resolveStudentUuid(student.id);
   const studentObs = (state.databaseObservations || [])
     .filter(obs => obs.student_id === student.id || obs.student_id === studentUuid)
@@ -5560,7 +5677,7 @@ function renderStudentReportContent() {
     if (typeof signObservationPhotos === 'function') {
       signObservationPhotos(state.databaseObservations).then(() => {
         renderStudentReportContent();
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }
 
@@ -5590,6 +5707,240 @@ function renderStudentReportContent() {
     : (activeData.photos && activeData.photos.length > 0 ? activeData.photos : (student.gallery || []));
 
   window.__currentReportPhotos = photos;
+
+  // -------------------------------------------------------------
+  // CONDITIONAL TEMPLATE ROUTING:
+  // Kategori SD ("Azhari", "Miftahul Ulum", "Citra Alam") vs PAUD / TK ("Masa Kecil", "Early Step")
+  // -------------------------------------------------------------
+  const isSD = isPrimarySchool(schoolKey, student);
+
+  if (isSD) {
+    // ============================================================
+    // SD TEMPLATE (Matching User Spec & media_1794964923846_f0d3e72b.png)
+    // NOTE: Tanda Tangan (TTD) dihapus khusus template SD agar bersih
+    // ============================================================
+    const sdScores = {
+      keterlibatan_aktif: activeData.skillRatings?.scores?.keterlibatan_aktif
+        ?? (typeof activeData.skillRatings?.keterlibatan_aktif === 'number' ? activeData.skillRatings.keterlibatan_aktif : 95),
+      kreatif: activeData.skillRatings?.scores?.kreatif
+        ?? (typeof activeData.skillRatings?.kreatif === 'number' ? activeData.skillRatings.kreatif : 92),
+      digital_innovation: activeData.skillRatings?.scores?.digital_innovation
+        ?? (typeof activeData.skillRatings?.digital_innovation === 'number' ? activeData.skillRatings.digital_innovation : 90),
+      problem_solving: activeData.skillRatings?.scores?.problem_solving
+        ?? (typeof activeData.skillRatings?.problem_solving === 'number' ? activeData.skillRatings.problem_solving : 88),
+      collaboration: activeData.skillRatings?.scores?.collaboration
+        ?? (typeof activeData.skillRatings?.collaboration === 'number' ? activeData.skillRatings.collaboration : 90)
+    };
+
+    const sdPredicates = {
+      keterlibatan_aktif: activeData.skillRatings?.predicates?.keterlibatan_aktif || getScorePredicate(sdScores.keterlibatan_aktif),
+      kreatif: activeData.skillRatings?.predicates?.kreatif || getScorePredicate(sdScores.kreatif),
+      digital_innovation: activeData.skillRatings?.predicates?.digital_innovation || getScorePredicate(sdScores.digital_innovation),
+      problem_solving: activeData.skillRatings?.predicates?.problem_solving || getScorePredicate(sdScores.problem_solving),
+      collaboration: activeData.skillRatings?.predicates?.collaboration || getScorePredicate(sdScores.collaboration)
+    };
+
+    let saranList = [];
+    if (activeData.developmentNotes && activeData.developmentNotes.trim().length > 0) {
+      saranList = activeData.developmentNotes
+        .split('\n')
+        .map(line => line.replace(/^[-*•]\s*/, '').trim())
+        .filter(line => line.length > 0);
+    }
+    if (saranList.length === 0) {
+      saranList = [
+        'menunjukkan keaktifan dan pemahaman yang sangat baik selama kegiatan',
+        'terus mengembangkan kreativitas melalui berbagai proyek sederhana'
+      ];
+    }
+
+    const attMatch = String(activeData.attendanceDisplay || '').match(/(\d+)%/);
+    let attendancePct = attMatch ? parseInt(attMatch[1], 10) : 92;
+    if (isNaN(attendancePct) || attendancePct < 0) attendancePct = 92;
+    if (attendancePct > 100) attendancePct = 100;
+
+    const defaultSdObjs = [
+      'mengenali berbagai jenis input sederhana, seperti tombol, sensor cahaya, dan sensor gerak',
+      'mengenali berbagai jenis output sederhana, seperti LED, buzzer, dan motor',
+      'menunjukkan pemahaman cara kerja Tilt Sensor sebagai input untuk mengaktifkan output',
+      'mencoba menggunakan Motor DC sebagai aktuator untuk menghasilkan gerakan',
+      'membuat rangkaian sederhana yang menghubungkan sensor sebagai input dan aktuator sebagai output'
+    ];
+    const sdObjs = (learningObjs && learningObjs.length > 0) ? learningObjs : defaultSdObjs;
+
+    container.innerHTML = `
+      <div class="space-y-5 font-sans text-slate-900">
+
+        <!-- ================= 1. HEADER SD ================= -->
+        <header class="pb-3 border-b border-slate-200 report-break-avoid">
+          <div class="flex items-center gap-4 sm:gap-6">
+            <div class="flex-shrink-0">
+              ${school.logoHtml}
+            </div>
+
+            <div>
+              <p class="text-xs sm:text-sm font-bold text-slate-800 tracking-wider uppercase mb-0.5">
+                ${lang === 'id' ? 'LAPORAN EKSTRAKURIKULER' : 'EXTRACURRICULAR REPORT'}
+              </p>
+              <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                ${escapeHTML(school.displayName)}
+              </h1>
+              <p class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mt-0.5">
+                ${escapeHTML(termDisplayName.toUpperCase())}
+              </p>
+            </div>
+          </div>
+
+          <!-- Student Identity Block -->
+          <div class="mt-4 space-y-1.5 text-xs sm:text-sm text-slate-800 font-medium">
+            <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
+              <span class="font-bold text-slate-900">${lang === 'id' ? 'Nama Peserta Didik' : 'Student Name'}</span>
+              <span class="font-bold text-slate-900">:</span>
+              <span class="font-bold text-slate-900">${escapeHTML(student.name)} ${student.nickname ? `<span class="text-slate-800 font-bold">(${escapeHTML(student.nickname)})</span>` : ''}</span>
+            </div>
+            <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
+              <span class="font-bold text-slate-900">${lang === 'id' ? 'Kelas' : 'Class'}</span>
+              <span class="font-bold text-slate-900">:</span>
+              <span class="font-semibold text-slate-800">${escapeHTML(student.className || '1A')}</span>
+            </div>
+            <div class="grid grid-cols-[140px_10px_1fr] sm:grid-cols-[160px_12px_1fr] items-start">
+              <span class="font-bold text-slate-900">${lang === 'id' ? 'Pengampu' : 'Facilitators'}</span>
+              <span class="font-bold text-slate-900">:</span>
+              <span class="leading-relaxed text-slate-800">${escapeHTML(facilitatorsText)}</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- ================= 2. BLOK OBJEKTIF PEMBELAJARAN ================= -->
+        <section class="rounded-2xl border-2 border-[#5B82A6] p-4 sm:p-5 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3 shadow-2xs">
+            ${lang === 'id' ? 'OBJEKTIF PEMBELAJARAN' : 'LEARNING OBJECTIVES'}
+          </div>
+          <ul class="space-y-1.5 text-xs sm:text-sm text-slate-800 leading-relaxed list-disc list-inside">
+            ${sdObjs.map(obj => `
+              <li>${escapeHTML(obj)}</li>
+            `).join('')}
+          </ul>
+        </section>
+
+        <!-- ================= 3. BLOK SKILL / KEMAMPUAN & SARAN PENGAMPU ================= -->
+        <section class="rounded-2xl border-2 border-[#5B82A6] p-4 sm:p-5 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3.5 shadow-2xs">
+            ${lang === 'id' ? 'SKILL / KEMAMPUAN' : 'SKILLS &amp; ABILITIES'}
+          </div>
+
+          <!-- Skill Scores Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-[#5B82A6] text-xs sm:text-sm text-slate-800">
+              <thead>
+                <tr class="bg-white">
+                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Aktif</th>
+                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Kreatif</th>
+                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Digital Innovation &amp; Inquiry</th>
+                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Problem Solving</th>
+                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Collaboration</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-white">
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.keterlibatan_aktif}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.kreatif}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.digital_innovation}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.problem_solving}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.collaboration}</td>
+                </tr>
+                <tr class="bg-white">
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.keterlibatan_aktif)}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.kreatif)}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.digital_innovation)}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.problem_solving)}</td>
+                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.collaboration)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Saran Pengampu Sub-Block -->
+          <div class="mt-4 pt-3">
+            <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-2.5 shadow-2xs">
+              ${lang === 'id' ? 'SARAN PENGAMPU' : 'FACILITATOR SUGGESTIONS'}
+            </div>
+            <ul class="space-y-1.5 text-xs sm:text-sm text-slate-800 leading-relaxed list-disc list-inside">
+              ${saranList.map(saran => `
+                <li>${escapeHTML(saran)}</li>
+              `).join('')}
+            </ul>
+          </div>
+        </section>
+
+        <!-- ================= 4. BLOK KEHADIRAN (Bar Indicator) ================= -->
+        <section class="rounded-2xl border-2 border-[#5B82A6] p-3 sm:p-4 flex items-center gap-3 sm:gap-4 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-2xs flex-shrink-0">
+            ${lang === 'id' ? 'KEHADIRAN' : 'ATTENDANCE'}
+          </div>
+          
+          <!-- Progress Bar Track -->
+          <div class="flex-1 bg-[#C8E0EC] rounded-full h-6 p-0.5 overflow-hidden">
+            <div class="bg-[#2C5282] h-full rounded-full transition-all duration-500" style="width: ${attendancePct}%;"></div>
+          </div>
+
+          <!-- Attendance Percentage Number -->
+          <span class="text-base sm:text-lg font-black text-slate-900 flex-shrink-0 min-w-12 text-right">
+            ${attendancePct}%
+          </span>
+        </section>
+
+        <!-- ================= 5. BLOK DOKUMENTASI MOMEN PEMBELAJARAN (SD) ================= -->
+        <section class="rounded-2xl border-2 border-[#5B82A6] p-4 sm:p-5 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3.5 shadow-2xs">
+            ${lang === 'id' ? 'DOKUMENTASI MOMEN PEMBELAJARAN' : 'LEARNING MOMENT DOCUMENTATION'}
+          </div>
+
+          <!-- Documentation Photos Grid -->
+          <div class="mt-2">
+            ${photos && photos.length > 0 ? `
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                ${photos.map((item, idx) => `
+                  <div class="rounded-xl border border-[#5B82A6]/40 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition cursor-pointer"
+                    onclick="handleReportPhotoClick(${idx})">
+                    <div>
+                      <div class="w-full h-36 rounded-lg bg-sand-100 border border-slate-200 overflow-hidden relative">
+                        <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
+                          class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                          loading="lazy">
+                      </div>
+                      <span class="block text-xs font-bold text-slate-900 mt-2">${escapeHTML(item.title || 'Momen Pembelajaran')}</span>
+                      <span class="block text-[10px] text-slate-500 mt-0.5">${escapeHTML(item.date || '')}</span>
+                      <p class="text-[11px] text-slate-700 mt-1.5 leading-snug line-clamp-2">
+                        ${escapeHTML(item.caption || '')}
+                      </p>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="py-8 px-4 text-center bg-sand-50/60 rounded-xl border border-dashed border-[#5B82A6]/40">
+                <span class="text-2xl block mb-1">📷</span>
+                <p class="text-xs font-bold text-slate-800">
+                  ${lang === 'id' ? 'Belum Ada Foto Observasi yang Diunggah' : 'No Observation Photos Uploaded Yet'}
+                </p>
+                <p class="text-[11px] text-slate-600 mt-0.5">
+                  ${lang === 'id' ? 'Foto dokumentasi observasi siswa akan otomatis tersinkronisasi di sini saat tutor menambahkan foto pada menu Observasi &amp; Ceklis.' : 'Student observation documentation photos will automatically sync here once uploaded in the Observations menu.'}
+                </p>
+              </div>
+            `}
+          </div>
+        </section>
+
+      </div>
+    `;
+    return;
+  }
+
+  // ============================================================
+  // PAUD / TK TEMPLATE (Sekolah Masa Kecil Montessori & TK Early Step)
+  // Checkbox Matrix & Standard Development Notes Template
+  // ============================================================
 
   container.innerHTML = `
     <div class="space-y-6 font-sans text-slate-900">
@@ -5681,16 +6032,16 @@ function renderStudentReportContent() {
                     ${escapeHTML(lang === 'id' ? row.label_id : row.label_en)}
                   </td>
                   ${SKILL_COLUMNS.map(col => {
-                    const studentLevel = activeData.skillRatings?.[col.key];
-                    const isMatch = studentLevel === row.key;
-                    return `
+    const studentLevel = activeData.skillRatings?.[col.key];
+    const isMatch = studentLevel === row.key;
+    return `
                       <td class="border ${school.borderClass} p-2 text-center align-middle bg-white h-11 sm:h-12">
                         ${isMatch
-                          ? '<div class="w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-full border-2 border-emerald-600 text-emerald-600 font-bold flex items-center justify-center text-sm shadow-2xs">✓</div>'
-                          : ''}
+        ? '<div class="w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-full border-2 border-emerald-600 text-emerald-600 font-bold flex items-center justify-center text-sm shadow-2xs">✓</div>'
+        : ''}
                       </td>
                     `;
-                  }).join('')}
+  }).join('')}
                 </tr>
               `).join('')}
             </tbody>
@@ -5699,8 +6050,8 @@ function renderStudentReportContent() {
 
         <p class="text-[10px] sm:text-[11px] text-slate-600 mt-2.5 italic">
           ${lang === 'id'
-            ? '✓ menunjukkan tingkat perkembangan yang paling menggambarkan perilaku anak berdasarkan pengamatan selama kegiatan Montessori STEM &amp; Robotik.'
-            : '✓ indicates the developmental stage that best reflects the child’s behavior based on Montessori STEM &amp; Robotics observations.'}
+      ? '✓ menunjukkan tingkat perkembangan yang paling menggambarkan perilaku anak berdasarkan pengamatan selama kegiatan Montessori STEM &amp; Robotik.'
+      : '✓ indicates the developmental stage that best reflects the child’s behavior based on Montessori STEM &amp; Robotics observations.'}
         </p>
       </section>
 
@@ -5974,20 +6325,19 @@ function renderFacilitatorPills() {
   container.innerHTML = `
     <span class="text-[10px] text-forest-light font-bold self-center">Pilih cepat:</span>
     ${candidateNames.slice(0, 7).map(name => {
-      const baseName = name.split(',')[0].toLowerCase().trim();
-      const isSelected = currentVal.includes(baseName);
-      return `
+    const baseName = name.split(',')[0].toLowerCase().trim();
+    const isSelected = currentVal.includes(baseName);
+    return `
         <button type="button" onclick="toggleFacilitatorName('${escapeHTML(name)}')"
-          class="px-2 py-0.5 rounded-full text-[10px] font-bold transition flex items-center gap-1 cursor-pointer ${
-            isSelected
-              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-              : 'bg-sand-100 hover:bg-sand-200 text-forest border border-sand-300'
-          }">
+          class="px-2 py-0.5 rounded-full text-[10px] font-bold transition flex items-center gap-1 cursor-pointer ${isSelected
+        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+        : 'bg-sand-100 hover:bg-sand-200 text-forest border border-sand-300'
+      }">
           <span>${isSelected ? '✓' : '＋'}</span>
           <span>${escapeHTML(name.split(',')[0])}</span>
         </button>
       `;
-    }).join('')}
+  }).join('')}
   `;
 }
 
@@ -6055,6 +6405,8 @@ function getActiveReportValues(student, term) {
   const cacheKey = `${studentUuid}_${currentTerm}`;
   const savedReport = state.studentReportsCache?.[cacheKey];
   const lang = state.lang || 'id';
+  const schoolKey = student.schoolId || state.reportSelectedSchool || 'masa_kecil';
+  const isSD = isPrimarySchool(schoolKey, student);
 
   // 1. Learning Objectives
   let objectives = [];
@@ -6062,22 +6414,38 @@ function getActiveReportValues(student, term) {
     objectives = savedReport.learning_objectives;
   } else if (student.learningObjectives) {
     objectives = (lang === 'id' ? student.learningObjectives.id : student.learningObjectives.en) || student.learningObjectives || [];
+  } else if (isSD) {
+    objectives = [
+      'mengenali berbagai jenis input sederhana, seperti tombol, sensor cahaya, dan sensor gerak',
+      'mengenali berbagai jenis output sederhana, seperti LED, buzzer, dan motor',
+      'menunjukkan pemahaman cara kerja Tilt Sensor sebagai input untuk mengaktifkan output',
+      'mencoba menggunakan Motor DC sebagai aktuator untuk menghasilkan gerakan',
+      'membuat rangkaian sederhana yang menghubungkan sensor sebagai input dan aktuator sebagai output'
+    ];
   }
 
   // 2. Skill Ratings
   let skillRatings = {};
   if (savedReport && savedReport.skill_ratings && typeof savedReport.skill_ratings === 'object') {
     skillRatings = savedReport.skill_ratings;
-  } else {
-    skillRatings = student.skillRatings || {};
+  } else if (student.skillRatings) {
+    skillRatings = student.skillRatings;
+  } else if (isSD) {
+    skillRatings = {
+      _format: 'sd',
+      scores: { keterlibatan_aktif: 95, kreatif: 92, digital_innovation: 90, problem_solving: 88, collaboration: 90 },
+      predicates: { keterlibatan_aktif: 'Sangat Mahir', kreatif: 'Mahir', digital_innovation: 'Mahir', problem_solving: 'Mahir', collaboration: 'Sangat Mahir' }
+    };
   }
 
-  // 3. Development Notes
+  // 3. Development Notes / Saran Pengampu
   let developmentNotes = '';
   if (savedReport && typeof savedReport.development_notes === 'string') {
     developmentNotes = savedReport.development_notes;
   } else if (student.narrativeFeedback) {
     developmentNotes = (lang === 'id' ? student.narrativeFeedback.id : student.narrativeFeedback.en) || student.narrativeFeedback || '';
+  } else if (isSD) {
+    developmentNotes = 'menunjukkan keaktifan dan pemahaman yang sangat baik selama kegiatan\nterus mengembangkan kreativitas melalui berbagai proyek sederhana';
   }
 
   // 4. Attendance
@@ -6087,6 +6455,8 @@ function getActiveReportValues(student, term) {
   } else if (student.attendance) {
     const note = lang === 'id' ? student.attendance.note_id : student.attendance.note_en;
     attendanceDisplay = `${student.attendance.percent}% (${note || ''})`;
+  } else if (isSD) {
+    attendanceDisplay = '92% (11 dari 12 Pertemuan)';
   } else {
     attendanceDisplay = '100% (12 dari 12 Pertemuan)';
   }
@@ -6186,8 +6556,8 @@ function renderEditReportSkillMatrix(currentRatings = {}) {
         ${escapeHTML(lang === 'id' ? row.label_id : row.label_en)}
       </td>
       ${SKILL_COLUMNS.map(col => {
-        const isChecked = currentRatings[col.key] === row.key;
-        return `
+    const isChecked = currentRatings[col.key] === row.key;
+    return `
           <td class="p-2 text-center align-middle border-l border-sand-200">
             <label class="inline-flex items-center justify-center p-1.5 cursor-pointer rounded-lg hover:bg-emerald-50 transition">
               <input type="radio" name="skill_${col.key}" value="${row.key}"
@@ -6196,7 +6566,7 @@ function renderEditReportSkillMatrix(currentRatings = {}) {
             </label>
           </td>
         `;
-      }).join('')}
+  }).join('')}
     </tr>
   `).join('');
 }
@@ -6226,8 +6596,13 @@ function openEditReportModal() {
 
   // 2. Fetch Active Data (from DB cache or student presets)
   const activeData = getActiveReportValues(student, currentTerm);
+  const isSD = isPrimarySchool(schoolKey, student);
 
   // 0. Fill Student Age & Facilitators
+  const ageWrapper = document.getElementById('edit-report-age-wrapper');
+  if (ageWrapper) {
+    ageWrapper.style.display = isSD ? 'none' : '';
+  }
   const ageInput = document.getElementById('edit-report-student-age');
   if (ageInput) ageInput.value = activeData.studentAge || student.age || '5 Tahun';
 
@@ -6245,18 +6620,49 @@ function openEditReportModal() {
     objInput.value = Array.isArray(activeData.objectives) ? activeData.objectives.join('\n') : '';
   }
 
-  // 4. Render and Populate Skill Matrix Table
-  renderEditReportSkillMatrix(activeData.skillRatings);
-
-  // 5. Fill Development Notes Textarea
+  // 4. Toggle & Populate Skill Section (TK Matrix vs SD Scores)
+  const tkSkillSection = document.getElementById('edit-report-skills-tk-section');
+  const sdSkillSection = document.getElementById('edit-report-skills-sd-section');
+  const notesLabel = document.getElementById('edit-report-notes-label');
   const notesInput = document.getElementById('edit-report-notes');
-  if (notesInput) {
-    notesInput.value = activeData.developmentNotes || '';
+
+  if (isSD) {
+    if (tkSkillSection) tkSkillSection.style.display = 'none';
+    if (sdSkillSection) sdSkillSection.classList.remove('hidden');
+    if (notesLabel) notesLabel.textContent = 'Saran Pengampu (1 Poin per Baris)';
+    if (notesInput) {
+      notesInput.placeholder = 'Tuliskan poin-poin saran pengampu (1 poin per baris)...';
+      notesInput.value = activeData.developmentNotes || '';
+    }
+
+    const scores = activeData.skillRatings?.scores || {
+      keterlibatan_aktif: 95,
+      kreatif: 92,
+      digital_innovation: 90,
+      problem_solving: 88,
+      collaboration: 90
+    };
+
+    setSdScoreInput('aktif', scores.keterlibatan_aktif ?? 95);
+    setSdScoreInput('kreatif', scores.kreatif ?? (scores.eksplorasi_alat ?? 92));
+    setSdScoreInput('digital', scores.digital_innovation ?? (scores.digital_inquiry ?? 90));
+    setSdScoreInput('problem', scores.problem_solving ?? (scores.kemandirian_fokus ?? 88));
+    setSdScoreInput('collab', scores.collaboration ?? (scores.kolaborasi_sosial ?? 90));
+  } else {
+    if (tkSkillSection) tkSkillSection.style.display = '';
+    if (sdSkillSection) sdSkillSection.classList.add('hidden');
+    if (notesLabel) notesLabel.textContent = 'Catatan Perkembangan Siswa (Deskriptif)';
+    if (notesInput) {
+      notesInput.placeholder = 'Tuliskan ulasan naratif mengenai perkembangan fokus, antusiasme, dan kemandirian siswa...';
+      notesInput.value = activeData.developmentNotes || '';
+    }
+    // Render and Populate Skill Matrix Table
+    renderEditReportSkillMatrix(activeData.skillRatings);
   }
 
   // 6. Fill Attendance Sessions
   const attMatch = String(activeData.attendanceDisplay || '').match(/(\d+)\s*dari\s*(\d+)/i);
-  const attended = attMatch ? parseInt(attMatch[1], 10) : 12;
+  const attended = attMatch ? parseInt(attMatch[1], 10) : (isSD ? 11 : 12);
   const total = attMatch ? parseInt(attMatch[2], 10) : 12;
   const attendedInput = document.getElementById('edit-report-attended-sessions');
   const totalInput = document.getElementById('edit-report-total-sessions');
@@ -6284,6 +6690,8 @@ async function handleSaveStudentReportSubmit(event) {
   }
   const studentUuid = resolveStudentUuid(student.id);
   const currentTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
+  const schoolKey = (student && student.schoolId) || state.reportSelectedSchool || 'masa_kecil';
+  const isSD = isPrimarySchool(schoolKey, student);
 
   // 1. Objectives array
   const rawObj = document.getElementById('edit-report-objectives')?.value || '';
@@ -6297,14 +6705,40 @@ async function handleSaveStudentReportSubmit(event) {
     return;
   }
 
-  // 2. Skill ratings matrix
-  const skill_ratings = {};
-  SKILL_COLUMNS.forEach(col => {
-    const checked = document.querySelector(`input[name="skill_${col.key}"]:checked`);
-    skill_ratings[col.key] = checked ? checked.value : 'mandiri';
-  });
+  // 2. Skill ratings matrix (Conditional: TK vs SD)
+  let skill_ratings = {};
+  if (isSD) {
+    const aktifScore = parseInt(document.getElementById('edit-report-sd-aktif')?.value, 10) || 95;
+    const kreatifScore = parseInt(document.getElementById('edit-report-sd-kreatif')?.value, 10) || 92;
+    const digitalScore = parseInt(document.getElementById('edit-report-sd-digital')?.value, 10) || 90;
+    const problemScore = parseInt(document.getElementById('edit-report-sd-problem')?.value, 10) || 88;
+    const collabScore = parseInt(document.getElementById('edit-report-sd-collab')?.value, 10) || 90;
 
-  // 3. Development notes
+    skill_ratings = {
+      _format: 'sd',
+      scores: {
+        keterlibatan_aktif: aktifScore,
+        kreatif: kreatifScore,
+        digital_innovation: digitalScore,
+        problem_solving: problemScore,
+        collaboration: collabScore
+      },
+      predicates: {
+        keterlibatan_aktif: getScorePredicate(aktifScore),
+        kreatif: getScorePredicate(kreatifScore),
+        digital_innovation: getScorePredicate(digitalScore),
+        problem_solving: getScorePredicate(problemScore),
+        collaboration: getScorePredicate(collabScore)
+      }
+    };
+  } else {
+    SKILL_COLUMNS.forEach(col => {
+      const checked = document.querySelector(`input[name="skill_${col.key}"]:checked`);
+      skill_ratings[col.key] = checked ? checked.value : 'mandiri';
+    });
+  }
+
+  // 3. Development notes / Saran Pengampu
   const development_notes = (document.getElementById('edit-report-notes')?.value || '').trim();
 
   // 4. Attendance percentage from session inputs
@@ -6318,7 +6752,7 @@ async function handleSaveStudentReportSubmit(event) {
   // 5. Custom Student Age & Facilitators inside skill_ratings
   const customAge = (document.getElementById('edit-report-student-age')?.value || '').trim();
   const customFacilitators = (document.getElementById('edit-report-facilitators')?.value || '').trim();
-  if (customAge) skill_ratings._custom_age = customAge;
+  if (customAge && !isSD) skill_ratings._custom_age = customAge;
   if (customFacilitators) skill_ratings._custom_tutors = customFacilitators;
 
   // Build Payload according to student_reports schema
@@ -6360,8 +6794,8 @@ async function handleSaveStudentReportSubmit(event) {
       if (error) {
         console.warn('[Supabase] student_reports upsert error:', error);
         if (error.code === 'PGRST205' || error.message?.includes('not find the table') || error.message?.includes('does not exist')) {
-          showToast(state.lang === 'id' 
-            ? 'Tabel student_reports belum dibuat di Supabase. Silakan jalankan student_reports.sql di SQL Editor.' 
+          showToast(state.lang === 'id'
+            ? 'Tabel student_reports belum dibuat di Supabase. Silakan jalankan student_reports.sql di SQL Editor.'
             : 'student_reports table not found. Please run student_reports.sql in Supabase SQL Editor.', '⚠️');
         } else {
           showToast(`Error Supabase: ${error.message || 'Gagal menyimpan'}`, '❌');
@@ -6410,6 +6844,10 @@ window.handleReportPhotoClick = handleReportPhotoClick;
 window.resolveStudentUuid = resolveStudentUuid;
 window.getStudentSchoolKey = getStudentSchoolKey;
 window.findReportStudent = findReportStudent;
+window.isPrimarySchool = isPrimarySchool;
+window.getScorePredicate = getScorePredicate;
+window.setSdScoreInput = setSdScoreInput;
+window.handleSdScoreChange = handleSdScoreChange;
 window.switchReportSchool = switchReportSchool;
 window.switchReportStudent = switchReportStudent;
 window.switchReportTerm = switchReportTerm;
@@ -6970,17 +7408,28 @@ async function saveObservationToSupabase(obs) {
         'image/jpeg': 'jpg',
         'image/png': 'png',
         'image/webp': 'webp',
+        'image/heic': 'heic',
+        'image/heif': 'heif',
       };
-      const extension = extensionByType[obs.photoFile.type];
+      let extension = extensionByType[obs.photoFile.type];
+      if (!extension) {
+        const fname = (obs.photoFile.name || '').toLowerCase();
+        if (fname.endsWith('.heic')) extension = 'heic';
+        else if (fname.endsWith('.heif')) extension = 'heif';
+        else if (fname.endsWith('.jpg') || fname.endsWith('.jpeg')) extension = 'jpg';
+        else if (fname.endsWith('.png')) extension = 'png';
+        else if (fname.endsWith('.webp')) extension = 'webp';
+      }
       if (!extension || obs.photoFile.size > 8 * 1024 * 1024) {
-        throw new Error('Photo must be JPG, PNG, or WebP and no larger than 8 MB.');
+        throw new Error('Photo must be JPG, PNG, WebP, or HEIC and no larger than 8 MB.');
       }
       uploadedPhotoPath = `${student.id}/${state.currentUser.id}/${crypto.randomUUID()}.${extension}`;
       photoUploadInProgress = true;
+      const uploadContentType = obs.photoFile.type || (extension === 'heic' ? 'image/heic' : extension === 'heif' ? 'image/heif' : 'image/jpeg');
       const { error: uploadError } = await sb.storage
         .from('student-observation-photos')
         .upload(uploadedPhotoPath, obs.photoFile, {
-          contentType: obs.photoFile.type,
+          contentType: uploadContentType,
           upsert: false,
         });
       if (uploadError) throw uploadError;
@@ -7050,4 +7499,3 @@ document.addEventListener('DOMContentLoaded', () => {
     btnFilterMine.addEventListener('click', () => setPlannerFilter('mine'));
   }
 });
- 
