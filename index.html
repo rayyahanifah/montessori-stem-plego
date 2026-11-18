@@ -17,6 +17,9 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- heic2any for client-side HEIC/HEIF to JPEG conversion -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="js/tailwind.config.js"></script>
@@ -1431,20 +1434,34 @@
             class="w-full text-xs p-3 rounded-2xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-forest"></textarea>
         </div>
 
-        <div
-          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 rounded-2xl bg-sand-100/60 border border-sand-200">
-          <div class="flex items-center gap-2">
-            <span
-              class="w-8 h-8 rounded-xl bg-cream border border-sand-300 flex items-center justify-center text-sm">📷</span>
-            <div class="flex-1">
-              <span class="font-bold text-forest block" data-i18n="obsModal.attachPhoto">Lampirkan Foto Hasil
-                Karya</span>
-              <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-                aria-describedby="obs-photo-help"
-                class="mt-1 w-full bg-cream border border-sand-200 rounded-xl px-3 py-2 text-xs">
-              <span id="obs-photo-help" class="mt-1 block text-[10px] text-forest-light"
-                data-i18n="obsModal.photoHelp">JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.</span>
+        <div id="obs-photo-dropzone"
+          class="relative p-4 rounded-2xl bg-sand-100/70 border-2 border-dashed border-sand-300 hover:border-sage transition cursor-pointer text-center group">
+          <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            aria-describedby="obs-photo-help">
+          
+          <div id="obs-photo-empty-state" class="flex flex-col items-center justify-center py-2 pointer-events-none">
+            <span class="w-10 h-10 rounded-2xl bg-cream border border-sand-300 flex items-center justify-center text-lg mb-2 shadow-2xs group-hover:scale-110 transition">📷</span>
+            <span class="font-bold text-forest text-xs block" data-i18n="obsModal.attachPhoto">Pilih Foto atau Tarik &amp; Lepas (Drag &amp; Drop) di Sini</span>
+            <span id="obs-photo-help" class="mt-1 block text-[10px] text-forest-light"
+              data-i18n="obsModal.photoHelp">JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.</span>
+          </div>
+
+          <div id="obs-photo-preview-state" class="hidden flex items-center justify-between gap-3 p-2 bg-cream rounded-xl border border-sand-200">
+            <div class="flex items-center gap-2.5 overflow-hidden">
+              <div class="w-12 h-12 rounded-lg bg-sand-200 border border-sand-300 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <img id="obs-photo-preview-img" src="" alt="Preview" class="w-full h-full object-cover hidden">
+                <span id="obs-photo-preview-icon" class="text-xl">📸</span>
+              </div>
+              <div class="text-left overflow-hidden">
+                <p id="obs-photo-file-name" class="font-bold text-forest text-xs truncate max-w-[220px] sm:max-w-xs">file.heic</p>
+                <p id="obs-photo-file-size" class="text-[10px] text-forest-light">1.2 MB</p>
+              </div>
             </div>
+            <button type="button" id="btn-remove-obs-photo" onclick="removeObsPhoto(event)"
+              class="relative z-20 px-2.5 py-1 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
+              Hapus
+            </button>
           </div>
         </div>
       </div>
@@ -1452,10 +1469,11 @@
       <div class="p-4 px-6 border-t border-sand-200 bg-sand-50 flex items-center justify-between">
         <button onclick="closeModal('modal-observation')" class="text-xs font-bold text-forest-light hover:text-forest"
           data-i18n="modal.cancel">Batal</button>
-        <button onclick="saveObservation()"
-          class="px-5 py-2 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-sm garden-interactive-btn"
+        <button id="btn-save-obs" onclick="saveObservation()"
+          class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-sm garden-interactive-btn flex items-center gap-2"
           data-i18n="modal.saveObs">
-          Simpan Observasi (Catat)
+          <span id="save-obs-spinner" class="hidden animate-spin">🌀</span>
+          <span id="save-obs-btn-text">Simpan Observasi (Catat)</span>
         </button>
       </div>
     </div>

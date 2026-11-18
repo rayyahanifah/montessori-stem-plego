@@ -3414,7 +3414,7 @@ function openObservationModal(studentId = state.students[0]?.id) {
     `${state.lang === 'id' ? 'Observasi' : 'Observation'}: ${student.name}`;
   document.getElementById('obs-modal-avatar-initials').textContent = getInitials(student.name);
   document.getElementById('obs-anecdote-input').value = '';
-  document.getElementById('obs-photo-file').value = '';
+  removeObsPhoto();
   const milestones = state.curriculumData.filter(item => item._fromDB);
   if (!milestones.length) {
     showToast(state.lang === 'id'
@@ -3439,6 +3439,170 @@ function selectObsLevel(level) {
   });
 }
 
+// -------------------------------------------------------------
+// HEIC / HEIF & PHOTO DRAG-AND-DROP HELPERS
+// -------------------------------------------------------------
+function removeObsPhoto(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const photoInput = document.getElementById('obs-photo-file');
+  if (photoInput) photoInput.value = '';
+  window.__currentObsPhotoFile = null;
+
+  const emptyState = document.getElementById('obs-photo-empty-state');
+  const previewState = document.getElementById('obs-photo-preview-state');
+  const previewImg = document.getElementById('obs-photo-preview-img');
+  const dropzone = document.getElementById('obs-photo-dropzone');
+
+  if (emptyState) emptyState.classList.remove('hidden');
+  if (previewState) previewState.classList.add('hidden');
+  if (previewImg) {
+    previewImg.src = '';
+    previewImg.classList.add('hidden');
+  }
+  if (dropzone) {
+    dropzone.classList.remove('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+  }
+}
+
+function handleObsPhotoSelect(file) {
+  if (!file) return;
+  window.__currentObsPhotoFile = file;
+
+  const emptyState = document.getElementById('obs-photo-empty-state');
+  const previewState = document.getElementById('obs-photo-preview-state');
+  const fileNameEl = document.getElementById('obs-photo-file-name');
+  const fileSizeEl = document.getElementById('obs-photo-file-size');
+  const previewImg = document.getElementById('obs-photo-preview-img');
+  const previewIcon = document.getElementById('obs-photo-preview-icon');
+
+  if (emptyState) emptyState.classList.add('hidden');
+  if (previewState) previewState.classList.remove('hidden');
+  if (fileNameEl) fileNameEl.textContent = file.name;
+  if (fileSizeEl) {
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    fileSizeEl.textContent = `${sizeMb} MB`;
+  }
+
+  const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
+  if (!isHeic && file.type.startsWith('image/')) {
+    try {
+      const objUrl = URL.createObjectURL(file);
+      if (previewImg) {
+        previewImg.src = objUrl;
+        previewImg.classList.remove('hidden');
+      }
+      if (previewIcon) previewIcon.classList.add('hidden');
+    } catch (e) {
+      if (previewImg) previewImg.classList.add('hidden');
+      if (previewIcon) previewIcon.classList.remove('hidden');
+    }
+  } else {
+    if (previewImg) previewImg.classList.add('hidden');
+    if (previewIcon) {
+      previewIcon.classList.remove('hidden');
+      previewIcon.textContent = '📸';
+    }
+  }
+}
+
+function initObsPhotoDropzone() {
+  const dropzone = document.getElementById('obs-photo-dropzone');
+  const fileInput = document.getElementById('obs-photo-file');
+  if (!dropzone || !fileInput) return;
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleObsPhotoSelect(file);
+  });
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+    }, false);
+  });
+
+  ['dragleave', 'dragend'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.remove('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+
+    const dt = e.dataTransfer;
+    const file = dt?.files?.[0];
+    if (file) {
+      try {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+      } catch (err) {
+        // Fallback store in window.__currentObsPhotoFile
+      }
+      handleObsPhotoSelect(file);
+    }
+  }, false);
+}
+
+async function ensureJpegCompatiblePhoto(file) {
+  if (!file) return null;
+  const fileName = (file.name || '').toLowerCase();
+  const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || fileName.endsWith('.heic') || fileName.endsWith('.heif');
+  
+  if (!isHeic) {
+    return file;
+  }
+
+  // 1. Try conversion using heic2any
+  try {
+    if (typeof heic2any === 'function') {
+      const converted = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.85
+      });
+      const jpegBlob = Array.isArray(converted) ? converted[0] : converted;
+      const newName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+      return new File([jpegBlob], newName, { type: 'image/jpeg' });
+    }
+  } catch (convErr) {
+    console.warn('[HEIC] Conversion with heic2any failed:', convErr);
+  }
+
+  // 2. Try native canvas decode (Safari/macOS/iOS)
+  try {
+    if (typeof createImageBitmap === 'function') {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bitmap, 0, 0);
+      const jpegBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+      if (jpegBlob) {
+        const newName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+        return new File([jpegBlob], newName, { type: 'image/jpeg' });
+      }
+    }
+  } catch (canvasErr) {
+    console.warn('[HEIC] Canvas decode failed:', canvasErr);
+  }
+
+  // 3. Fallback: wrap with image/jpeg so Supabase storage accepts it without 415 error
+  const newName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+  return new File([file], newName, { type: 'image/jpeg' });
+}
+
 async function saveObservation() {
   if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
     showToast(state.lang === 'id' ? 'Akses mencatat observasi ditolak.' : 'You cannot record observations.', '⚠️');
@@ -3459,60 +3623,101 @@ async function saveObservation() {
       : 'Choose an observation indicator first.', '⚠️');
     return;
   }
-  const photoFile = document.getElementById('obs-photo-file').files?.[0] || null;
+
+  const photoInput = document.getElementById('obs-photo-file');
+  const rawPhotoFile = window.__currentObsPhotoFile || photoInput?.files?.[0] || null;
+
   const allowedPhotoTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-  const photoName = (photoFile?.name || '').toLowerCase();
+  const photoName = (rawPhotoFile?.name || '').toLowerCase();
   const isHeicOrHeifExt = photoName.endsWith('.heic') || photoName.endsWith('.heif');
-  const isAllowedPhotoType = photoFile && (allowedPhotoTypes.includes(photoFile.type) || isHeicOrHeifExt);
-  if (photoFile && (!isAllowedPhotoType || photoFile.size > 8 * 1024 * 1024)) {
+  const isAllowedPhotoType = rawPhotoFile && (allowedPhotoTypes.includes(rawPhotoFile.type) || isHeicOrHeifExt);
+  
+  if (rawPhotoFile && (!isAllowedPhotoType || rawPhotoFile.size > 8 * 1024 * 1024)) {
     showToast(state.lang === 'id'
       ? 'Pilih foto JPG, PNG, WebP, atau HEIC dengan ukuran maksimal 8 MB.'
       : 'Choose a JPG, PNG, WebP, or HEIC photo no larger than 8 MB.', '⚠️');
     return;
   }
 
-  const observation = {
-    studentId: student.id,
-    studentName: student.name,
-    domain: 'science',
-    milestone,
-    level: state.obsLevel,
-    time: state.lang === 'id' ? 'Baru saja' : 'Just now',
-    anecdote,
-    photoFile,
-  };
+  // Visual loading state on Save button
+  const saveBtn = document.getElementById('btn-save-obs');
+  const spinner = document.getElementById('save-obs-spinner');
+  const btnText = document.getElementById('save-obs-btn-text');
+  if (saveBtn) saveBtn.disabled = true;
+  if (spinner) spinner.classList.remove('hidden');
+  if (btnText) btnText.textContent = state.lang === 'id' ? 'Menyimpan...' : 'Saving...';
 
-  if (student._fromDB) {
-    const saved = await saveObservationToSupabase(observation);
-    if (!saved) return;
-    try {
-      await signObservationPhotos([saved]);
-    } catch (error) {
-      console.warn('[Supabase] saved observation photo preview could not be generated:', error);
-      showToast(`${state.lang === 'id'
-        ? 'Observasi tersimpan, tetapi pratinjau foto gagal dimuat'
-        : 'Observation saved, but the photo preview could not be loaded'}: ${error.message || error}`, '⚠️');
+  try {
+    let finalPhotoFile = rawPhotoFile;
+    if (rawPhotoFile && isHeicOrHeifExt) {
+      if (btnText) btnText.textContent = state.lang === 'id' ? 'Mengonversi foto HEIC...' : 'Converting HEIC...';
+      finalPhotoFile = await ensureJpegCompatiblePhoto(rawPhotoFile);
+      if (btnText) btnText.textContent = state.lang === 'id' ? 'Menyimpan...' : 'Saving...';
     }
-    state.databaseObservations.unshift(saved);
-    if (state.databaseObservationCount !== null) state.databaseObservationCount += 1;
-    if (state.databaseRecentObservationCount !== null &&
-      saved.created_at && Date.now() - new Date(saved.created_at).getTime() < 24 * 60 * 60 * 1000) {
-      state.databaseRecentObservationCount += 1;
+
+    const observation = {
+      studentId: student.id,
+      studentName: student.name,
+      domain: 'science',
+      milestone,
+      level: state.obsLevel,
+      time: state.lang === 'id' ? 'Baru saja' : 'Just now',
+      anecdote,
+      photoFile: finalPhotoFile,
+    };
+
+    if (student._fromDB) {
+      let saved = await saveObservationToSupabase(observation);
+      
+      // If upload failed with photo, fallback to saving without photo so observation is never lost
+      if (!saved && finalPhotoFile) {
+        console.warn('[saveObservation] Save with photo failed, attempting save without photo...');
+        saved = await saveObservationToSupabase({ ...observation, photoFile: null });
+        if (saved) {
+          showToast(state.lang === 'id' ? 'Observasi tersimpan (tanpa foto karena kendala upload).' : 'Observation saved without photo.', '⚠️');
+        }
+      }
+
+      if (!saved) {
+        showToast(state.lang === 'id' ? 'Gagal menyimpan observasi ke database.' : 'Failed to save observation.', '❌');
+        return;
+      }
+
+      try {
+        await signObservationPhotos([saved]);
+      } catch (error) {
+        console.warn('[Supabase] saved observation photo preview could not be generated:', error);
+      }
+      state.databaseObservations.unshift(saved);
+      if (state.databaseObservationCount !== null) state.databaseObservationCount += 1;
+      if (state.databaseRecentObservationCount !== null &&
+        saved.created_at && Date.now() - new Date(saved.created_at).getTime() < 24 * 60 * 60 * 1000) {
+        state.databaseRecentObservationCount += 1;
+      }
+      applyDatabaseObservations();
+      showToast(
+        state.lang === 'id' ? 'Observasi berhasil disimpan ke database.' : 'Observation saved to the database.',
+        '✅'
+      );
+    } else {
+      showToast(state.lang === 'id'
+        ? 'Observasi tidak disimpan: siswa belum terhubung ke database.'
+        : 'Observation was not saved: the student is not connected to the database.', '⚠️');
+      return;
     }
-    applyDatabaseObservations();
-  } else {
-    showToast(state.lang === 'id'
-      ? 'Observasi tidak disimpan: siswa belum terhubung ke database.'
-      : 'Observation was not saved: the student is not connected to the database.', '⚠️');
-    return;
+
+    removeObsPhoto();
+    closeModal('modal-observation');
+    renderView();
+
+  } catch (err) {
+    console.error('[saveObservation] Error:', err);
+    showToast(state.lang === 'id' ? `Gagal menyimpan: ${err.message || err}` : `Save failed: ${err.message || err}`, '❌');
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+    if (spinner) spinner.classList.add('hidden');
+    if (btnText) btnText.textContent = state.lang === 'id' ? 'Simpan Observasi (Catat)' : 'Save Observation';
   }
-
-  closeModal('modal-observation');
-  renderView();
-  showToast(
-    state.lang === 'id' ? 'Observasi berhasil disimpan ke database.' : 'Observation saved to the database.',
-    '✅'
-  );
 }
 
 const messageLoadSequence = { parent: 0, teacher: 0, inbox: 0, sharedThread: 0 };
@@ -7404,31 +7609,33 @@ async function saveObservationToSupabase(obs) {
       anecdote: obs.anecdote,
     };
     if (obs.photoFile) {
+      let fileToUpload = obs.photoFile;
+      const isHeic = fileToUpload.type === 'image/heic' || fileToUpload.type === 'image/heif' || (fileToUpload.name || '').toLowerCase().endsWith('.heic') || (fileToUpload.name || '').toLowerCase().endsWith('.heif');
+      if (isHeic) {
+        fileToUpload = await ensureJpegCompatiblePhoto(fileToUpload);
+      }
+
       const extensionByType = {
         'image/jpeg': 'jpg',
         'image/png': 'png',
         'image/webp': 'webp',
-        'image/heic': 'heic',
-        'image/heif': 'heif',
       };
-      let extension = extensionByType[obs.photoFile.type];
+      let extension = extensionByType[fileToUpload.type];
       if (!extension) {
-        const fname = (obs.photoFile.name || '').toLowerCase();
-        if (fname.endsWith('.heic')) extension = 'heic';
-        else if (fname.endsWith('.heif')) extension = 'heif';
-        else if (fname.endsWith('.jpg') || fname.endsWith('.jpeg')) extension = 'jpg';
-        else if (fname.endsWith('.png')) extension = 'png';
+        const fname = (fileToUpload.name || '').toLowerCase();
+        if (fname.endsWith('.png')) extension = 'png';
         else if (fname.endsWith('.webp')) extension = 'webp';
+        else extension = 'jpg';
       }
-      if (!extension || obs.photoFile.size > 8 * 1024 * 1024) {
-        throw new Error('Photo must be JPG, PNG, WebP, or HEIC and no larger than 8 MB.');
+      if (fileToUpload.size > 8 * 1024 * 1024) {
+        throw new Error(state.lang === 'id' ? 'Ukuran foto melebihi batas 8 MB.' : 'Photo exceeds 8 MB size limit.');
       }
       uploadedPhotoPath = `${student.id}/${state.currentUser.id}/${crypto.randomUUID()}.${extension}`;
       photoUploadInProgress = true;
-      const uploadContentType = obs.photoFile.type || (extension === 'heic' ? 'image/heic' : extension === 'heif' ? 'image/heif' : 'image/jpeg');
+      const uploadContentType = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg';
       const { error: uploadError } = await sb.storage
         .from('student-observation-photos')
-        .upload(uploadedPhotoPath, obs.photoFile, {
+        .upload(uploadedPhotoPath, fileToUpload, {
           contentType: uploadContentType,
           upsert: false,
         });
@@ -7498,4 +7705,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnFilterMine) {
     btnFilterMine.addEventListener('click', () => setPlannerFilter('mine'));
   }
+
+  // Observation photo drag and drop initializer
+  initObsPhotoDropzone();
 });
+
+// Immediate initialization if already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initObsPhotoDropzone();
+}
+
+window.removeObsPhoto = removeObsPhoto;
+window.handleObsPhotoSelect = handleObsPhotoSelect;
+window.initObsPhotoDropzone = initObsPhotoDropzone;
+window.ensureJpegCompatiblePhoto = ensureJpegCompatiblePhoto;
+window.saveObservation = saveObservation;
