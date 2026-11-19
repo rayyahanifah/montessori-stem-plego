@@ -15,8 +15,8 @@ const initialCurriculumItems = [
     elo: 'Peserta dapat menyebutkan bahwa teknologi terdiri dari komponen input dan output, serta mengelompokkan contoh benda sehari-hari.',
     domain: 'science',
     canva_url: 'https://www.canva.com/design/DAF8_Plego_NusaPenida/view?embed',
-    materials_id: ['Sensor Cahaya (LDR) Plego', 'Modul Lampu LED', 'Kabel Konektor Magnetik', 'Baki Kayu Montessori', 'Kain Penutup Gelap'],
-    materials_en: ['Plego Light Sensor (LDR)', 'LED Light Module', 'Magnetic Connecting Cables', 'Montessori Wooden Tray', 'Dark Cover Cloth'],
+    materials_id: ['Sensor Cahaya (LDR) Plego', 'Modul Lampu LED', 'Kabel Konektor Magnetik', 'Baki Kayu Kerja Future Skill', 'Kain Penutup Gelap'],
+    materials_en: ['Plego Light Sensor (LDR)', 'LED Light Module', 'Magnetic Connecting Cables', 'Future Skill Wooden Tray', 'Dark Cover Cloth'],
     local_tips_id: 'Gunakan tempurung kelapa atau kain perca batik untuk mensimulasikan kondisi malam hari di atas perahu nelayan tradisional.',
     local_tips_en: 'Use coconut halves or local batik scraps to simulate night conditions on fisherman boats.',
     steps_id: [
@@ -284,9 +284,12 @@ const state = {
   databaseObservations: [],
   databaseObservationCount: null,
   databaseRecentObservationCount: null,
+  showDocumentationPhotos: false, // Default OFF (mode hemat egress Supabase)
+  obsAttendance: 'present', // 'present' | 'sick' | 'excused' | 'absent'
+  showAllObsMissions: false, // If false, hide already observed missions for selected student
   reportSelectedSchool: 'azhari',
   reportSelectedStudentId: 'stu-aileen',
-  reportSelectedTerm: 'Term 1 (Semester Gasal) 2026/2027',
+  reportSelectedTerm: 'Semester Gasal 2026/2027',
 };
 
 const ADMIN_IDENTITIES = {
@@ -343,7 +346,7 @@ function getSelectableTutors() {
    ===================================================================== */
 const i18n = {
   id: {
-    'login.subtitle': 'Montessori STEM Platform · Masuk Akun Anda',
+    'login.subtitle': 'Future Skill STEM Platform · Masuk Akun Anda',
     'login.email': 'Email Akun Terdaftar:',
     'login.password': 'Kata Sandi (Password):',
     'login.reset': 'Lupa Sandi?',
@@ -377,7 +380,7 @@ const i18n = {
     'nav.parentActivities': 'Eksplorasi di Rumah',
     'nav.parentChat': 'Pesan dengan Guru',
     'nav.logout': 'Keluar (Logout)',
-    'dash.cycle': 'Siklus Pembelajaran Montessori 09:00 - 11:30',
+    'dash.cycle': 'Siklus Pembelajaran Future Skill 09:00 - 11:30',
     'dash.greeting': 'Selamat pagi',
     'dash.subtitle': 'Jadwal dan ringkasan observasi dimuat dari database.',
     'dash.quickLog': 'Catat Observasi',
@@ -408,8 +411,8 @@ const i18n = {
     'dash.viewAllPlan': 'Lihat Semua →',
     'dash.attentionTitle': 'Perlu Observasi',
     'dash.attentionDesc': 'Daftar anak yang belum memiliki observasi dalam 7 hari terakhir.',
-    'dash.pedagogyTipTitle': 'Prinsip Montessori Hari Ini',
-    'dash.pedagogyTipDesc': '"Jangan pernah membantu anak pada tugas yang ia rasa mampu selesaikan sendiri." — Maria Montessori.',
+    'dash.pedagogyTipTitle': 'Prinsip Future Skill Hari Ini',
+    'dash.pedagogyTipDesc': '"Mendorong kemandirian dan rasa ingin tahu anak untuk memecahkan tantangan dengan percaya diri." — Prinsip Pendampingan Future Skill.',
     'curr.title': 'Kurikulum Plego STEM & AI Path',
     'curr.subtitle': 'Pemetaan berjenjang dari Preschool (Level 0) hingga SMA dengan Taxonomy Bloom & PLEGO Blocks',
     'curr.addBtn': '+ Tambah Kurikulum Baru',
@@ -448,7 +451,7 @@ const i18n = {
     'obs.recentFeedTitle': 'Catatan Observasi Terkini di Kelas B1',
     'obs.liveSynced': 'Tersinkron dengan database',
     'parent.reportCycle': 'Perjalanan belajar dan catatan perkembangan anak',
-    'parent.reportEyebrow': 'Jurnal tumbuh kembang',
+    'parent.reportEyebrow': 'Jurnal Perjalanan Eksplorasi Belajar',
     'parent.previewStudent': 'Pratinjau anak',
     'parent.statObservations': 'Catatan observasi',
     'parent.statMastered': 'Capaian dikuasai',
@@ -496,7 +499,7 @@ const i18n = {
     'modal.saveObs': 'Simpan Observasi (Catat)',
     'obsModal.subtitle': 'Formulir Pencatatan Indikator Perkembangan STEM',
     'obsModal.indicator': 'Indikator yang Diamati:',
-    'obsModal.levelLabel': 'Tingkat Capaian (Montessori Mastery Scale):',
+    'obsModal.levelLabel': 'Tingkat Capaian (Future Skill Mastery Scale):',
     'obsModal.anecdoteLabel': 'Catatan Anekdot & Kutipan Anak:',
     'obsModal.attachPhoto': 'Lampirkan Foto Hasil Karya',
     'obsModal.photoHelp': 'JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.',
@@ -521,7 +524,7 @@ const i18n = {
     'level.mastered': 'Menguasai'
   },
   en: {
-    'login.subtitle': 'Montessori STEM Platform · Sign In to Your Account',
+    'login.subtitle': 'Future Skill STEM Platform · Sign In to Your Account',
     'login.email': 'Registered Email Address:',
     'login.password': 'Password:',
     'login.reset': 'Forgot password?',
@@ -544,7 +547,7 @@ const i18n = {
     'nav.parentActivities': 'Home Explorations',
     'nav.parentChat': 'Teacher Messages',
     'nav.logout': 'Sign Out (Logout)',
-    'dash.cycle': 'Montessori Work Cycle 09:00 - 11:30',
+    'dash.cycle': 'Future Skill Work Cycle 09:00 - 11:30',
     'dash.greeting': 'Good morning',
     'dash.subtitle': 'Schedules and observation summaries are loaded from the database.',
     'dash.quickLog': 'Log Observation',
@@ -575,8 +578,8 @@ const i18n = {
     'dash.viewAllPlan': 'View Full Week →',
     'dash.attentionTitle': 'Needs Observation',
     'dash.attentionDesc': 'Children with no recorded observation in the last 7 days.',
-    'dash.pedagogyTipTitle': 'Montessori Principle Today',
-    'dash.pedagogyTipDesc': '"Never help a child with a task at which he feels he can succeed." — Maria Montessori.',
+    'dash.pedagogyTipTitle': 'Future Skill Principle Today',
+    'dash.pedagogyTipDesc': '"Fostering independence and curiosity in children to solve challenges with confidence." — Future Skill Mentoring Principle.',
     'curr.title': 'Plego STEM & AI Tooling Path',
     'curr.subtitle': 'Progressive pathway from Preschool (Level 0) to Senior High with Bloom\'s Taxonomy & PLEGO Blocks',
     'curr.addBtn': '+ Add New Curriculum Unit',
@@ -615,7 +618,7 @@ const i18n = {
     'obs.recentFeedTitle': 'Recent Observation Entries in Class B1',
     'obs.liveSynced': 'Synced with database',
     'parent.reportCycle': 'Your child’s learning journey and progress notes',
-    'parent.reportEyebrow': 'Learning journal',
+    'parent.reportEyebrow': 'Learning Exploration Journey Journal',
     'parent.previewStudent': 'Preview child',
     'parent.statObservations': 'Observation notes',
     'parent.statMastered': 'Milestones mastered',
@@ -663,7 +666,7 @@ const i18n = {
     'modal.saveObs': 'Save Observation Entry',
     'obsModal.subtitle': 'STEM Milestone & Anecdotal Record Form',
     'obsModal.indicator': 'Observed Indicator / Milestone:',
-    'obsModal.levelLabel': 'Mastery Level (Montessori Scale):',
+    'obsModal.levelLabel': 'Mastery Level (Future Skill Scale):',
     'obsModal.anecdoteLabel': 'Anecdotal Observation & Child Quote:',
     'obsModal.attachPhoto': 'Attach Child Work Photo',
     'obsModal.photoHelp': 'JPG, PNG, WebP, or HEIC, up to 8 MB. Photos are stored privately.',
@@ -820,7 +823,7 @@ async function handleParentLoginSubmit(e) {
           nickname: s.nickname || (s.full_name ? s.full_name.split(' ')[0] : 'Anak'),
           age: '—',
           classId: s.class_id || cls?.id || null,
-          className: cls?.name || 'Kelas Montessori',
+          className: cls?.name || 'Kelas Future Skill',
           schoolName: sch?.name || 'Sekolah Mitra Plego',
           lastObsDays: 0,
           needsAttention: false,
@@ -851,7 +854,7 @@ async function handleParentLoginSubmit(e) {
                   nickname: s.nickname || (s.full_name ? s.full_name.split(' ')[0] : 'Anak'),
                   age: '—',
                   classId: s.class_id || cls?.id || null,
-                  className: cls?.name || 'Kelas Montessori',
+                  className: cls?.name || 'Kelas Future Skill',
                   schoolName: sch?.name || 'Sekolah Mitra Plego',
                   lastObsDays: 0,
                   needsAttention: false,
@@ -880,7 +883,7 @@ async function handleParentLoginSubmit(e) {
             nickname: cleanName.split(' ')[0],
             age: '—',
             classId: null,
-            className: 'Kelas Montessori',
+            className: 'Kelas Future Skill',
             schoolName: 'Sekolah Mitra Plego',
             lastObsDays: 0,
             needsAttention: false,
@@ -1164,6 +1167,10 @@ function configureRolePrivacy(role) {
     const quickManage = document.getElementById('admin-quick-manage-btn');
     if (quickManage) quickManage.classList.toggle('hidden', role !== 'admin');
   }
+
+  if (typeof updatePhotoToggleUI === 'function') {
+    updatePhotoToggleUI();
+  }
 }
 async function logout() {
   const { error } = await sb.auth.signOut();
@@ -1315,24 +1322,370 @@ function updateCurriculumFormLanguage() {
   }
 }
 
-function renderObservationMilestones(selectedUnitId) {
+function isScheduleMatchingStudent(schedule, student) {
+  if (!schedule || !student) return false;
+
+  // 1. Direct class ID match (highest priority)
+  if (schedule.classId && student.classId && schedule.classId === student.classId) {
+    return true;
+  }
+
+  // 2. Class name exact match
+  const schedClassName = String(schedule.className || '').trim().toLowerCase();
+  const studentClassName = String(student.className || '').trim().toLowerCase();
+  if (schedClassName && studentClassName && schedClassName !== '—' && schedClassName === studentClassName) {
+    return true;
+  }
+
+  // 3. Match through student school key and schedule class school
+  const studentSchoolKey = getStudentSchoolKey(student);
+  if (studentSchoolKey && studentSchoolKey !== 'other') {
+    const schedClassObj = (state.classes || []).find(c => c.id === schedule.classId);
+    const schedSchoolKey = schedClassObj
+      ? getStudentSchoolKey({
+        schoolName: schedClassObj.schools?.name,
+        className: schedClassObj.name,
+        schoolId: schedClassObj.school_id
+      })
+      : getStudentSchoolKey({ className: schedule.className });
+
+    if (schedSchoolKey && schedSchoolKey === studentSchoolKey) {
+      return true;
+    }
+
+    // Keyword matching on schedule.className for this school
+    const schoolKeywords = {
+      azhari: ['azhari', 'rasuna', 'yellow'],
+      masa_kecil: ['masa kecil', 'green'],
+      miftahul_ulum: ['miftahul', 'miftahul ulum', 'mi'],
+      early_step: ['early step', 'tk b', 'tk-b'],
+      citra_alam: ['citra alam', 'red']
+    };
+    const kws = schoolKeywords[studentSchoolKey] || [studentSchoolKey];
+    if (kws.some(kw => schedClassName.includes(kw))) {
+      return true;
+    }
+  }
+
+  // 4. Student schoolName matching in schedule.className
+  const studentSchoolName = String(student.schoolName || '').trim().toLowerCase();
+  if (studentSchoolName && studentSchoolName !== '—' && schedClassName.includes(studentSchoolName)) {
+    return true;
+  }
+
+  return false;
+}
+
+function getRelevantMissionsForStudent(student) {
+  const currentStudent = student || state.selectedStudentForObs;
+  if (!currentStudent) return [];
+
+  // Filter schedule assignments strictly from Lesson Planner (Perencana Pembelajaran)
+  const matchingSchedules = (state.scheduleItems || []).filter(item =>
+    isScheduleMatchingStudent(item, currentStudent)
+  );
+
+  // Sort chronologically by scheduled date so missions appear in sequence
+  matchingSchedules.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+
+  const seenKeys = new Set();
+  const seenTitles = new Set();
+  const missions = [];
+
+  for (const schedule of matchingSchedules) {
+    const unit = (state.curriculumData || []).find(u =>
+      (schedule.curriculumUnitId && u.id === schedule.curriculumUnitId) ||
+      (schedule.actTitle && bText(u, 'title')?.trim().toLowerCase() === schedule.actTitle.trim().toLowerCase())
+    );
+
+    const title = (unit ? bText(unit, 'title') : schedule.actTitle) || '';
+    if (!title || title === '—') continue;
+
+    const dedupKey = (schedule.curriculumUnitId || title).trim().toLowerCase();
+    const titleKey = title.trim().toLowerCase();
+    if (seenKeys.has(dedupKey) || seenTitles.has(titleKey)) continue;
+
+    seenKeys.add(dedupKey);
+    seenTitles.add(titleKey);
+
+    const missionObj = unit ? {
+      ...unit,
+      _isScheduled: true,
+      _scheduledDate: schedule.date || '',
+      _scheduledClassName: schedule.className || '',
+      _scheduleId: schedule.id || null,
+      _curriculumUnitId: schedule.curriculumUnitId || unit.id || null,
+      _activityId: schedule.activityId || schedule.curriculumUnitId || unit.id || null,
+    } : {
+      id: schedule.curriculumUnitId || schedule.id,
+      title_id: schedule.actTitle,
+      title_en: schedule.actTitleEn || schedule.actTitle,
+      domain: schedule.domain || 'science',
+      elo: schedule.notes || '',
+      description_id: schedule.notes || '',
+      _isScheduled: true,
+      _scheduledDate: schedule.date || '',
+      _scheduledClassName: schedule.className || '',
+      _scheduleId: schedule.id || null,
+      _curriculumUnitId: schedule.curriculumUnitId || null,
+      _activityId: schedule.activityId || schedule.curriculumUnitId || null,
+      _fromDB: true
+    };
+
+    missions.push(missionObj);
+  }
+
+  return missions;
+}
+
+function cleanObservationTitle(str) {
+  return String(str || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/^(misi|mission)\s*(\d+|[a-z0-9_-]+)?\s*[:\-–]\s*/i, '')
+    .replace(/[^\w\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractObservationCoreWords(str) {
+  const cleaned = cleanObservationTitle(str);
+  const stopWords = new Set(['misi', 'mission', 'dan', 'di', 'ke', 'dari', 'yang', 'untuk', 'dengan', 'the', 'of', 'and', 'to', 'in', 'on', 'a', 'an']);
+  return cleaned.split(' ').filter(w => w.length > 2 && !stopWords.has(w));
+}
+
+function getStudentObservations(student) {
+  const currentStudent = student || state.selectedStudentForObs;
+  if (!currentStudent) return [];
+
+  const studentIds = new Set();
+  const studentNames = new Set();
+
+  function addId(v) {
+    if (v === null || v === undefined) return;
+    const s = String(v).trim().toLowerCase();
+    if (s && s !== '—') studentIds.add(s);
+  }
+  function addName(v) {
+    if (v === null || v === undefined) return;
+    const s = String(v).trim().toLowerCase();
+    if (s && s !== '—') studentNames.add(s);
+  }
+
+  addId(currentStudent.id);
+  addId(currentStudent.uuid);
+  addId(currentStudent.student_id);
+  addId(currentStudent.studentId);
+  addName(currentStudent.name);
+  addName(currentStudent.full_name);
+  addName(currentStudent.nickname);
+
+  const roster = [...(state.allStudents || []), ...(state.students || [])];
+  const matchedInRoster = roster.find(s =>
+    (s.id && studentIds.has(String(s.id).toLowerCase())) ||
+    (s.name && studentNames.has(String(s.name).trim().toLowerCase())) ||
+    (s.full_name && studentNames.has(String(s.full_name).trim().toLowerCase()))
+  );
+  if (matchedInRoster) {
+    addId(matchedInRoster.id);
+    addId(matchedInRoster.uuid);
+    addName(matchedInRoster.name);
+    addName(matchedInRoster.full_name);
+    addName(matchedInRoster.nickname);
+  }
+
+  return (state.databaseObservations || []).filter(obs => {
+    const obsStudentId = String(obs.student_id || obs.studentId || '').trim().toLowerCase();
+    if (obsStudentId && studentIds.has(obsStudentId)) return true;
+
+    const obsStudentName = String(obs.studentName || obs.student_name || '').trim().toLowerCase();
+    if (obsStudentName) {
+      if (studentNames.has(obsStudentName)) return true;
+      for (const n of studentNames) {
+        if (n.length >= 3 && (obsStudentName.includes(n) || n.includes(obsStudentName))) return true;
+      }
+    }
+
+    if (obsStudentId) {
+      const obsStudentObj = roster.find(s => String(s.id).toLowerCase() === obsStudentId);
+      if (obsStudentObj) {
+        const objName = String(obsStudentObj.name || obsStudentObj.full_name || '').trim().toLowerCase();
+        if (objName && studentNames.has(objName)) return true;
+        for (const n of studentNames) {
+          if (n.length >= 3 && (objName.includes(n) || n.includes(objName))) return true;
+        }
+      }
+    }
+
+    return false;
+  });
+}
+
+function isMissionObservedForStudent(mission, studentObsList) {
+  if (!mission || !studentObsList || !studentObsList.length) {
+    return { isObserved: false, observation: null };
+  }
+
+  const mUnitIds = new Set([
+    mission.id,
+    mission.curriculumUnitId,
+    mission._curriculumUnitId,
+    mission.activity_id,
+    mission.activityId,
+    mission._activityId
+  ].filter(Boolean).map(v => String(v).toLowerCase()));
+
+  const mSchedIds = new Set([
+    mission.schedule_id,
+    mission.scheduleId,
+    mission._scheduleId
+  ].filter(Boolean).map(v => String(v).toLowerCase()));
+
+  const mTitles = [
+    typeof bText === 'function' ? bText(mission, 'title') : '',
+    mission.title,
+    mission.title_id,
+    mission.title_en,
+    mission.actTitle,
+    mission.actTitleEn
+  ].filter(Boolean);
+
+  const mCleanTitles = mTitles.map(cleanObservationTitle).filter(Boolean);
+  const mCoreWords = mTitles.flatMap(extractObservationCoreWords);
+  const mDate = String(mission._scheduledDate || mission.scheduledDate || mission.date || '').slice(0, 10);
+
+  const distinctiveKeywords = [
+    'wakatobi', 'maumere', 'jayapura', 'ternate', 'banda', 'morotai', 'merauke',
+    'rinjani', 'alor', 'sulawesi', 'tengah', 'banjarmasin', 'mandalika', 'bitung',
+    'biak', 'bali', 'kintamani', 'kalimantan', 'penida', 'toraja', 'ambon', 'ende',
+    'sumbawa', 'buleleng', 'rebo', 'bima', 'dompu', 'sikka', 'tabuk', 'lovin', 'kelimutu'
+  ];
+
+  for (const obs of studentObsList) {
+    // 1. Direct ID matches
+    const obsUnitId = String(obs.curriculum_unit_id || obs.unit_id || obs.activity_id || obs.mission_id || '').toLowerCase();
+    if (obsUnitId && mUnitIds.has(obsUnitId)) {
+      return { isObserved: true, observation: obs };
+    }
+
+    const obsSchedId = String(obs.schedule_id || obs.scheduleId || '').toLowerCase();
+    if (obsSchedId && mSchedIds.has(obsSchedId)) {
+      return { isObserved: true, observation: obs };
+    }
+
+    // 2. Title matching
+    const obsTitles = [obs.milestone, obs.title, obs.activity_title].filter(Boolean);
+    const obsCleanTitles = obsTitles.map(cleanObservationTitle).filter(Boolean);
+    const obsCoreWords = obsTitles.flatMap(extractObservationCoreWords);
+
+    // 2a. Clean title exact match or substring
+    for (const mt of mCleanTitles) {
+      for (const ot of obsCleanTitles) {
+        if (mt === ot) return { isObserved: true, observation: obs };
+        if (mt.length >= 5 && ot.length >= 5 && (mt.includes(ot) || ot.includes(mt))) {
+          return { isObserved: true, observation: obs };
+        }
+      }
+    }
+
+    // 2b. Core keyword overlap (e.g. 'mandalika', 'wakatobi', 'kintamani')
+    const commonWords = mCoreWords.filter(w => obsCoreWords.includes(w));
+    if (commonWords.length >= 1) {
+      if (commonWords.length >= 2 || commonWords.some(w => distinctiveKeywords.includes(w))) {
+        return { isObserved: true, observation: obs };
+      }
+    }
+
+    // 3. Date match if both have valid schedule date + at least 1 keyword
+    const obsDate = String(obs.created_at || obs.date || '').slice(0, 10);
+    if (mDate && obsDate && mDate === obsDate && commonWords.length >= 1) {
+      return { isObserved: true, observation: obs };
+    }
+  }
+
+  return { isObserved: false, observation: null };
+}
+
+// Backward-compatible wrappers
+function getStudentObservedMilestones(student) {
+  const obsList = getStudentObservations(student);
+  const observedMap = new Map();
+  obsList.forEach(obs => {
+    const raw = String(obs.milestone || '').trim();
+    if (raw) {
+      observedMap.set(raw.toLowerCase(), obs);
+      const cleaned = cleanObservationTitle(raw);
+      if (cleaned) observedMap.set(cleaned, obs);
+    }
+  });
+  return observedMap;
+}
+
+function isMissionCompletedForStudent(mission, studentObsListOrMap) {
+  if (Array.isArray(studentObsListOrMap)) {
+    return isMissionObservedForStudent(mission, studentObsListOrMap).isObserved;
+  }
+  const student = state.selectedStudentForObs;
+  const list = getStudentObservations(student);
+  return isMissionObservedForStudent(mission, list).isObserved;
+}
+
+function renderObservationMilestones(selectedUnitId, student, missionsList, totalScheduledCount = 0, completedScheduledCount = 0) {
   const milestoneSelect = document.getElementById('obs-milestone-select');
-  const milestones = state.curriculumData.filter(item => item._fromDB);
-  const placeholder = `<option value="" disabled selected>${state.lang === 'id' ? 'Pilih indikator yang diamati...' : 'Choose an observation indicator...'}</option>`;
-  milestoneSelect.innerHTML = placeholder + milestones.map(item => {
-    const title = bText(item, 'title');
-    return title
-      ? `<option value="${escapeHTML(title)}" data-unit-id="${escapeHTML(item.id)}">${escapeHTML(title)}</option>`
-      : '';
+  const hintEl = document.getElementById('obs-single-milestone-hint');
+  if (!milestoneSelect) return;
+  const currentStudent = student || state.selectedStudentForObs;
+  const allMilestones = getRelevantMissionsForStudent(currentStudent);
+  const milestones = missionsList || allMilestones;
+  const totalCount = totalScheduledCount || allMilestones.length;
+  const completedCount = completedScheduledCount;
+
+  if (!milestones.length) {
+    milestoneSelect.disabled = true;
+    if (completedCount > 0 && !state.showAllObsMissions) {
+      milestoneSelect.innerHTML = `<option value="" disabled selected>${state.lang === 'id' ? '✅ Seluruh misi terjadwal telah selesai diobservasi untuk siswa ini' : '✅ All scheduled missions completed for this student'}</option>`;
+      if (hintEl) {
+        hintEl.innerHTML = `<div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 font-medium text-xs mt-1 leading-relaxed flex items-center justify-between gap-2">
+          <span>✅ <strong>Seluruh ${totalCount} misi terjadwal telah tercatat</strong> untuk ${escapeHTML(currentStudent?.name || 'siswa ini')}.</span>
+          <button type="button" onclick="toggleShowAllObsMissions()" class="px-2.5 py-1 rounded-xl bg-white border border-emerald-300 text-emerald-900 font-bold text-[11px] hover:bg-emerald-100 transition shadow-2xs flex-shrink-0">
+            👁️ Tampilkan Semua (${totalCount})
+          </button>
+        </div>`;
+      }
+    } else {
+      milestoneSelect.innerHTML = `<option value="" disabled selected>${state.lang === 'id' ? '⚠️ Belum ada misi yang dijadwalkan di Perencana Pembelajaran untuk sekolah/kelas ini' : '⚠️ No missions scheduled in Lesson Planner for this school/class'}</option>`;
+      if (hintEl) {
+        const schKey = getStudentSchoolKey(currentStudent);
+        const schPreset = SCHOOL_REPORT_PRESETS[schKey];
+        const schName = currentStudent?.className || schPreset?.displayName || 'sekolah/kelas ini';
+        hintEl.innerHTML = `<span class="inline-block p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 font-semibold text-xs mt-1 leading-relaxed">⚠️ Belum ada aktivitas/misi yang dijadwalkan di <strong>Perencana Pembelajaran</strong> untuk ${escapeHTML(schName)}. Silakan buat jadwal kegiatan di menu Perencana Pembelajaran terlebih dahulu.</span>`;
+      }
+    }
+    return;
+  }
+
+  milestoneSelect.disabled = false;
+  const placeholder = `<option value="" disabled selected>${state.lang === 'id' ? 'Pilih misi / indikator yang diamati...' : 'Choose an observation indicator...'}</option>`;
+  milestoneSelect.innerHTML = placeholder + milestones.map((item, idx) => {
+    const title = bText(item, 'title') || item.title_id || item.actTitle || 'Misi';
+    const dateText = item._scheduledDate ? ` · ${item._scheduledDate}` : '';
+    const completedBadge = item._isCompleted ? ' [Sudah Ada Data]' : '';
+    return `<option value="${escapeHTML(title)}" data-unit-id="${escapeHTML(item.id)}" data-idx="${idx}">Misi ${idx + 1}: ${escapeHTML(title)}${dateText}${completedBadge}</option>`;
   }).join('');
+
   if (selectedUnitId) {
     const selectedOption = [...milestoneSelect.options].find(option => option.dataset.unitId === selectedUnitId);
     if (selectedOption) milestoneSelect.value = selectedOption.value;
   }
-  if (!milestones.some(item => bText(item, 'title'))) {
-    milestoneSelect.innerHTML = `<option value="" disabled selected>${state.lang === 'id' ? 'Indikator belum tersedia dalam bahasa ini' : 'No indicators are available in this language'}</option>`;
+
+  if (hintEl && currentStudent) {
+    if (!state.showAllObsMissions && completedCount > 0) {
+      hintEl.innerHTML = `<span class="text-[11px] text-forest-light">Menampilkan <strong>${milestones.length} misi tersisa</strong> yang belum diisi (${completedCount} dari ${totalCount} misi sudah selesai).</span>`;
+    } else {
+      hintEl.innerHTML = `<span class="text-[11px] text-forest-light">Menampilkan ${milestones.length} misi sesuai jadwal Perencana Pembelajaran (${escapeHTML(currentStudent.className || 'Kelas Siswa')}).</span>`;
+    }
   }
-  enhanceSearchableSelect(milestoneSelect);
 }
 
 /* =====================================================================
@@ -1381,6 +1734,7 @@ function navigateTo(viewName) {
 }
 
 function renderView() {
+  if (typeof updatePhotoToggleUI === 'function') updatePhotoToggleUI();
   switch (state.currentView) {
     case 'dashboard': renderDashboard(); break;
     case 'curriculum': renderCurriculum(); break;
@@ -1887,12 +2241,12 @@ function openCurriculumGuide(currId) {
   else if (item.materials_en && state.lang === 'en') materials = item.materials_en;
   else if (toolsText) {
     materials = toolsText.split(',').map(s => s.trim());
-    materials.push(state.lang === 'id' ? 'Baki Kayu Kerja Montessori' : 'Montessori work tray');
+    materials.push(state.lang === 'id' ? 'Baki Kayu Kerja Future Skill' : 'Future Skill work tray');
     materials.push(state.lang === 'id' ? 'Alas Kerja Katun' : 'Cotton work mat');
   } else {
     materials = state.lang === 'id'
-      ? ['Perangkat PLEGO Blocks', 'Baki Kayu Montessori']
-      : ['PLEGO Blocks components', 'Montessori wooden tray'];
+      ? ['Perangkat PLEGO Blocks', 'Baki Kayu Kerja Future Skill']
+      : ['PLEGO Blocks components', 'Future Skill wooden tray'];
   }
 
   // Determine steps
@@ -1990,10 +2344,10 @@ function openCurriculumGuide(currId) {
           </div>
         </div>
 
-        <!-- 3-Period Montessori Presentation -->
+        <!-- 3-Period Future Skill Presentation -->
         <div>
           <h4 class="font-heading font-bold text-forest text-sm mb-3 flex items-center gap-2">
-            <span>🌱</span> ${state.lang === 'id' ? 'Langkah Presentasi Montessori (The Presentation)' : 'Montessori Presentation Steps'}
+            <span>🌱</span> ${state.lang === 'id' ? 'Langkah Presentasi Future Skill (The Presentation)' : 'Future Skill Presentation Steps'}
           </h4>
           <div class="space-y-2.5">
             ${steps.map(s => `
@@ -2008,7 +2362,7 @@ function openCurriculumGuide(currId) {
         <!-- Pedagogy Notes -->
         <div class="p-4 rounded-2xl bg-sage-50 border border-sage-100">
           <h4 class="font-heading font-bold text-sage-700 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <span>🌿</span> ${state.lang === 'id' ? 'Catatan Pedagogi & Kontrol Kesalahan (Control of Error)' : 'Montessori Pedagogy Notes'}
+            <span>🌿</span> ${state.lang === 'id' ? 'Catatan Pedagogi & Kontrol Kesalahan (Control of Error)' : 'Future Skill Pedagogy Notes'}
           </h4>
           <p class="text-xs text-forest-light leading-relaxed">
             ${escapeHTML(montessoriNotes)}
@@ -2909,6 +3263,7 @@ function renderObservations() {
     state.databaseStatus.students ? String(roster.filter(student => student.needsAttention).length) : '—';
   document.getElementById('obs-summary-recent').textContent =
     state.databaseStatus.observations ? String(feedObservations.length) : '—';
+  if (typeof updatePhotoToggleUI === 'function') updatePhotoToggleUI();
   document.getElementById('obs-roster-hint').textContent = state.lang === 'id'
     ? 'Pilih anak untuk menambahkan catatan perkembangan.'
     : 'Choose a child to add a developmental observation.';
@@ -3014,26 +3369,43 @@ function renderObservations() {
 
   feed.innerHTML = state.databaseStatus.observations ? (feedObservations.length ? feedObservations.map(obs => {
     const dColor = getDomainColor(obs.domain);
+    const canDelete = ['admin', 'teacher'].includes(state.currentUser?.role);
     return `
-          <article class="observation-feed-item">
+          <article class="observation-feed-item" data-obs-id="${escapeHTML(obs.id)}">
             <div class="observation-feed-avatar">${escapeHTML(getInitials(obs.studentName))}</div>
             <div class="observation-feed-content">
               <div class="observation-feed-meta">
                 <span class="observation-feed-student">${escapeHTML(obs.studentName)}</span>
                 <span class="observation-domain-pill ${dColor.bgLight} ${dColor.textColor}">${dColor.label}</span>
                 <span class="observation-feed-time">${escapeHTML(obs.time)}</span>
-              </div>
-              <p class="observation-feed-milestone">${escapeHTML(obs.milestone)}</p>
-              <p class="observation-feed-note">${escapeHTML(obs.anecdote)}</p>
-              ${obs.photoUrl ? `
-                <div class="mt-2.5">
-                  <button type="button" onclick="openPhotoModal('${escapeHTML(obs.photoUrl)}', '${escapeHTML(obs.milestone)}', '${escapeHTML(obs.anecdote)}', '${escapeHTML(obs.studentName)} · ${escapeHTML(obs.time)}')"
-                    class="inline-flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-sand-100 hover:bg-sand-200 border border-sand-300 transition text-xs font-semibold text-forest shadow-2xs group">
-                    <img src="${escapeHTML(obs.photoUrl)}" alt="Foto Observasi" class="w-8 h-8 rounded-lg object-cover border border-sand-300 group-hover:scale-105 transition">
-                    <span>📸 ${state.lang === 'id' ? 'Lihat Foto Dokumentasi' : 'View Documentation Photo'}</span>
+                ${canDelete ? `
+                  <button type="button" onclick="confirmDeleteObservation('${escapeHTML(obs.id)}')"
+                    title="${state.lang === 'id' ? 'Hapus observasi ini dari database' : 'Delete this observation'}"
+                    class="ml-auto px-2 py-0.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 border border-red-200/60 transition text-[11px] font-bold flex items-center gap-1 shadow-2xs">
+                    <span>🗑️</span> <span class="hidden sm:inline">${state.lang === 'id' ? 'Hapus' : 'Delete'}</span>
                   </button>
-                </div>
-              ` : ''}
+                ` : ''}
+              </div>
+              <p class="observation-feed-milestone font-bold text-forest">${escapeHTML(obs.milestone)}</p>
+              <p class="observation-feed-note">${escapeHTML(obs.anecdote)}</p>
+              ${(obs.hasPhoto || obs.photoPath || obs.photoUrl) ? (
+                state.showDocumentationPhotos && obs.photoUrl ? `
+                  <div class="mt-2.5">
+                    <button type="button" onclick="openPhotoModal('${escapeHTML(obs.photoUrl)}', '${escapeHTML(obs.milestone)}', '${escapeHTML(obs.anecdote)}', '${escapeHTML(obs.studentName)} · ${escapeHTML(obs.time)}')"
+                      class="inline-flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-sand-100 hover:bg-sand-200 border border-sand-300 transition text-xs font-semibold text-forest shadow-2xs group">
+                      <img src="${escapeHTML(obs.photoUrl)}" alt="Foto Observasi" class="w-8 h-8 rounded-lg object-cover border border-sand-300 group-hover:scale-105 transition">
+                      <span>📸 ${state.lang === 'id' ? 'Lihat Foto Dokumentasi' : 'View Documentation Photo'}</span>
+                    </button>
+                  </div>
+                ` : `
+                  <div class="mt-2.5">
+                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/80 text-[11px] font-semibold">
+                      <span>📸</span>
+                      <span>${state.lang === 'id' ? 'Foto Dokumentasi (Nonaktif — Mode Hemat Egress: OFF)' : 'Documentation Photo (Disabled — Egress Saver: OFF)'}</span>
+                    </span>
+                  </div>
+                `
+              ) : ''}
             </div>
             <span class="observation-mastery-pill">${getMasteryLabel(obs.level)}</span>
           </article>
@@ -3403,6 +3775,14 @@ async function saveNewStudent(event) {
   }
 }
 
+function toggleShowAllObsMissions() {
+  state.showAllObsMissions = !state.showAllObsMissions;
+  if (state.selectedStudentForObs) {
+    openObservationModal(state.selectedStudentForObs.id);
+  }
+}
+window.toggleShowAllObsMissions = toggleShowAllObsMissions;
+
 function openObservationModal(studentId = state.students[0]?.id) {
   if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
     showToast(state.lang === 'id'
@@ -3419,23 +3799,142 @@ function openObservationModal(studentId = state.students[0]?.id) {
   }
   state.selectedStudentForObs = student;
 
+  const schKey = getStudentSchoolKey(student);
+  const schLabel = schKey === 'azhari' ? 'Azhari Islamic School'
+    : schKey === 'masa_kecil' ? 'Masa Kecil School'
+      : schKey === 'miftahul_ulum' ? 'MI Miftahul Ulum'
+        : schKey === 'early_step' ? 'Early Step Preschool'
+          : schKey === 'citra_alam' ? 'Citra Alam School'
+            : (student.school_name || 'Sekolah Terpilih');
+  const isSD = isPrimarySchool(schKey, student);
+
+  const allRelevantMissions = getRelevantMissionsForStudent(student);
+  const studentObsList = getStudentObservations(student);
+
+  allRelevantMissions.forEach(m => {
+    const check = isMissionObservedForStudent(m, studentObsList);
+    m._isCompleted = check.isObserved;
+    m._matchedObs = check.observation;
+  });
+
+  const pendingMissions = allRelevantMissions.filter(m => !m._isCompleted);
+  const completedMissions = allRelevantMissions.filter(m => m._isCompleted);
+  const activeMissions = state.showAllObsMissions ? allRelevantMissions : pendingMissions;
+
+  const schoolBadgeEl = document.getElementById('obs-school-badge');
+  if (schoolBadgeEl) {
+    schoolBadgeEl.innerHTML = `🏫 <strong>${escapeHTML(schLabel)}</strong> · <span class="text-sage-700 font-semibold">${isSD ? 'Jenjang SD (Level 1)' : 'Jenjang PAUD (Level 0)'}</span>`;
+  }
+  const countBadgeEl = document.getElementById('obs-count-badge');
+  if (countBadgeEl) {
+    if (completedMissions.length > 0) {
+      countBadgeEl.textContent = `${pendingMissions.length} Misi Belum Diisi (${completedMissions.length} Selesai)`;
+      countBadgeEl.className = pendingMissions.length === 0
+        ? 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold border border-emerald-300'
+        : 'text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-300';
+    } else {
+      countBadgeEl.textContent = `${allRelevantMissions.length} Misi Terjadwal`;
+      countBadgeEl.className = 'text-[10px] px-2 py-0.5 rounded-full bg-sand-200 text-forest font-bold';
+    }
+  }
+
+  const toggleBtnEl = document.getElementById('btn-toggle-obs-all-missions');
+  if (toggleBtnEl) {
+    if (completedMissions.length > 0) {
+      toggleBtnEl.classList.remove('hidden');
+      toggleBtnEl.textContent = state.showAllObsMissions
+        ? (state.lang === 'id' ? '👁️ Sembunyikan yang Selesai' : '👁️ Hide Completed')
+        : (state.lang === 'id' ? `📋 Tampilkan Semua (${allRelevantMissions.length} Misi)` : `📋 Show All (${allRelevantMissions.length})`);
+    } else {
+      toggleBtnEl.classList.add('hidden');
+    }
+  }
+
   document.getElementById('obs-modal-student-name').textContent =
     `${state.lang === 'id' ? 'Observasi' : 'Observation'}: ${student.name}`;
   document.getElementById('obs-modal-avatar-initials').textContent = getInitials(student.name);
   document.getElementById('obs-anecdote-input').value = '';
   removeObsPhoto();
-  const milestones = state.curriculumData.filter(item => item._fromDB);
-  if (!milestones.length) {
-    showToast(state.lang === 'id'
-      ? 'Indikator belum tersedia dari kurikulum database.'
-      : 'No observation indicators are available from the database.', '⚠️');
-    return;
-  }
-  renderObservationMilestones();
 
+  renderObservationMilestones(undefined, student, activeMissions, allRelevantMissions.length, completedMissions.length);
   selectObsLevel('developing');
+  setObsAttendanceStatus('present');
+
+  prepareBulkObservationItems(student, activeMissions, studentObsList);
+  renderBulkObservationList();
+  switchObsInputMode(currentObsInputMode || 'single');
+
+  if (allRelevantMissions.length === 0) {
+    showToast(state.lang === 'id'
+      ? 'Belum ada misi yang dijadwalkan di Perencana Pembelajaran untuk sekolah/kelas ini.'
+      : 'No missions scheduled in Lesson Planner for this school/class.', '⚠️');
+  }
+
   openModal('modal-observation');
 }
+
+function setObsAttendanceStatus(status = 'present') {
+  state.obsAttendance = status;
+  const badge = document.getElementById('obs-att-badge');
+  const anecdoteInput = document.getElementById('obs-anecdote-input');
+  const dropzone = document.getElementById('obs-photo-dropzone');
+  const studentName = state.selectedStudentForObs?.name || 'Siswa';
+
+  const labels = {
+    present: { text: '👤 Hadir (Normal)', class: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+    sick: { text: '🏥 Sakit', class: 'bg-amber-100 text-amber-800 border-amber-300' },
+    excused: { text: '✉️ Izin', class: 'bg-sky-100 text-sky-800 border-sky-300' },
+    absent: { text: '⚠️ Tidak Hadir (Alpa)', class: 'bg-rose-100 text-rose-800 border-rose-300' }
+  };
+
+  if (badge && labels[status]) {
+    badge.textContent = labels[status].text;
+    badge.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${labels[status].class}`;
+  }
+
+  const buttons = {
+    present: document.getElementById('obs-att-btn-present'),
+    sick: document.getElementById('obs-att-btn-sick'),
+    excused: document.getElementById('obs-att-btn-excused'),
+    absent: document.getElementById('obs-att-btn-absent')
+  };
+
+  ['present', 'sick', 'excused', 'absent'].forEach(st => {
+    const btn = buttons[st];
+    if (!btn) return;
+    if (st === status) {
+      if (st === 'present') btn.className = 'obs-att-btn p-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-bold text-center transition shadow-2xs';
+      else if (st === 'sick') btn.className = 'obs-att-btn p-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-950 font-bold text-center transition shadow-2xs';
+      else if (st === 'excused') btn.className = 'obs-att-btn p-2 rounded-xl border-2 border-sky-500 bg-sky-50 text-sky-950 font-bold text-center transition shadow-2xs';
+      else if (st === 'absent') btn.className = 'obs-att-btn p-2 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-950 font-bold text-center transition shadow-2xs';
+    } else {
+      btn.className = 'obs-att-btn p-2 rounded-xl border border-sand-300 bg-white hover:border-sand-400 text-forest font-semibold text-center transition shadow-2xs opacity-75';
+    }
+  });
+
+  if (status !== 'present') {
+    selectObsLevel('not_observed');
+    if (dropzone) dropzone.classList.add('hidden');
+    if (anecdoteInput && (!anecdoteInput.value || anecdoteInput.value.startsWith('[Sakit]') || anecdoteInput.value.startsWith('[Izin]') || anecdoteInput.value.startsWith('[Tidak Hadir]'))) {
+      if (status === 'sick') {
+        anecdoteInput.value = `[Sakit] ${studentName} tidak dapat mengikuti sesi misi ini karena sakit.`;
+      } else if (status === 'excused') {
+        anecdoteInput.value = `[Izin] ${studentName} berhalangan hadir pada sesi misi ini (izin).`;
+      } else if (status === 'absent') {
+        anecdoteInput.value = `[Tidak Hadir] ${studentName} tidak hadir saat sesi misi terjadwal.`;
+      }
+    }
+  } else {
+    if (dropzone) dropzone.classList.remove('hidden');
+    if (anecdoteInput && (anecdoteInput.value.startsWith('[Sakit]') || anecdoteInput.value.startsWith('[Izin]') || anecdoteInput.value.startsWith('[Tidak Hadir]'))) {
+      anecdoteInput.value = '';
+    }
+    if (state.obsLevel === 'not_observed') {
+      selectObsLevel('developing');
+    }
+  }
+}
+window.setObsAttendanceStatus = setObsAttendanceStatus;
 
 function selectObsLevel(level) {
   state.obsLevel = level;
@@ -3658,10 +4157,23 @@ async function saveObservation() {
 
   try {
     let finalPhotoFile = rawPhotoFile;
-    if (rawPhotoFile && isHeicOrHeifExt) {
+    const isAbsent = state.obsAttendance && state.obsAttendance !== 'present';
+    if (isAbsent) {
+      finalPhotoFile = null;
+    } else if (rawPhotoFile && isHeicOrHeifExt) {
       if (btnText) btnText.textContent = state.lang === 'id' ? 'Mengonversi foto HEIC...' : 'Converting HEIC...';
       finalPhotoFile = await ensureJpegCompatiblePhoto(rawPhotoFile);
       if (btnText) btnText.textContent = state.lang === 'id' ? 'Menyimpan...' : 'Saving...';
+    }
+
+    let finalAnecdote = anecdote;
+    let finalLevel = state.obsLevel;
+    if (isAbsent) {
+      finalLevel = 'not_observed';
+      const prefix = state.obsAttendance === 'sick' ? '[Sakit]' : state.obsAttendance === 'excused' ? '[Izin]' : '[Tidak Hadir]';
+      if (!finalAnecdote.startsWith(prefix)) {
+        finalAnecdote = `${prefix} ${finalAnecdote}`.trim();
+      }
     }
 
     const observation = {
@@ -3669,9 +4181,9 @@ async function saveObservation() {
       studentName: student.name,
       domain: 'science',
       milestone,
-      level: state.obsLevel,
+      level: finalLevel,
       time: state.lang === 'id' ? 'Baru saja' : 'Just now',
-      anecdote,
+      anecdote: finalAnecdote,
       photoFile: finalPhotoFile,
     };
 
@@ -3726,6 +4238,760 @@ async function saveObservation() {
     if (saveBtn) saveBtn.disabled = false;
     if (spinner) spinner.classList.add('hidden');
     if (btnText) btnText.textContent = state.lang === 'id' ? 'Simpan Observasi (Catat)' : 'Save Observation';
+  }
+}
+
+// -------------------------------------------------------------
+// BULK OBSERVATION & DELETION HELPERS (Admin & Tutor)
+// -------------------------------------------------------------
+let currentObsInputMode = 'single'; // 'single' or 'bulk'
+window.__bulkObsItems = [];
+
+function switchObsInputMode(mode) {
+  currentObsInputMode = mode;
+  const tabSingle = document.getElementById('tab-obs-mode-single');
+  const tabBulk = document.getElementById('tab-obs-mode-bulk');
+  const singleContainer = document.getElementById('obs-single-container');
+  const bulkContainer = document.getElementById('obs-bulk-container');
+  const saveBtn = document.getElementById('btn-save-obs');
+  const saveBtnText = document.getElementById('save-obs-btn-text');
+
+  const count = (window.__bulkObsItems || []).length;
+  const student = state.selectedStudentForObs;
+  const studentObsList = student ? getStudentObservations(student) : [];
+  const allMissions = student ? getRelevantMissionsForStudent(student) : [];
+  const completedCount = allMissions.filter(m => isMissionObservedForStudent(m, studentObsList).isObserved).length;
+  const isAllDone = allMissions.length > 0 && completedCount >= allMissions.length && !state.showAllObsMissions;
+
+  if (mode === 'bulk') {
+    tabSingle?.classList.remove('bg-white', 'text-forest', 'shadow-2xs');
+    tabSingle?.classList.add('text-forest-light');
+    tabBulk?.classList.add('bg-white', 'text-forest', 'shadow-2xs');
+    tabBulk?.classList.remove('text-forest-light');
+
+    singleContainer?.classList.add('hidden');
+    bulkContainer?.classList.remove('hidden');
+
+    if (count === 0) {
+      if (saveBtn) saveBtn.disabled = true;
+      if (saveBtnText) {
+        saveBtnText.textContent = isAllDone
+          ? (state.lang === 'id' ? 'Semua Misi Selesai' : 'All Missions Completed')
+          : (state.lang === 'id' ? 'Belum Ada Misi Terjadwal' : 'No Missions Scheduled');
+      }
+    } else {
+      if (saveBtn) saveBtn.disabled = false;
+      if (saveBtnText) {
+        saveBtnText.textContent = state.lang === 'id'
+          ? `Simpan Seluruh Misi (${count} Misi)`
+          : `Save All Missions (${count})`;
+      }
+    }
+  } else {
+    tabSingle?.classList.add('bg-white', 'text-forest', 'shadow-2xs');
+    tabSingle?.classList.remove('text-forest-light');
+    tabBulk?.classList.remove('bg-white', 'text-forest', 'shadow-2xs');
+    tabBulk?.classList.add('text-forest-light');
+
+    singleContainer?.classList.remove('hidden');
+    bulkContainer?.classList.add('hidden');
+
+    const milestoneSelect = document.getElementById('obs-milestone-select');
+    const hasSelectable = milestoneSelect && !milestoneSelect.disabled && milestoneSelect.options.length > 1;
+
+    if (!hasSelectable && (count === 0 || isAllDone)) {
+      if (saveBtn) saveBtn.disabled = true;
+      if (saveBtnText) {
+        saveBtnText.textContent = isAllDone
+          ? (state.lang === 'id' ? 'Semua Misi Selesai' : 'All Missions Completed')
+          : (state.lang === 'id' ? 'Belum Ada Misi Terjadwal' : 'No Missions Scheduled');
+      }
+    } else {
+      if (saveBtn) saveBtn.disabled = false;
+      if (saveBtnText) {
+        saveBtnText.textContent = state.lang === 'id'
+          ? 'Simpan Observasi (Catat)'
+          : 'Save Observation';
+      }
+    }
+  }
+}
+
+function prepareBulkObservationItems(student, relevantMissions, studentObsList) {
+  const currentObsList = Array.isArray(studentObsList) ? studentObsList : getStudentObservations(student);
+  window.__bulkObsItems = (relevantMissions || []).map((m, idx) => {
+    const title = (typeof bText === 'function' ? bText(m, 'title') : '') || m.title_id || m.actTitle || 'Misi';
+    const check = isMissionObservedForStudent(m, currentObsList);
+    const existingObs = check.observation || m._matchedObs || null;
+
+    let defaultAttendance = 'present';
+    if (existingObs?.mastery_level === 'not_observed') {
+      const anec = String(existingObs?.anecdote || '');
+      if (anec.includes('[Sakit]')) defaultAttendance = 'sick';
+      else if (anec.includes('[Izin]')) defaultAttendance = 'excused';
+      else if (anec.includes('[Tidak Hadir]')) defaultAttendance = 'absent';
+    }
+
+    return {
+      idx,
+      unitId: m.id,
+      title: title,
+      desc: (typeof bText === 'function' ? (bText(m, 'elo') || bText(m, 'description')) : '') || m.elo || m.description_id || '',
+      level: existingObs?.mastery_level || 'developing',
+      attendance: defaultAttendance,
+      anecdote: existingObs?.anecdote || '',
+      photoFile: null,
+      existingPhotoUrl: existingObs?.photo_signed_url || null,
+      existingId: existingObs?.id || null,
+      isScheduled: Boolean(m._isScheduled),
+      scheduledDate: m._scheduledDate || '',
+      isCompleted: check.isObserved || Boolean(existingObs)
+    };
+  });
+}
+
+function renderBulkPhotoSlotContent(item, idx) {
+  if (item.attendance && item.attendance !== 'present') {
+    const attLabel = item.attendance === 'sick' ? 'Sakit' : item.attendance === 'excused' ? 'Izin' : 'Tidak Hadir';
+    return `
+      <div class="flex items-center justify-center gap-2 py-2 pointer-events-none text-forest-light bg-sand-100/60 rounded-xl">
+        <span class="text-base">⏸️</span>
+        <span class="text-xs font-semibold text-amber-900/90">Foto tidak diperlukan (Siswa: ${attLabel})</span>
+      </div>
+    `;
+  }
+
+  if (item.photoFile) {
+    const isHeic = item.photoFile.type === 'image/heic' || item.photoFile.type === 'image/heif' ||
+      (item.photoFile.name || '').toLowerCase().endsWith('.heic') ||
+      (item.photoFile.name || '').toLowerCase().endsWith('.heif');
+    let previewSrc = '';
+    if (!isHeic) {
+      try { previewSrc = URL.createObjectURL(item.photoFile); } catch (e) { }
+    }
+    const sizeMb = (item.photoFile.size / (1024 * 1024)).toFixed(2);
+    return `
+      <div class="flex items-center justify-between gap-2 p-1.5 bg-sand-50 rounded-xl border border-sand-300">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <div class="w-10 h-10 rounded-lg bg-sand-200 border border-sand-300 overflow-hidden flex-shrink-0 flex items-center justify-center">
+            ${previewSrc ? `<img src="${previewSrc}" alt="Preview" class="w-full h-full object-cover">` : `<span class="text-base">📸</span>`}
+          </div>
+          <div class="text-left overflow-hidden">
+            <p class="font-bold text-forest text-[11px] truncate max-w-[140px] sm:max-w-xs">${escapeHTML(item.photoFile.name)}</p>
+            <p class="text-[10px] text-forest-light">${sizeMb} MB ${isHeic ? '· Format HEIC' : ''}</p>
+          </div>
+        </div>
+        <button type="button" onclick="removeBulkPhoto(${idx}, event)"
+          class="relative z-20 px-2 py-0.5 text-[10px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
+          Hapus
+        </button>
+      </div>
+    `;
+  } else if (item.existingPhotoUrl) {
+    if (state.showDocumentationPhotos) {
+      return `
+        <div class="flex items-center justify-between gap-2 p-1.5 bg-emerald-50/70 rounded-xl border border-emerald-300">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <img src="${escapeHTML(item.existingPhotoUrl)}" alt="Foto Tersimpan" class="w-10 h-10 rounded-lg object-cover border border-emerald-300 flex-shrink-0">
+            <div class="text-left overflow-hidden">
+              <p class="font-bold text-emerald-950 text-[11px]">Foto Tersimpan di Database</p>
+              <p class="text-[10px] text-emerald-700">Klik / drag untuk mengganti foto</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/80 text-emerald-900">Aktif</span>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="flex items-center justify-between gap-2 p-1.5 bg-amber-50/80 rounded-xl border border-amber-300">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="text-xl">📷</span>
+            <div class="text-left overflow-hidden">
+              <p class="font-bold text-amber-950 text-[11px]">Foto Tersimpan (Mode Hemat Egress: OFF)</p>
+              <p class="text-[10px] text-amber-700">Klik / drag untuk mengganti foto</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900">Tersimpan</span>
+        </div>
+      `;
+    }
+  } else {
+    return `
+      <div class="flex items-center justify-center gap-2 py-1.5 pointer-events-none">
+        <span class="text-base">📷</span>
+        <span class="font-bold text-forest text-xs">Pilih atau Drag Foto Misi ${idx + 1} di Sini (Opsional)</span>
+        <span class="text-[10px] text-forest-light hidden sm:inline">(JPG/PNG/HEIC maks 8MB)</span>
+      </div>
+    `;
+  }
+}
+
+function handleBulkFileInputChange(idx, event) {
+  const file = event.target.files?.[0];
+  if (file) handleBulkPhotoSelect(idx, file);
+}
+
+function handleBulkPhotoSelect(idx, file) {
+  if (!file || !window.__bulkObsItems?.[idx]) return;
+  window.__bulkObsItems[idx].photoFile = file;
+  const contentEl = document.getElementById(`obs-bulk-photo-content-${idx}`);
+  if (contentEl) {
+    contentEl.innerHTML = renderBulkPhotoSlotContent(window.__bulkObsItems[idx], idx);
+  }
+}
+
+function removeBulkPhoto(idx, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (!window.__bulkObsItems?.[idx]) return;
+  window.__bulkObsItems[idx].photoFile = null;
+  const inputEl = document.getElementById(`obs-bulk-file-${idx}`);
+  if (inputEl) inputEl.value = '';
+  const contentEl = document.getElementById(`obs-bulk-photo-content-${idx}`);
+  if (contentEl) {
+    contentEl.innerHTML = renderBulkPhotoSlotContent(window.__bulkObsItems[idx], idx);
+  }
+}
+
+function handleBulkAnecdoteChange(idx, value) {
+  if (window.__bulkObsItems?.[idx]) {
+    window.__bulkObsItems[idx].anecdote = value;
+  }
+}
+
+function initBulkPhotoDropzone(idx) {
+  const dropzone = document.getElementById(`obs-bulk-dropzone-${idx}`);
+  const fileInput = document.getElementById(`obs-bulk-file-${idx}`);
+  if (!dropzone || !fileInput) return;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+    }, false);
+  });
+
+  ['dragleave', 'dragend'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.remove('border-forest', 'bg-sage-50/70', 'ring-2', 'ring-forest/30');
+    const dt = e.dataTransfer;
+    const file = dt?.files?.[0];
+    if (file) {
+      try {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+      } catch (err) { }
+      handleBulkPhotoSelect(idx, file);
+    }
+  }, false);
+}
+
+function initBulkPhotoDropzones() {
+  (window.__bulkObsItems || []).forEach((_, idx) => {
+    initBulkPhotoDropzone(idx);
+  });
+}
+
+function setBulkItemLevel(idx, level) {
+  if (!window.__bulkObsItems?.[idx]) return;
+  window.__bulkObsItems[idx].level = level;
+  const container = document.getElementById(`obs-bulk-levels-${idx}`);
+  if (container) {
+    container.innerHTML = ['not_observed', 'emerging', 'developing', 'mastered'].map(lvl => {
+      const isSelected = level === lvl;
+      const colorClasses = lvl === 'not_observed' ? 'bg-sand-100 text-forest border-sand-300'
+        : lvl === 'emerging' ? 'bg-amber-100 text-amber-900 border-amber-300'
+          : lvl === 'developing' ? 'bg-sky-100 text-sky-900 border-sky-300'
+            : 'bg-emerald-100 text-emerald-900 border-emerald-300';
+      const ring = isSelected ? 'ring-2 ring-forest font-bold shadow-2xs' : 'opacity-85';
+      const label = lvl === 'not_observed' ? (state.lang === 'id' ? 'Belum Muncul' : 'None')
+        : lvl === 'emerging' ? (state.lang === 'id' ? 'Mulai Muncul' : 'Emerging')
+          : lvl === 'developing' ? (state.lang === 'id' ? 'Berkembang' : 'Developing')
+            : (state.lang === 'id' ? 'Menguasai' : 'Mastered');
+      return `
+        <button type="button" onclick="setBulkItemLevel(${idx}, '${lvl}')"
+          class="p-1.5 rounded-lg border text-center transition text-xs ${colorClasses} ${ring}">
+          ${label}
+        </button>
+      `;
+    }).join('');
+  }
+}
+
+function setAllBulkLevels(level) {
+  (window.__bulkObsItems || []).forEach((item, idx) => {
+    item.level = level;
+  });
+  renderBulkObservationList();
+}
+
+function setBulkItemAttendance(idx, status) {
+  if (!window.__bulkObsItems?.[idx]) return;
+  const item = window.__bulkObsItems[idx];
+  item.attendance = status || 'present';
+  const studentName = state.selectedStudentForObs?.name || 'Siswa';
+
+  if (item.attendance !== 'present') {
+    item.level = 'not_observed';
+    if (!item.anecdote || item.anecdote.startsWith('[Sakit]') || item.anecdote.startsWith('[Izin]') || item.anecdote.startsWith('[Tidak Hadir]')) {
+      if (item.attendance === 'sick') {
+        item.anecdote = `[Sakit] ${studentName} tidak dapat mengikuti aktivitas ${item.title} karena sakit.`;
+      } else if (item.attendance === 'excused') {
+        item.anecdote = `[Izin] ${studentName} berhalangan hadir pada misi ${item.title} (izin).`;
+      } else if (item.attendance === 'absent') {
+        item.anecdote = `[Tidak Hadir] ${studentName} tidak hadir saat sesi misi ${item.title}.`;
+      }
+    }
+  } else {
+    if (item.anecdote && (item.anecdote.startsWith('[Sakit]') || item.anecdote.startsWith('[Izin]') || item.anecdote.startsWith('[Tidak Hadir]'))) {
+      item.anecdote = '';
+    }
+    if (item.level === 'not_observed') {
+      item.level = 'developing';
+    }
+  }
+  renderBulkObservationList();
+}
+window.setBulkItemAttendance = setBulkItemAttendance;
+
+function setAllBulkAttendance(status) {
+  const studentName = state.selectedStudentForObs?.name || 'Siswa';
+  (window.__bulkObsItems || []).forEach(item => {
+    item.attendance = status || 'present';
+    if (item.attendance !== 'present') {
+      item.level = 'not_observed';
+      if (!item.anecdote || item.anecdote.startsWith('[Sakit]') || item.anecdote.startsWith('[Izin]') || item.anecdote.startsWith('[Tidak Hadir]')) {
+        if (item.attendance === 'sick') {
+          item.anecdote = `[Sakit] ${studentName} tidak dapat mengikuti aktivitas ${item.title} karena sakit.`;
+        } else if (item.attendance === 'excused') {
+          item.anecdote = `[Izin] ${studentName} berhalangan hadir pada misi ${item.title} (izin).`;
+        } else if (item.attendance === 'absent') {
+          item.anecdote = `[Tidak Hadir] ${studentName} tidak hadir saat sesi misi ${item.title}.`;
+        }
+      }
+    } else {
+      if (item.anecdote && (item.anecdote.startsWith('[Sakit]') || item.anecdote.startsWith('[Izin]') || item.anecdote.startsWith('[Tidak Hadir]'))) {
+        item.anecdote = '';
+      }
+      if (item.level === 'not_observed') {
+        item.level = 'developing';
+      }
+    }
+  });
+  renderBulkObservationList();
+}
+window.setAllBulkAttendance = setAllBulkAttendance;
+
+function renderBulkObservationList() {
+  const listEl = document.getElementById('obs-bulk-list');
+  const batchActions = document.getElementById('obs-bulk-batch-actions');
+  if (!listEl) return;
+  const items = window.__bulkObsItems || [];
+
+  if (!items.length) {
+    if (batchActions) batchActions.classList.add('hidden');
+    const student = state.selectedStudentForObs;
+    const schKey = getStudentSchoolKey(student);
+    const schLabel = schKey === 'azhari' ? 'Azhari Islamic School'
+      : schKey === 'masa_kecil' ? 'Masa Kecil School'
+        : schKey === 'miftahul_ulum' ? 'MI Miftahul Ulum'
+          : schKey === 'early_step' ? 'Early Step Preschool'
+            : schKey === 'citra_alam' ? 'Citra Alam School'
+              : (student?.school_name || 'Sekolah Terpilih');
+    const className = student?.className || 'Kelas Siswa';
+
+    const studentObsList = getStudentObservations(student);
+    const allMissions = getRelevantMissionsForStudent(student);
+    const completedCount = allMissions.filter(m => isMissionObservedForStudent(m, studentObsList).isObserved).length;
+
+    if (completedCount > 0 && !state.showAllObsMissions) {
+      listEl.innerHTML = `
+        <div class="py-8 px-6 text-center rounded-3xl bg-emerald-50 border-2 border-emerald-300 space-y-3">
+          <span class="text-4xl block">🎉</span>
+          <h4 class="font-bold text-emerald-950 text-base">
+            ${state.lang === 'id' ? 'Seluruh Misi Terjadwal Telah Selesai Diobservasi!' : 'All Scheduled Missions Completed!'}
+          </h4>
+          <p class="text-xs text-emerald-800 max-w-md mx-auto leading-relaxed">
+            ${state.lang === 'id'
+              ? `Seluruh <strong>${completedCount} misi</strong> yang dijadwalkan di Perencana Pembelajaran telah memiliki catatan observasi tersimpan untuk <strong>${escapeHTML(student?.name || 'siswa ini')}</strong>. Tidak ada misi yang tertinggal atau mangkrak.`
+              : `All missions have been observed and recorded safely.`}
+          </p>
+          <div class="pt-2 flex items-center justify-center gap-2">
+            <button type="button" onclick="toggleShowAllObsMissions()"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-emerald-400 text-emerald-950 font-bold text-xs hover:bg-emerald-100 transition shadow-2xs">
+              <span>👁️</span> <span>${state.lang === 'id' ? 'Tampilkan Seluruh Misi yang Sudah Tersimpan' : 'View All Stored Missions'}</span>
+            </button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div class="py-10 px-6 text-center rounded-3xl bg-amber-50/90 border-2 border-dashed border-amber-300 space-y-3">
+        <span class="text-4xl block">🗓️</span>
+        <h4 class="font-bold text-amber-950 text-base">
+          ${state.lang === 'id' ? 'Misi Belum Terjadwal di Perencana Pembelajaran' : 'No Missions Scheduled in Lesson Planner'}
+        </h4>
+        <p class="text-xs text-amber-800 max-w-md mx-auto leading-relaxed">
+          ${state.lang === 'id'
+        ? `Belum ada misi atau aktivitas pembelajaran yang dijadwalkan untuk <strong>${escapeHTML(schLabel)}</strong> (${escapeHTML(className)}). Silakan buat jadwal kegiatan di menu <strong>Perencana Pembelajaran</strong> terlebih dahulu agar daftar misi dan slot unggah foto observasi otomatis terhubung.`
+        : `No missions have been scheduled in the Lesson Planner for this child's school or class yet. Please add lessons in the Lesson Planner first.`}
+        </p>
+        <div class="pt-2">
+          <button type="button" onclick="closeModal('modal-observation'); navigateTo('planner');"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition shadow-sm">
+            <span>📅</span> <span>${state.lang === 'id' ? 'Buka Menu Perencana Pembelajaran' : 'Open Lesson Planner'}</span>
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (batchActions) batchActions.classList.remove('hidden');
+
+  listEl.innerHTML = items.map((item, idx) => {
+    const isAbsent = item.attendance && item.attendance !== 'present';
+    const attBadgeText = item.attendance === 'sick' ? '🏥 Sakit'
+      : item.attendance === 'excused' ? '✉️ Izin'
+        : item.attendance === 'absent' ? '⚠️ Alpa'
+          : '👤 Hadir';
+    const attBadgeClass = item.attendance === 'sick' ? 'bg-amber-100 text-amber-900 border-amber-300'
+      : item.attendance === 'excused' ? 'bg-sky-100 text-sky-900 border-sky-300'
+        : item.attendance === 'absent' ? 'bg-rose-100 text-rose-900 border-rose-300'
+          : 'bg-emerald-100 text-emerald-900 border-emerald-300';
+
+    return `
+    <div class="rounded-2xl border ${isAbsent ? 'border-amber-300 bg-amber-50/40' : 'border-sand-300 bg-sand-50/70'} p-4 space-y-3" id="obs-bulk-card-${idx}">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full bg-forest text-white text-[10px] font-bold">Misi ${idx + 1}</span>
+            ${item.scheduledDate ? `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-200">🗓️ ${escapeHTML(item.scheduledDate)}</span>` : ''}
+            ${item.isCompleted ? `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200">✓ ${state.lang === 'id' ? 'Sudah Ada Data' : 'Existing'}</span>` : ''}
+          </div>
+          <h4 class="font-bold text-forest text-sm">${escapeHTML(item.title)}</h4>
+          ${item.desc ? `<p class="text-[11px] text-forest-light mt-0.5 line-clamp-2">${escapeHTML(item.desc)}</p>` : ''}
+        </div>
+      </div>
+
+      <!-- Status Kehadiran Siswa pada Misi Ini -->
+      <div class="p-2.5 bg-white rounded-xl border border-sand-200">
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block font-bold text-forest text-[11px]">Status Kehadiran Siswa:</label>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${attBadgeClass}">${attBadgeText}</span>
+        </div>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button type="button" onclick="setBulkItemAttendance(${idx}, 'present')"
+            class="p-1.5 rounded-lg border text-center transition text-xs font-semibold ${item.attendance === 'present' ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-bold shadow-2xs' : 'border-sand-300 bg-white text-forest opacity-80'}">
+            👤 Hadir
+          </button>
+          <button type="button" onclick="setBulkItemAttendance(${idx}, 'sick')"
+            class="p-1.5 rounded-lg border text-center transition text-xs font-semibold ${item.attendance === 'sick' ? 'border-2 border-amber-500 bg-amber-100 text-amber-950 font-bold shadow-2xs' : 'border-sand-300 bg-white text-forest opacity-80'}">
+            🏥 Sakit
+          </button>
+          <button type="button" onclick="setBulkItemAttendance(${idx}, 'excused')"
+            class="p-1.5 rounded-lg border text-center transition text-xs font-semibold ${item.attendance === 'excused' ? 'border-2 border-sky-500 bg-sky-100 text-sky-950 font-bold shadow-2xs' : 'border-sand-300 bg-white text-forest opacity-80'}">
+            ✉️ Izin
+          </button>
+          <button type="button" onclick="setBulkItemAttendance(${idx}, 'absent')"
+            class="p-1.5 rounded-lg border text-center transition text-xs font-semibold ${item.attendance === 'absent' ? 'border-2 border-rose-500 bg-rose-100 text-rose-950 font-bold shadow-2xs' : 'border-sand-300 bg-white text-forest opacity-80'}">
+            ⚠️ Alpa
+          </button>
+        </div>
+      </div>
+
+      <!-- Foto Berpasangan untuk Misi Ini -->
+      <div class="${isAbsent ? 'opacity-50 pointer-events-none' : ''}">
+        <label class="block font-bold text-forest text-[11px] mb-1">📷 Foto Dokumentasi Misi ${idx + 1}:</label>
+        <div id="obs-bulk-dropzone-${idx}" class="relative p-3 rounded-xl bg-white border-2 border-dashed border-sand-300 hover:border-sage transition text-center cursor-pointer group">
+          <input type="file" id="obs-bulk-file-${idx}" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+            onchange="handleBulkFileInputChange(${idx}, event)"
+            ${isAbsent ? 'disabled' : ''}
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+          <div id="obs-bulk-photo-content-${idx}">
+            ${renderBulkPhotoSlotContent(item, idx)}
+          </div>
+        </div>
+      </div>
+
+      <!-- Tingkat Capaian untuk Misi Ini -->
+      <div class="${isAbsent ? 'opacity-60' : ''}">
+        <label class="block font-bold text-forest text-[11px] mb-1">Tingkat Capaian:</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="obs-bulk-levels-${idx}">
+          ${['not_observed', 'emerging', 'developing', 'mastered'].map(lvl => {
+            const isSelected = item.level === lvl;
+            const colorClasses = lvl === 'not_observed' ? 'bg-sand-100 text-forest border-sand-300'
+              : lvl === 'emerging' ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : lvl === 'developing' ? 'bg-sky-100 text-sky-900 border-sky-300'
+                  : 'bg-emerald-100 text-emerald-900 border-emerald-300';
+            const ring = isSelected ? 'ring-2 ring-forest font-bold shadow-2xs' : 'opacity-85';
+            const label = lvl === 'not_observed' ? (state.lang === 'id' ? 'Belum Muncul' : 'None')
+              : lvl === 'emerging' ? (state.lang === 'id' ? 'Mulai Muncul' : 'Emerging')
+                : lvl === 'developing' ? (state.lang === 'id' ? 'Berkembang' : 'Developing')
+                  : (state.lang === 'id' ? 'Menguasai' : 'Mastered');
+            return `
+              <button type="button" onclick="setBulkItemLevel(${idx}, '${lvl}')"
+                class="p-1.5 rounded-lg border text-center transition text-xs ${colorClasses} ${ring}">
+                ${label}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Catatan Anekdot untuk Misi Ini -->
+      <div>
+        <label class="block font-bold text-forest text-[11px] mb-1">Catatan Anekdot:</label>
+        <textarea rows="2" oninput="handleBulkAnecdoteChange(${idx}, this.value)"
+          placeholder="${state.lang === 'id' ? 'Catatan perkembangan anak pada misi ini...' : 'Anecdotal note on this mission...'}"
+          class="w-full text-xs p-2 rounded-xl bg-white border border-sand-200 text-forest">${escapeHTML(item.anecdote || '')}</textarea>
+      </div>
+    </div>
+  `;
+  }).join('');
+
+  initBulkPhotoDropzones();
+}
+
+async function handleObsSubmit() {
+  if (currentObsInputMode === 'bulk') {
+    await saveBulkObservations();
+  } else {
+    await saveObservation();
+  }
+}
+
+async function saveBulkObservations() {
+  if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+    showToast(state.lang === 'id' ? 'Akses mencatat observasi ditolak.' : 'Permission denied.', '⚠️');
+    return;
+  }
+  const student = state.selectedStudentForObs;
+  if (!student) {
+    showToast(state.lang === 'id' ? 'Pilih siswa sebelum mencatat observasi.' : 'Select a student first.', '⚠️');
+    return;
+  }
+  const items = window.__bulkObsItems || [];
+  if (!items.length) {
+    showToast(state.lang === 'id' ? 'Belum ada misi yang dijadwalkan di Perencana Pembelajaran untuk disimpan.' : 'No scheduled missions to save.', '⚠️');
+    return;
+  }
+
+  const saveBtn = document.getElementById('btn-save-obs');
+  const spinner = document.getElementById('save-obs-spinner');
+  const btnText = document.getElementById('save-obs-btn-text');
+  if (saveBtn) saveBtn.disabled = true;
+  if (spinner) spinner.classList.remove('hidden');
+
+  let savedCount = 0;
+  let updatedCount = 0;
+  let errorCount = 0;
+
+  try {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (btnText) {
+        btnText.textContent = state.lang === 'id'
+          ? `Menyimpan Misi ${i + 1}/${items.length}...`
+          : `Saving Mission ${i + 1}/${items.length}...`;
+      }
+
+      const isAbsent = item.attendance && item.attendance !== 'present';
+      let finalPhotoFile = isAbsent ? null : item.photoFile;
+
+      if (finalPhotoFile) {
+        const photoName = (finalPhotoFile.name || '').toLowerCase();
+        const isHeic = finalPhotoFile.type === 'image/heic' || finalPhotoFile.type === 'image/heif' || photoName.endsWith('.heic') || photoName.endsWith('.heif');
+        if (isHeic) {
+          if (btnText) btnText.textContent = `Konversi foto HEIC Misi ${i + 1}...`;
+          finalPhotoFile = await ensureJpegCompatiblePhoto(finalPhotoFile);
+        }
+      }
+
+      const defaultAnecdote = state.lang === 'id'
+        ? `Anak mengikuti aktivitas ${item.title} dengan fokus tenang.`
+        : `Child followed activity ${item.title} with focused curiosity.`;
+      let anecdote = (item.anecdote && item.anecdote.trim()) || defaultAnecdote;
+
+      if (isAbsent) {
+        const prefix = item.attendance === 'sick' ? '[Sakit]' : item.attendance === 'excused' ? '[Izin]' : '[Tidak Hadir]';
+        if (!anecdote.startsWith(prefix)) {
+          anecdote = `${prefix} ${anecdote}`.trim();
+        }
+      }
+
+      const finalLevel = isAbsent ? 'not_observed' : item.level;
+
+      // If already exists in Supabase
+      if (item.existingId) {
+        let uploadedPhotoPath = null;
+        if (finalPhotoFile) {
+          const extensionByType = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+          let extension = extensionByType[finalPhotoFile.type] || 'jpg';
+          uploadedPhotoPath = `${student.id}/${state.currentUser.id}/${crypto.randomUUID()}.${extension}`;
+          const uploadContentType = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg';
+          const { error: uploadError } = await sb.storage
+            .from('student-observation-photos')
+            .upload(uploadedPhotoPath, finalPhotoFile, { contentType: uploadContentType, upsert: false });
+          if (uploadError) console.warn('[Bulk] Photo upload failed:', uploadError);
+        }
+
+        const updatePayload = {
+          mastery_level: finalLevel,
+          anecdote: anecdote
+        };
+        if (uploadedPhotoPath) {
+          updatePayload.photo_path = uploadedPhotoPath;
+        }
+
+        const { data: updatedData, error: updateError } = await sb
+          .from('observations')
+          .update(updatePayload)
+          .eq('id', item.existingId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.warn('[Bulk] Update failed:', updateError);
+          errorCount++;
+        } else {
+          updatedCount++;
+          const idxInState = state.databaseObservations.findIndex(o => o.id === item.existingId);
+          if (idxInState !== -1) {
+            state.databaseObservations[idxInState] = { ...state.databaseObservations[idxInState], ...updatedData };
+            if (uploadedPhotoPath) {
+              await signObservationPhotos([state.databaseObservations[idxInState]]);
+            }
+          }
+        }
+      } else {
+        // Create new observation
+        const obsPayload = {
+          studentId: student.id,
+          studentName: student.name,
+          domain: 'science',
+          milestone: item.title,
+          level: finalLevel,
+          time: state.lang === 'id' ? 'Baru saja' : 'Just now',
+          anecdote: anecdote,
+          photoFile: finalPhotoFile
+        };
+        const saved = await saveObservationToSupabase(obsPayload);
+        if (saved) {
+          savedCount++;
+          try {
+            await signObservationPhotos([saved]);
+          } catch (e) { }
+          state.databaseObservations.unshift(saved);
+          if (state.databaseObservationCount !== null) state.databaseObservationCount += 1;
+        } else {
+          errorCount++;
+        }
+      }
+    }
+
+    applyDatabaseObservations();
+    closeModal('modal-observation');
+    renderView();
+
+    const totalSuccess = savedCount + updatedCount;
+    if (totalSuccess > 0) {
+      showToast(state.lang === 'id'
+        ? `Berhasil menyimpan data ${totalSuccess} misi (${savedCount} baru, ${updatedCount} diperbarui).`
+        : `Successfully saved ${totalSuccess} missions.`, '✅');
+    } else if (errorCount > 0) {
+      showToast(state.lang === 'id' ? 'Gagal menyimpan data misi massal.' : 'Failed to save bulk missions.', '❌');
+    }
+  } catch (err) {
+    console.error('[saveBulkObservations] Error:', err);
+    showToast(state.lang === 'id' ? `Error: ${err.message || err}` : `Error: ${err.message || err}`, '❌');
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+    if (spinner) spinner.classList.add('hidden');
+    if (btnText) btnText.textContent = state.lang === 'id' ? 'Simpan Observasi (Catat)' : 'Save Observation';
+  }
+}
+
+// -------------------------------------------------------------
+// FITUR HAPUS OBSERVASI (Admin & Tutor)
+// -------------------------------------------------------------
+let pendingObsIdToDelete = null;
+
+function confirmDeleteObservation(obsId) {
+  if (!['admin', 'teacher'].includes(state.currentUser?.role)) {
+    showToast(state.lang === 'id' ? 'Akses menghapus observasi ditolak.' : 'Permission denied.', '⚠️');
+    return;
+  }
+  const obs = (state.databaseObservations || []).find(o => o.id === obsId);
+  if (!obs) {
+    showToast(state.lang === 'id' ? 'Data observasi tidak ditemukan.' : 'Observation not found.', '⚠️');
+    return;
+  }
+  pendingObsIdToDelete = obsId;
+  const student = state.allStudents.find(s => s.id === obs.student_id);
+  const studentName = student?.name || obs.studentName || 'Siswa';
+  const studentEl = document.getElementById('delete-obs-student');
+  const milestoneEl = document.getElementById('delete-obs-milestone');
+  if (studentEl) studentEl.textContent = studentName;
+  if (milestoneEl) milestoneEl.textContent = obs.milestone || 'Observasi';
+  const labelEl = document.getElementById('delete-obs-student-name');
+  if (labelEl) labelEl.textContent = `${studentName} — ${obs.milestone || 'Observasi'}`;
+  openModal('modal-delete-observation');
+}
+
+async function executeDeleteObservation() {
+  if (!pendingObsIdToDelete) return;
+  const obsId = pendingObsIdToDelete;
+  const deleteBtn = document.getElementById('btn-confirm-delete-obs');
+  if (deleteBtn) {
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = `<span>🌀</span> <span>${state.lang === 'id' ? 'Menghapus...' : 'Deleting...'}</span>`;
+  }
+  try {
+    const obs = (state.databaseObservations || []).find(o => o.id === obsId);
+    if (obs && obs.photo_path) {
+      if (typeof signedPhotoCache !== 'undefined') signedPhotoCache.delete(obs.photo_path);
+      try {
+        await sb.storage.from('student-observation-photos').remove([obs.photo_path]);
+      } catch (e) {
+        console.warn('[Supabase] Failed to remove photo from storage:', e);
+      }
+    }
+    const { error } = await sb.from('observations').delete().eq('id', obsId);
+    if (error) throw error;
+
+    state.databaseObservations = (state.databaseObservations || []).filter(o => o.id !== obsId);
+    if (state.databaseObservationCount !== null && state.databaseObservationCount > 0) {
+      state.databaseObservationCount -= 1;
+    }
+    applyDatabaseObservations();
+    closeModal('modal-delete-observation');
+    renderObservations();
+    showToast(state.lang === 'id' ? 'Catatan observasi berhasil dihapus.' : 'Observation deleted successfully.', '✅');
+  } catch (err) {
+    console.error('[executeDeleteObservation] Error:', err);
+    showToast(state.lang === 'id' ? `Gagal menghapus: ${err.message || err}` : `Delete failed: ${err.message || err}`, '❌');
+  } finally {
+    pendingObsIdToDelete = null;
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = `<span>🗑️</span> <span>${state.lang === 'id' ? 'Ya, Hapus Permanen' : 'Delete'}</span>`;
+    }
   }
 }
 
@@ -4266,7 +5532,11 @@ function openAddAdminModal() {
   document.getElementById('new-admin-name').focus();
 }
 
-async function loadAdminsFromSupabase() {
+async function loadAdminsFromSupabase(force = false) {
+  if (!force && state.admins && state.admins.length > 0) {
+    state.databaseStatus.admins = true;
+    return true;
+  }
   try {
     const { data, error } = await sb.from('admins')
       .select('id, full_name, email, created_at')
@@ -4675,7 +5945,11 @@ function renderTutors() {
 }
 
 // --- PARENT MANAGEMENT FUNCTIONS (Admin Exclusive) ---
-async function loadParentsFromSupabase() {
+async function loadParentsFromSupabase(force = false) {
+  if (!force && state.parents && state.parents.length > 0) {
+    state.databaseStatus.parents = true;
+    return state.parents;
+  }
   try {
     const { data, error } = await sb
       .from('parents')
@@ -4961,7 +6235,7 @@ async function handleSaveEditParent(event) {
       ? `Data akun "${parentName}" (Nama, No HP & Sandi) berhasil disimpan!`
       : `Account "${parentName}" (Name, Phone & PIN) successfully saved!`, '✅');
 
-    await loadParentsFromSupabase();
+    await loadParentsFromSupabase(true);
     renderParents();
   } catch (err) {
     console.error('[Supabase] update parent failed:', err);
@@ -5003,7 +6277,7 @@ function renderParentHub() {
       nickname: childName.split(' ')[0],
       age: '—',
       classId: null,
-      className: 'Kelas Montessori',
+      className: 'Kelas Future Skill',
       schoolName: 'Sekolah Mitra Plego',
       lastObsDays: 0,
       needsAttention: false,
@@ -5094,7 +6368,7 @@ function renderParentHub() {
 
   const progressContent = document.getElementById('parent-progress-content');
   const masteryLevels = ['not_observed', 'emerging', 'developing', 'mastered'];
-  const masteryColors = ['bg-sand-300', 'bg-sunshine', 'bg-sky', 'bg-leaf'];
+  const masteryColors = ['bg-sand-300', 'bg-sunshine', 'bg-sky', 'bg-sage'];
   const masteryLabels = {
     not_observed: t('level.none'),
     emerging: t('level.emerging'),
@@ -5120,28 +6394,61 @@ function renderParentHub() {
       : 'Progress appears after observations are saved to the database.'}</p>`;
 
   // Trigger background photo signing if any observation has photo_path but not yet photo_signed_url
-  if (observations.some(obs => obs.photo_path && !obs.photo_signed_url)) {
+  if (state.showDocumentationPhotos && observations.some(obs => obs.photo_path && !obs.photo_signed_url)) {
     if (typeof signObservationPhotos === 'function') {
       signObservationPhotos(observations).then(() => {
-        const feed = document.getElementById('parent-photo-feed');
-        if (feed && state.currentView === 'parentHub') renderParentHub();
+        renderParentPhotoFeed(observations);
       }).catch(() => { });
     }
+  }
+
+  renderParentPhotoFeed(observations);
+}
+
+function renderParentPhotoFeed(observations) {
+  const feed = document.getElementById('parent-photo-feed');
+  if (!feed) return;
+
+  if (!state.showDocumentationPhotos) {
+    const hasAnyObsPhoto = (observations || []).some(o => o.photo_path || o.photo_url || o.photo_signed_url);
+    feed.innerHTML = `
+      <div class="col-span-full p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 text-center py-6 shadow-2xs">
+        <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto text-lg mb-2">📸</div>
+        <p class="text-xs font-bold text-amber-900">${state.lang === 'id' ? 'Tampilan Foto Dokumentasi Nonaktif (Mode Hemat Egress: OFF)' : 'Observation Photos Disabled (Egress Saver Mode: OFF)'}</p>
+        <p class="text-[11px] text-amber-700/90 mt-1 max-w-md mx-auto leading-relaxed">
+          ${hasAnyObsPhoto
+            ? (state.lang === 'id'
+              ? 'Tersedia dokumentasi foto anak yang tersimpan aman di cloud. Tampilan foto saat ini dimatikan untuk menghemat kuota egress Supabase.'
+              : 'Documentation photos are stored safely. Photos are currently hidden to save egress bandwidth.')
+            : (state.lang === 'id'
+              ? 'Foto akan tampil setelah pendidik mengunggah dokumentasi observasi.'
+              : 'Photos appear after an educator uploads observation documentation.')}
+        </p>
+        ${isAdminUser() ? `
+          <button type="button" onclick="toggleDocumentationPhotos(true)"
+            class="mt-3 px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-2xs inline-flex items-center gap-1.5">
+            <span>⚡ Aktifkan Tampilan Foto (ON)</span>
+          </button>
+        ` : ''}
+      </div>
+    `;
+    return;
   }
 
   const photos = observations
     .map(observation => {
       let rawPhoto = observation.photo_signed_url || observation.photo_url || '';
-      if (!rawPhoto && observation.photo_path && typeof sb !== 'undefined' && sb) {
-        rawPhoto = sb.storage.from('student-observation-photos').getPublicUrl(observation.photo_path).data?.publicUrl || '';
+      if (!rawPhoto && observation.photo_path && typeof signedPhotoCache !== 'undefined' && signedPhotoCache.has(observation.photo_path)) {
+        rawPhoto = signedPhotoCache.get(observation.photo_path).url;
       }
       return {
         ...observation,
-        safePhotoUrl: typeof safeHttpsUrl === 'function' ? safeHttpsUrl(rawPhoto) : rawPhoto,
+        safePhotoUrl: rawPhoto || '',
       };
     })
     .filter(observation => observation.safePhotoUrl);
-  document.getElementById('parent-photo-feed').innerHTML = photos.length
+
+  feed.innerHTML = photos.length
     ? photos.map(observation => {
       const createdDate = observation.created_at ? new Date(observation.created_at).toLocaleDateString(state.lang === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
       return `
@@ -5150,14 +6457,17 @@ function renderParentHub() {
           data-photo-caption="${escapeHTML(observation.anecdote || '')}"
           data-photo-meta="${escapeHTML(createdDate || observation.time || '')}"
           class="rounded-2xl overflow-hidden aspect-video bg-sand-200 hover:opacity-95 transition shadow-2xs group relative">
-          <img src="${escapeHTML(observation.safePhotoUrl)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+          <img src="${escapeHTML(observation.safePhotoUrl)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" 
+            loading="lazy" decoding="async"
+            class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
         </button>
       `;
     }).join('')
     : `<p class="parent-photo-empty">${state.lang === 'id'
       ? 'Foto akan tampil setelah pendidik mengunggah dokumentasi observasi.'
       : 'Photos appear after an educator uploads observation documentation.'}</p>`;
-  document.querySelectorAll('[data-parent-photo]').forEach(button => {
+
+  feed.querySelectorAll('[data-parent-photo]').forEach(button => {
     button.addEventListener('click', () => {
       openPhotoModal(
         button.dataset.parentPhoto,
@@ -5346,7 +6656,7 @@ function getDomainColor(domain) {
     case 'technology': return { bg: 'bg-violet', bgLight: 'bg-violet-light', textColor: 'text-violet', label: state.lang === 'id' ? '💻 Teknologi' : '💻 Technology' };
     case 'engineering': return { bg: 'bg-terracotta', bgLight: 'bg-terracotta-light', textColor: 'text-terracotta', label: state.lang === 'id' ? '⚙️ Rekayasa' : '⚙️ Engineering' };
     case 'math': return { bg: 'bg-sunshine', bgLight: 'bg-sunshine-light', textColor: 'text-sunshine-dark', label: state.lang === 'id' ? '📐 Matematika' : '📐 Math' };
-    default: return { bg: 'bg-leaf', bgLight: 'bg-leaf/10', textColor: 'text-leaf', label: state.lang === 'id' ? '🌿 Kehidupan Praktis' : '🌿 Practical Life' };
+    default: return { bg: 'bg-sage', bgLight: 'bg-sage-50', textColor: 'text-sage', label: state.lang === 'id' ? '🧭 Kehidupan Praktis' : '🧭 Practical Life' };
   }
 }
 
@@ -5609,12 +6919,12 @@ const DUMMY_REPORT_STUDENTS = [
       id: [
         'Mengenal konsep dasar polaritas magnetik (daya tarik & tolak) melalui sensori-bin eksploratif.',
         'Melatih koordinasi motorik bilateral dan diskriminasi visual saat menguji daya apung material alami di siklus air.',
-        'Membangun fokus kerja bertahap (three-period lesson) dan kemandirian merapikan aparatus Montessori ke rak kerja.'
+        'Membangun fokus kerja bertahap dan kemandirian merapikan aparatus Future Skill ke rak kerja.'
       ],
       en: [
         'Understand basic magnetic polarity (attraction & repulsion) using an exploratory sensory bin.',
         'Develop bilateral motor coordination and visual discrimination while testing natural buoyancy in water.',
-        'Cultivate three-period lesson focus and independence in returning Montessori apparatus to shelves.'
+        'Cultivate focused exploration and independence in returning Future Skill apparatus to shelves.'
       ]
     },
     skillRatings: {
@@ -5626,7 +6936,7 @@ const DUMMY_REPORT_STUDENTS = [
     },
     narrativeFeedback: {
       id: 'Aileen menunjukkan kematangan konsentrasi dan penalaran sensori yang sangat menonjol. Ia memiliki inisiatif tinggi dalam mengeksplorasi polaritas magnetik dan mampu menyelesaikan seluruh siklus kerja secara tenang. Sikap mandiri dan keteraturan Aileen saat merapikan aparatus patut diapresiasi.',
-      en: 'Aileen exhibits exceptional maturity in concentration and sensory inquiry. She displays high initiative exploring magnetic polarity and completes entire Montessori work cycles with poise. Her independence and neatness when restoring apparatus are commendable.'
+      en: 'Aileen exhibits exceptional maturity in concentration and sensory inquiry. She displays high initiative exploring magnetic polarity and completes entire Future Skill work cycles with poise. Her independence and neatness when restoring apparatus are commendable.'
     },
     attendance: { percent: 100, note_id: '12 dari 12 Pertemuan', note_en: '12 of 12 Sessions' },
     gallery: [
@@ -5804,6 +7114,94 @@ function getScorePredicate(score) {
   if (num >= 85) return 'Mahir';
   if (num >= 75) return 'Berkembang';
   return 'Perlu Bimbingan';
+}
+
+function getSdSkillNarrative(skillKey, predicate, score, lang = 'id') {
+  const p = String(predicate || '').toLowerCase();
+  const isEn = lang === 'en';
+  const num = typeof score === 'number' ? score : parseInt(score, 10);
+
+  const narratives = {
+    keterlibatan_aktif: {
+      'sangat mahir': isEn
+        ? 'Highly enthusiastic, fully engaged, and demonstrates independent focus throughout all exploratory activities.'
+        : 'Sangat antusias, berpartisipasi aktif secara penuh, serta fokus mandiri sepanjang proses eksplorasi.',
+      'mahir': isEn
+        ? 'Actively participates, responsive to instructions, and shows commendable learning curiosity.'
+        : 'Aktif berpartisipasi dalam pembelajaran, responsif, dan menunjukkan rasa ingin tahu yang baik.',
+      'berkembang': isEn
+        ? 'Shows emerging active participation with regular encouragement and guidance from facilitators.'
+        : 'Mulai menunjukkan ketertarikan dan keterlibatan aktif dengan dorongan dan arahan berkala.',
+      'perlu bimbingan': isEn
+        ? 'Requires continuous encouragement and step-by-step guidance to participate actively in sessions.'
+        : 'Memerlukan motivasi dan pendampingan bertahap agar lebih aktif terlibat dalam sesi belajar.'
+    },
+    kreatif: {
+      'sangat mahir': isEn
+        ? 'Creates original assembly ideas and independently modifies mechanical models with great confidence.'
+        : 'Mampu merancang ide rakitan orisinal dan memodifikasi solusi model secara mandiri dan percaya diri.',
+      'mahir': isEn
+        ? 'Skilled at combining modular blocks and exploring creative structural variations effectively.'
+        : 'Kreatif memadukan komponen blok dan mengeksplorasi variasi bentuk baru dengan baik.',
+      'berkembang': isEn
+        ? 'Explores new structural shapes with initial reference and step-by-step tutor guidance.'
+        : 'Mampu mengembangkan variasi bentuk baru dengan bantuan panduan atau contoh instruksi.',
+      'perlu bimbingan': isEn
+        ? 'Follows standard sample models and requires support to express personal creative ideas.'
+        : 'Masih mengikuti contoh dasar dan membutuhkan bimbingan dalam memunculkan ide kreatif.'
+    },
+    digital_innovation: {
+      'sangat mahir': isEn
+        ? 'Exceptionally adept at analyzing sensor behaviors, system logic, and digital cause-and-effect relationships.'
+        : 'Sangat terampil menganalisis fungsi sensor, logika sistem, dan keterkaitan sebab-akibat digital.',
+      'mahir': isEn
+        ? 'Understands sensor functions and accurately applies electronic module logic in assemblies.'
+        : 'Memahami fungsi sensor dan menerapkan logika modul elektronik pada rangkaian dengan tepat.',
+      'berkembang': isEn
+        ? 'Begins grasping sensor workflows and fundamental logic through guided practice.'
+        : 'Mulai mengenali fungsi sensor dan modul elektronik melalui latihan serta arahan tutor.',
+      'perlu bimbingan': isEn
+        ? 'Needs close assistance to comprehend electronic components and basic digital circuitry logic.'
+        : 'Perlu bimbingan intensif untuk mengenali komponen teknologi dan logika rangkaian dasar.'
+    },
+    problem_solving: {
+      'sangat mahir': isEn
+        ? 'Swiftly diagnoses circuit or mechanical errors and independently discovers logical solutions.'
+        : 'Sangat cekatan menganalisis kendala mekanik/rangkaian dan menemukan solusi secara mandiri.',
+      'mahir': isEn
+        ? 'Identifies build errors accurately and rectifies them through sound logical reasoning.'
+        : 'Mampu mengenali kesalahan rangkaian dan memperbaikinya dengan penalaran logis yang baik.',
+      'berkembang': isEn
+        ? 'Resolves simple technical issues when guided towards the root cause by facilitators.'
+        : 'Dapat memecahkan kendala teknis sederhana setelah diarahkan pada sumber permasalahan.',
+      'perlu bimbingan': isEn
+        ? 'Requires structured assistance and patient mentoring when encountering technical obstacles.'
+        : 'Memerlukan bantuan dan bimbingan terarah saat menghadapi kesulitan dalam perakitan.'
+    },
+    collaboration: {
+      'sangat mahir': isEn
+        ? 'Outstanding team communicator, deeply values peer ideas, and fosters a harmonious collaborative atmosphere.'
+        : 'Sangat komunikatif, menghargai ide teman, dan mampu membangun kerja sama tim yang harmonis.',
+      'mahir': isEn
+        ? 'Cooperates effectively, shares tools courteously, and divides group roles constructively.'
+        : 'Mampu bekerja sama, berbagi alat kerja dengan tertib, dan berkontribusi baik dalam tim.',
+      'berkembang': isEn
+        ? 'Participates in group tasks and learns to take turns with occasional reminders from tutors.'
+        : 'Mulai dapat bekerja sama dalam kelompok walaupun sesekali perlu diingatkan untuk berbagi.',
+      'perlu bimbingan': isEn
+        ? 'Needs encouragement to interact comfortably and share components within team learning settings.'
+        : 'Perlu dorongan berkala untuk berinteraksi dan berbagi alat dalam kerja kelompok.'
+    }
+  };
+
+  const skillData = narratives[skillKey] || narratives.keterlibatan_aktif;
+  let key = 'mahir';
+  if (p.includes('sangat') || (!isNaN(num) && num >= 93)) key = 'sangat mahir';
+  else if (p.includes('berkembang') || (!isNaN(num) && num >= 75 && num < 85)) key = 'berkembang';
+  else if (p.includes('bimbingan') || p.includes('perlu') || (!isNaN(num) && num < 75)) key = 'perlu bimbingan';
+  else key = 'mahir';
+
+  return skillData[key] || (isEn ? 'Demonstrates solid mastery of this learning domain.' : 'Menunjukkan capaian yang baik dan terarah pada domain pembelajaran ini.');
 }
 
 function setSdScoreInput(key, val) {
@@ -6193,14 +7591,22 @@ function renderStudentReport() {
   renderStudentReportContent();
 }
 
-async function loadAllStudentReportsForTerm(term) {
+async function loadAllStudentReportsForTerm(term, force = false) {
   const selectedTerm = term || state.reportSelectedTerm || 'Semester Gasal 2026/2027';
   if (!state.studentReportsCache) state.studentReportsCache = {};
+  if (!state.loadedReportsTerms) state.loadedReportsTerms = new Set();
+
+  if (!force && state.loadedReportsTerms.has(selectedTerm)) {
+    const currentSchoolStudents = (state.allStudents || []).filter(s => getStudentSchoolKey(s) === state.reportSelectedSchool);
+    updateReportStatusBadges(currentSchoolStudents);
+    return;
+  }
+
   if (typeof sb !== 'undefined' && sb) {
     try {
       const { data, error } = await sb
         .from('student_reports')
-        .select('*')
+        .select('id, student_id, term, learning_objectives, skill_ratings, development_notes, attendance_percentage, updated_at')
         .eq('term', selectedTerm);
 
       if (!error && Array.isArray(data)) {
@@ -6209,8 +7615,12 @@ async function loadAllStudentReportsForTerm(term) {
             state.studentReportsCache[`${row.student_id}_${row.term}`] = row;
           }
         });
+        state.loadedReportsTerms.add(selectedTerm);
         const currentSchoolStudents = (state.allStudents || []).filter(s => getStudentSchoolKey(s) === state.reportSelectedSchool);
         updateReportStatusBadges(currentSchoolStudents);
+        if (state.currentView === 'studentReport') {
+          renderStudentReportContent();
+        }
       }
     } catch (err) {
       console.warn('[studentReport] loadAllStudentReportsForTerm warning:', err);
@@ -6276,12 +7686,13 @@ function renderStudentReportContent() {
   const lang = state.lang || 'id';
   let student = findReportStudent(state.reportSelectedStudentId);
 
-  // Parent fallback: ensure parent always resolves their linked child
-  if (!student && state.currentUser?.role === 'parent') {
-    student = findReportStudent(state.previewStudentId) || (state.students && state.students[0]) || (state.allStudents && state.allStudents[0]);
-    if (student) {
-      state.reportSelectedStudentId = student.id;
-      state.reportSelectedSchool = getStudentSchoolKey(student);
+  // Parent guarantee: ALWAYS resolve the parent's linked child and their school
+  if (isParent) {
+    const parentChild = (state.students && state.students[0]) || (state.allStudents && state.allStudents[0]);
+    if (parentChild) {
+      student = findReportStudent(parentChild.id) || parentChild;
+      state.reportSelectedStudentId = parentChild.id;
+      state.reportSelectedSchool = getStudentSchoolKey(parentChild);
     }
   }
   const schoolKey = (student && student.schoolId) || state.reportSelectedSchool || 'masa_kecil';
@@ -6345,7 +7756,7 @@ function renderStudentReportContent() {
     .filter(obs => obs.student_id === student.id || obs.student_id === studentUuid)
     .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-  if (studentObs.some(obs => obs.photo_path && !obs.photo_signed_url)) {
+  if (state.showDocumentationPhotos && studentObs.some(obs => obs.photo_path && !obs.photo_signed_url)) {
     if (typeof signObservationPhotos === 'function') {
       signObservationPhotos(state.databaseObservations).then(() => {
         renderStudentReportContent();
@@ -6355,24 +7766,26 @@ function renderStudentReportContent() {
 
   const obsPhotos = studentObs
     .map(obs => {
-      let rawUrl = obs.photo_signed_url || obs.photo_url || '';
-      if (!rawUrl && obs.photo_path && typeof sb !== 'undefined' && sb) {
-        rawUrl = sb.storage.from('student-observation-photos').getPublicUrl(obs.photo_path).data?.publicUrl || '';
+      let rawUrl = (state.showDocumentationPhotos ? (obs.photo_signed_url || obs.photo_url) : '') || '';
+      if (state.showDocumentationPhotos && !rawUrl && obs.photo_path && typeof signedPhotoCache !== 'undefined' && signedPhotoCache.has(obs.photo_path)) {
+        rawUrl = signedPhotoCache.get(obs.photo_path).url;
       }
       const safeUrl = typeof safeHttpsUrl === 'function' ? safeHttpsUrl(rawUrl) : rawUrl;
-      if (!safeUrl) return null;
       const createdAt = obs.created_at ? new Date(obs.created_at) : null;
       const dateFormatted = createdAt && !Number.isNaN(createdAt.getTime())
         ? createdAt.toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })
         : (obs.time || '');
       return {
+        id: obs.id,
+        photoPath: obs.photo_path,
         url: safeUrl,
         title: obs.milestone || (lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'),
         caption: obs.anecdote || '',
-        date: dateFormatted
+        date: dateFormatted,
+        isOff: !state.showDocumentationPhotos,
       };
     })
-    .filter(Boolean);
+    .filter(item => item.url || item.photoPath || item.caption);
 
   const photos = obsPhotos.length > 0
     ? obsPhotos
@@ -6442,7 +7855,7 @@ function renderStudentReportContent() {
 
     const currentActiveUuid = resolveStudentUuid(student ? student.id : null);
     const currentSelectedTerm = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
-    const savedReportSd = activeData.savedReport || state.studentReportsCache?.[`${currentActiveUuid}_${currentSelectedTerm}`];
+    const savedReportSd = activeData.savedReport || state.studentReportsCache?.[`${currentActiveUuid}_${currentSelectedTerm}`] || (student ? state.studentReportsCache?.[`${student.id}_${currentSelectedTerm}`] : null);
     const isRealData = Boolean(savedReportSd) || (
       Boolean(activeData.developmentNotes) &&
       activeData.developmentNotes.trim().length > 0 &&
@@ -6532,8 +7945,8 @@ function renderStudentReportContent() {
         </header>
 
         <!-- ================= 2. BLOK OBJEKTIF PEMBELAJARAN ================= -->
-        <section class="rounded-2xl border-2 border-[#5B82A6] p-4 sm:p-5 relative report-break-avoid bg-white">
-          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3 shadow-2xs">
+        <section class="rounded-2xl border-2 border-[#1E3A8A] p-4 sm:p-5 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#1E3A8A] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3 shadow-2xs">
             ${lang === 'id' ? 'OBJEKTIF PEMBELAJARAN' : 'LEARNING OBJECTIVES'}
           </div>
           <ul class="space-y-1.5 text-xs sm:text-sm text-slate-800 leading-relaxed list-disc list-inside">
@@ -6544,37 +7957,72 @@ function renderStudentReportContent() {
         </section>
 
         <!-- ================= 3. BLOK SKILL / KEMAMPUAN & SARAN PENGAMPU ================= -->
-        <section class="rounded-2xl border-2 border-[#5B82A6] p-4 sm:p-5 relative report-break-avoid bg-white">
-          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3.5 shadow-2xs">
-            ${lang === 'id' ? 'SKILL / KEMAMPUAN' : 'SKILLS &amp; ABILITIES'}
+        <section class="rounded-2xl border-2 border-[#1E3A8A] p-4 sm:p-5 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#1E3A8A] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3.5 shadow-2xs">
+            ${lang === 'id' ? 'SKILL / KEMAMPUAN &amp; DESKRIPSI CAPAIAN' : 'SKILLS, ABILITIES &amp; DESCRIPTIONS'}
           </div>
 
-          <!-- Skill Scores Table -->
+          <!-- Skill Scores Table with Narrative Descriptions -->
           <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-[#5B82A6] text-xs sm:text-sm text-slate-800">
+            <table class="w-full border-collapse border border-[#1E3A8A]/30 text-xs sm:text-sm text-slate-800">
               <thead>
-                <tr class="bg-white">
-                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Aktif</th>
-                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Kreatif</th>
-                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Digital Innovation &amp; Inquiry</th>
-                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Problem Solving</th>
-                  <th class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Collaboration</th>
+                <tr class="bg-slate-50/80">
+                  <th class="border border-[#1E3A8A]/20 p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Keterlibatan Aktif</th>
+                  <th class="border border-[#1E3A8A]/20 p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Kreatif</th>
+                  <th class="border border-[#1E3A8A]/20 p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Digital Innovation &amp; Inquiry</th>
+                  <th class="border border-[#1E3A8A]/20 p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Problem Solving</th>
+                  <th class="border border-[#1E3A8A]/20 p-2.5 sm:p-3 text-center font-bold text-slate-900 w-1/5">Collaboration</th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="bg-white">
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.keterlibatan_aktif}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.kreatif}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.digital_innovation}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.problem_solving}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-bold text-slate-900 text-sm sm:text-base">${sdScores.collaboration}</td>
+                  <td class="border border-[#1E3A8A]/20 p-2.5 text-center font-extrabold text-[#1E3A8A] text-base sm:text-lg bg-blue-50/40">${sdScores.keterlibatan_aktif}</td>
+                  <td class="border border-[#1E3A8A]/20 p-2.5 text-center font-extrabold text-[#1E3A8A] text-base sm:text-lg bg-blue-50/40">${sdScores.kreatif}</td>
+                  <td class="border border-[#1E3A8A]/20 p-2.5 text-center font-extrabold text-[#1E3A8A] text-base sm:text-lg bg-blue-50/40">${sdScores.digital_innovation}</td>
+                  <td class="border border-[#1E3A8A]/20 p-2.5 text-center font-extrabold text-[#1E3A8A] text-base sm:text-lg bg-blue-50/40">${sdScores.problem_solving}</td>
+                  <td class="border border-[#1E3A8A]/20 p-2.5 text-center font-extrabold text-[#1E3A8A] text-base sm:text-lg bg-blue-50/40">${sdScores.collaboration}</td>
                 </tr>
                 <tr class="bg-white">
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.keterlibatan_aktif)}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.kreatif)}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.digital_innovation)}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.problem_solving)}</td>
-                  <td class="border border-[#5B82A6] p-2.5 sm:p-3 text-center font-medium text-slate-800 text-xs sm:text-sm">${escapeHTML(sdPredicates.collaboration)}</td>
+                  <td class="border border-[#1E3A8A]/20 p-3 text-left align-top bg-white">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF6FF] text-[#1E3A8A] border border-[#BFDBFE] mb-1.5">
+                      ${escapeHTML(sdPredicates.keterlibatan_aktif)}
+                    </span>
+                    <p class="text-[11px] sm:text-xs text-slate-700 leading-snug">
+                      ${escapeHTML(getSdSkillNarrative('keterlibatan_aktif', sdPredicates.keterlibatan_aktif, sdScores.keterlibatan_aktif, lang))}
+                    </p>
+                  </td>
+                  <td class="border border-[#1E3A8A]/20 p-3 text-left align-top bg-white">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF6FF] text-[#1E3A8A] border border-[#BFDBFE] mb-1.5">
+                      ${escapeHTML(sdPredicates.kreatif)}
+                    </span>
+                    <p class="text-[11px] sm:text-xs text-slate-700 leading-snug">
+                      ${escapeHTML(getSdSkillNarrative('kreatif', sdPredicates.kreatif, sdScores.kreatif, lang))}
+                    </p>
+                  </td>
+                  <td class="border border-[#1E3A8A]/20 p-3 text-left align-top bg-white">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF6FF] text-[#1E3A8A] border border-[#BFDBFE] mb-1.5">
+                      ${escapeHTML(sdPredicates.digital_innovation)}
+                    </span>
+                    <p class="text-[11px] sm:text-xs text-slate-700 leading-snug">
+                      ${escapeHTML(getSdSkillNarrative('digital_innovation', sdPredicates.digital_innovation, sdScores.digital_innovation, lang))}
+                    </p>
+                  </td>
+                  <td class="border border-[#1E3A8A]/20 p-3 text-left align-top bg-white">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF6FF] text-[#1E3A8A] border border-[#BFDBFE] mb-1.5">
+                      ${escapeHTML(sdPredicates.problem_solving)}
+                    </span>
+                    <p class="text-[11px] sm:text-xs text-slate-700 leading-snug">
+                      ${escapeHTML(getSdSkillNarrative('problem_solving', sdPredicates.problem_solving, sdScores.problem_solving, lang))}
+                    </p>
+                  </td>
+                  <td class="border border-[#1E3A8A]/20 p-3 text-left align-top bg-white">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF6FF] text-[#1E3A8A] border border-[#BFDBFE] mb-1.5">
+                      ${escapeHTML(sdPredicates.collaboration)}
+                    </span>
+                    <p class="text-[11px] sm:text-xs text-slate-700 leading-snug">
+                      ${escapeHTML(getSdSkillNarrative('collaboration', sdPredicates.collaboration, sdScores.collaboration, lang))}
+                    </p>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -6582,7 +8030,7 @@ function renderStudentReportContent() {
 
           <!-- Saran Pengampu Sub-Block -->
           <div class="mt-4 pt-3">
-            <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-2.5 shadow-2xs">
+            <div class="inline-block bg-[#1E3A8A] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-2.5 shadow-2xs">
               ${lang === 'id' ? 'SARAN PENGAMPU' : 'FACILITATOR SUGGESTIONS'}
             </div>
             <ul class="space-y-1.5 text-xs sm:text-sm text-slate-800 leading-relaxed list-disc list-inside">
@@ -6594,14 +8042,14 @@ function renderStudentReportContent() {
         </section>
 
         <!-- ================= 4. BLOK KEHADIRAN (Bar Indicator) ================= -->
-        <section class="rounded-2xl border-2 border-[#5B82A6] p-3 sm:p-4 flex items-center gap-3 sm:gap-4 relative report-break-avoid bg-white">
-          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-2xs flex-shrink-0">
+        <section class="rounded-2xl border-2 border-[#1E3A8A] p-3 sm:p-4 flex items-center gap-3 sm:gap-4 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#1E3A8A] text-white text-[11px] sm:text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-2xs flex-shrink-0">
             ${lang === 'id' ? 'KEHADIRAN' : 'ATTENDANCE'}
           </div>
           
           <!-- Progress Bar Track -->
-          <div class="flex-1 bg-[#C8E0EC] rounded-full h-6 p-0.5 overflow-hidden">
-            <div class="bg-[#2C5282] h-full rounded-full transition-all duration-500" style="width: ${attendancePct}%;"></div>
+          <div class="flex-1 bg-slate-100 rounded-full h-6 p-0.5 overflow-hidden border border-slate-200">
+            <div class="bg-[#1E3A8A] h-full rounded-full transition-all duration-500" style="width: ${attendancePct}%;"></div>
           </div>
 
           <!-- Attendance Percentage Number -->
@@ -6611,23 +8059,42 @@ function renderStudentReportContent() {
         </section>
 
         <!-- ================= 5. BLOK DOKUMENTASI MOMEN PEMBELAJARAN (SD) ================= -->
-        <section class="rounded-2xl border-2 border-[#5B82A6] p-4 sm:p-5 relative report-break-avoid bg-white">
-          <div class="inline-block bg-[#5B82A6] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3.5 shadow-2xs">
+        <section class="rounded-2xl border-2 border-[#1E3A8A] p-4 sm:p-5 relative report-break-avoid bg-white">
+          <div class="inline-block bg-[#1E3A8A] text-white text-[11px] sm:text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider mb-3.5 shadow-2xs">
             ${lang === 'id' ? 'DOKUMENTASI MOMEN PEMBELAJARAN' : 'LEARNING MOMENT DOCUMENTATION'}
           </div>
 
           <!-- Documentation Photos Grid -->
           <div class="mt-2">
+            ${isAdminUser() ? `
+              <div class="flex items-center justify-between mb-3 p-2 rounded-xl bg-amber-50/70 border border-amber-200">
+                <div class="flex items-center gap-1.5 text-xs text-amber-900 font-medium">
+                  <span>📸</span>
+                  <span>${state.showDocumentationPhotos ? 'Tampilan foto dokumentasi aktif (ON).' : 'Tampilan foto dinonaktifkan (mode hemat egress).'}</span>
+                </div>
+                <button type="button" onclick="toggleDocumentationPhotos()"
+                  class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1 shadow-2xs ${state.showDocumentationPhotos ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300'}">
+                  <span>${state.showDocumentationPhotos ? 'Foto: ON' : 'Foto: OFF (Hemat Egress)'}</span>
+                </button>
+              </div>
+            ` : ''}
             ${photos && photos.length > 0 ? `
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 ${photos.map((item, idx) => `
-                  <div class="rounded-xl border border-[#5B82A6]/40 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition cursor-pointer"
-                    onclick="handleReportPhotoClick(${idx})">
+                  <div class="rounded-xl border border-[#1E3A8A]/30 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition cursor-pointer"
+                    onclick="${item.url ? `handleReportPhotoClick(${idx})` : (item.id ? `loadAndPreviewSinglePhoto('${escapeHTML(item.id)}')` : (isAdminUser() ? 'toggleDocumentationPhotos(true)' : ''))}">
                     <div>
-                      <div class="w-full h-36 rounded-lg bg-sand-100 border border-slate-200 overflow-hidden relative">
-                        <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
-                          class="w-full h-full object-cover hover:scale-105 transition duration-300"
-                          loading="lazy">
+                      <div class="w-full h-36 rounded-lg ${item.url ? 'bg-sand-100 border border-slate-200 overflow-hidden relative' : 'bg-amber-50/80 border border-amber-200/90 flex flex-col items-center justify-center p-2 text-center'}">
+                        ${item.url ? `
+                          <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
+                            class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                            loading="lazy">
+                        ` : `
+                          <span class="text-2xl mb-1">📸</span>
+                          <span class="text-xs font-bold text-amber-900">${lang === 'id' ? 'Foto Dokumentasi' : 'Documentation Photo'}</span>
+                          <span class="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-semibold mt-1">${lang === 'id' ? 'Mode Hemat Egress: OFF' : 'Egress Saver: OFF'}</span>
+                          <span class="text-[10px] text-amber-700 underline font-semibold mt-1">${isAdminUser() ? (lang === 'id' ? 'Klik Aktifkan Foto' : 'Click to Enable') : (lang === 'id' ? 'Klik Buka Foto' : 'Click to View')}</span>
+                        `}
                       </div>
                       <span class="block text-xs font-bold text-slate-900 mt-2">${escapeHTML(item.title || 'Momen Pembelajaran')}</span>
                       <span class="block text-[10px] text-slate-500 mt-0.5">${escapeHTML(item.date || '')}</span>
@@ -6639,7 +8106,7 @@ function renderStudentReportContent() {
                 `).join('')}
               </div>
             ` : `
-              <div class="py-8 px-4 text-center bg-sand-50/60 rounded-xl border border-dashed border-[#5B82A6]/40">
+              <div class="py-8 px-4 text-center bg-sand-50/60 rounded-xl border border-dashed border-[#1E3A8A]/30">
                 <span class="text-2xl block mb-1">📷</span>
                 <p class="text-xs font-bold text-slate-800">
                   ${lang === 'id' ? 'Belum Ada Foto Observasi yang Diunggah' : 'No Observation Photos Uploaded Yet'}
@@ -6664,7 +8131,7 @@ function renderStudentReportContent() {
 
   const currentActiveUuidTk = resolveStudentUuid(student ? student.id : null);
   const currentSelectedTermTk = state.reportSelectedTerm || 'Semester Gasal 2026/2027';
-  const savedReportTk = activeData.savedReport || state.studentReportsCache?.[`${currentActiveUuidTk}_${currentSelectedTermTk}`];
+  const savedReportTk = activeData.savedReport || state.studentReportsCache?.[`${currentActiveUuidTk}_${currentSelectedTermTk}`] || (student ? state.studentReportsCache?.[`${student.id}_${currentSelectedTermTk}`] : null);
   const isRealDataTk = Boolean(savedReportTk) || (
     Boolean(activeData.developmentNotes) &&
     activeData.developmentNotes.trim().length > 0 &&
@@ -6811,9 +8278,16 @@ function renderStudentReportContent() {
 
         <p class="text-[10px] sm:text-[11px] text-slate-600 mt-2.5 italic">
           ${lang === 'id'
-      ? '✓ menunjukkan tingkat perkembangan yang paling menggambarkan perilaku anak berdasarkan pengamatan selama kegiatan Montessori STEM &amp; Robotik.'
-      : '✓ indicates the developmental stage that best reflects the child’s behavior based on Montessori STEM &amp; Robotics observations.'}
+      ? '✓ menunjukkan tingkat perkembangan yang paling menggambarkan perilaku anak berdasarkan pengamatan selama kegiatan Future Skill STEM &amp; Robotik.'
+      : '✓ indicates the developmental stage that best reflects the child’s behavior based on Future Skill STEM &amp; Robotics observations.'}
         </p>
+
+        <div class="mt-3 pt-2.5 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] sm:text-[11px] text-slate-600">
+          <div><strong class="text-slate-800">${lang === 'id' ? 'Mandiri &amp; Berinisiatif:' : 'Independent &amp; Proactive:'}</strong> ${lang === 'id' ? 'Mampu memimpin &amp; menyelesaikan eksplorasi secara mandiri dengan inisiatif tinggi.' : 'Leads and completes exploration independently with high initiative.'}</div>
+          <div><strong class="text-slate-800">${lang === 'id' ? 'Mandiri:' : 'Independent:'}</strong> ${lang === 'id' ? 'Mampu merangkai &amp; menjalankan modul sesuai tujuan tanpa arahan berulang.' : 'Assembles and operates modules purposefully without repeated prompts.'}</div>
+          <div><strong class="text-slate-800">${lang === 'id' ? 'Dengan Pendampingan:' : 'With Guidance:'}</strong> ${lang === 'id' ? 'Memahami alur kerja dan mampu menyelesaikan aktivitas dengan bimbingan tutor.' : 'Understands workflows and completes tasks with facilitator guidance.'}</div>
+          <div><strong class="text-slate-800">${lang === 'id' ? 'Mulai Berkembang:' : 'Emerging:'}</strong> ${lang === 'id' ? 'Mulai menunjukkan ketertarikan, pengenalan sensor, dan eksplorasi awal.' : 'Shows emerging interest, sensor recognition, and initial exploration.'}</div>
+        </div>
       </section>
 
       <!-- ================= 4. BLOK CATATAN PERKEMBANGAN SISWA ================= -->
@@ -6839,16 +8313,35 @@ function renderStudentReportContent() {
 
         <!-- Documentation Photos Grid -->
         <div class="mt-2">
+          ${isAdminUser() ? `
+            <div class="flex items-center justify-between mb-3 p-2 rounded-xl bg-amber-50/70 border border-amber-200">
+              <div class="flex items-center gap-1.5 text-xs text-amber-900 font-medium">
+                <span>📸</span>
+                <span>${state.showDocumentationPhotos ? 'Tampilan foto dokumentasi aktif (ON).' : 'Tampilan foto dinonaktifkan (mode hemat egress).'}</span>
+              </div>
+              <button type="button" onclick="toggleDocumentationPhotos()"
+                class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1 shadow-2xs ${state.showDocumentationPhotos ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300'}">
+                <span>${state.showDocumentationPhotos ? 'Foto: ON' : 'Foto: OFF (Hemat Egress)'}</span>
+              </button>
+            </div>
+          ` : ''}
           ${photos && photos.length > 0 ? `
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               ${photos.map((item, idx) => `
                 <div class="rounded-xl border ${school.borderClass}/40 p-2.5 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition cursor-pointer"
-                  onclick="handleReportPhotoClick(${idx})">
+                  onclick="${item.url ? `handleReportPhotoClick(${idx})` : (item.id ? `loadAndPreviewSinglePhoto('${escapeHTML(item.id)}')` : (isAdminUser() ? 'toggleDocumentationPhotos(true)' : ''))}">
                   <div>
-                    <div class="w-full h-36 rounded-lg bg-sand-100 border border-slate-200 overflow-hidden relative">
-                      <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
-                        class="w-full h-full object-cover hover:scale-105 transition duration-300"
-                        loading="lazy">
+                    <div class="w-full h-36 rounded-lg ${item.url ? 'bg-sand-100 border border-slate-200 overflow-hidden relative' : 'bg-amber-50/80 border border-amber-200/90 flex flex-col items-center justify-center p-2 text-center'}">
+                      ${item.url ? `
+                        <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
+                          class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                          loading="lazy">
+                      ` : `
+                        <span class="text-2xl mb-1">📸</span>
+                        <span class="text-xs font-bold text-amber-900">${lang === 'id' ? 'Foto Dokumentasi' : 'Documentation Photo'}</span>
+                        <span class="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-semibold mt-1">${lang === 'id' ? 'Mode Hemat Egress: OFF' : 'Egress Saver: OFF'}</span>
+                        <span class="text-[10px] text-amber-700 underline font-semibold mt-1">${isAdminUser() ? (lang === 'id' ? 'Klik Aktifkan Foto' : 'Click to Enable') : (lang === 'id' ? 'Klik Buka Foto' : 'Click to View')}</span>
+                      `}
                     </div>
                     <span class="block text-xs font-bold text-slate-900 mt-2">${escapeHTML(item.title || 'Momen Pembelajaran')}</span>
                     <span class="block text-[10px] text-slate-500 mt-0.5">${escapeHTML(item.date || '')}</span>
@@ -7125,7 +8618,7 @@ function getActiveReportValues(student, term) {
   const studentUuid = resolveStudentUuid(student.id);
   const currentTerm = term || state.reportSelectedTerm || 'Semester Gasal 2026/2027';
   const cacheKey = `${studentUuid}_${currentTerm}`;
-  const savedReport = state.studentReportsCache?.[cacheKey];
+  const savedReport = state.studentReportsCache?.[cacheKey] || (student ? state.studentReportsCache?.[`${student.id}_${currentTerm}`] : null);
   const lang = state.lang || 'id';
   const schoolKey = student.schoolId || state.reportSelectedSchool || 'masa_kecil';
   const isSD = isPrimarySchool(schoolKey, student);
@@ -7210,18 +8703,22 @@ function getActiveReportValues(student, term) {
   };
 }
 
-async function loadStudentReportFromSupabase(studentId, term) {
+async function loadStudentReportFromSupabase(studentId, term, force = false) {
   const studentUuid = resolveStudentUuid(studentId);
   const selectedTerm = term || state.reportSelectedTerm || 'Semester Gasal 2026/2027';
   const cacheKey = `${studentUuid}_${selectedTerm}`;
 
   if (!state.studentReportsCache) state.studentReportsCache = {};
 
+  if (!force && state.studentReportsCache[cacheKey]) {
+    return state.studentReportsCache[cacheKey];
+  }
+
   if (typeof sb !== 'undefined' && sb) {
     try {
       const { data, error } = await sb
         .from('student_reports')
-        .select('*')
+        .select('id, student_id, term, learning_objectives, skill_ratings, development_notes, attendance_percentage, updated_at')
         .eq('student_id', studentUuid)
         .eq('term', selectedTerm)
         .maybeSingle();
@@ -7230,8 +8727,9 @@ async function loadStudentReportFromSupabase(studentId, term) {
         state.studentReportsCache[cacheKey] = data;
         // Trigger live re-render if matches currently active view
         const currentActiveUuid = resolveStudentUuid(state.reportSelectedStudentId);
-        if (currentActiveUuid === studentUuid && state.reportSelectedTerm === selectedTerm) {
+        if (currentActiveUuid === studentUuid) {
           renderStudentReportContent();
+          updateReportStatusBadges();
         }
       }
     } catch (err) {
@@ -7559,6 +9057,10 @@ async function handleSaveStudentReportSubmit(event) {
 function handleReportPhotoClick(index) {
   const photo = window.__currentReportPhotos?.[index];
   if (!photo) return;
+  if (!photo.url && photo.id) {
+    loadAndPreviewSinglePhoto(photo.id);
+    return;
+  }
   openPhotoModal(photo.url, photo.title, photo.caption, photo.date);
 }
 
@@ -7680,7 +9182,11 @@ async function setActiveClass(classId) {
   renderView();
 }
 
-async function loadClassesFromSupabase() {
+async function loadClassesFromSupabase(force = false) {
+  if (!force && state.classes && state.classes.length > 0) {
+    state.databaseStatus.classes = true;
+    return true;
+  }
   try {
     const { data, error } = await sb.from('classes')
       .select('id, name, school_id, day_of_week, start_time, end_time')
@@ -7710,7 +9216,11 @@ const CODE_TO_DB_PREFIX = {
 };
 
 // Load curriculum from Supabase, merge with any local additions
-async function loadCurriculumFromSupabase(unitIds = null) {
+async function loadCurriculumFromSupabase(unitIds = null, force = false) {
+  if (!force && !unitIds && state.curriculumData && state.curriculumData.length > 0) {
+    state.databaseStatus.curriculum = true;
+    return true;
+  }
   try {
     if (unitIds && !unitIds.length) {
       state.curriculumData = [];
@@ -7751,7 +9261,11 @@ async function loadCurriculumFromSupabase(unitIds = null) {
 }
 
 // Load students from Supabase
-async function loadStudentsFromSupabase() {
+async function loadStudentsFromSupabase(force = false) {
+  if (!force && state.allStudents && state.allStudents.length > 0) {
+    state.databaseStatus.students = true;
+    return true;
+  }
   try {
     let query = sb.from('students')
       .select('id, full_name, nickname, class_id, classes(id, name, school_id, schools(name))')
@@ -7835,8 +9349,15 @@ async function loadStudentsFromSupabase() {
   }
 }
 
+// In-memory cache for signed Supabase Storage URLs (photo_path -> { url, expiresAt })
+const signedPhotoCache = new Map();
+
 // Load tutors from Supabase into state
-async function loadTutorsFromSupabase() {
+async function loadTutorsFromSupabase(force = false) {
+  if (!force && state.tutors && state.tutors.length > 0) {
+    state.databaseStatus.tutors = true;
+    return true;
+  }
   try {
     const { data, error } = await sb.from('tutors')
       .select('id, full_name, email')
@@ -7854,7 +9375,11 @@ async function loadTutorsFromSupabase() {
 }
 
 // Load schedule_assignments from Supabase
-async function loadScheduleFromSupabase() {
+async function loadScheduleFromSupabase(force = false) {
+  if (!force && state.scheduleItems && state.scheduleItems.length > 0) {
+    state.databaseStatus.schedule = true;
+    return true;
+  }
   try {
     let query = sb.from('schedule_assignments')
       .select('*, tutors!schedule_assignments_tutor_id_fkey(full_name), curriculum_units!schedule_assignments_activity_id_fkey(id, title_id, title_en, level, domain), classes(name, start_time)');
@@ -7897,7 +9422,11 @@ async function loadScheduleFromSupabase() {
   }
 }
 
-async function loadObservationsFromSupabase() {
+async function loadObservationsFromSupabase(force = false) {
+  if (!force && state.databaseObservations && state.databaseObservations.length > 0) {
+    state.databaseStatus.observations = true;
+    return true;
+  }
   try {
     const since24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     let allQuery = sb.from('observations').select('*', { count: 'exact' });
@@ -7927,10 +9456,12 @@ async function loadObservationsFromSupabase() {
     if (allResult.error) throw allResult.error;
     if (recentResult.error) throw recentResult.error;
     state.databaseObservations = allResult.data || [];
-    try {
-      await signObservationPhotos(state.databaseObservations);
-    } catch (photoErr) {
-      console.warn('[Supabase] photo signing skipped:', photoErr);
+    if (state.showDocumentationPhotos) {
+      try {
+        await signObservationPhotos(state.databaseObservations);
+      } catch (photoErr) {
+        console.warn('[Supabase] photo signing skipped:', photoErr);
+      }
     }
     state.databaseObservationCount = allResult.count ?? state.databaseObservations.length;
     state.databaseRecentObservationCount = recentResult.count ?? 0;
@@ -7945,17 +9476,46 @@ async function loadObservationsFromSupabase() {
   }
 }
 
-async function signObservationPhotos(observations) {
+async function signObservationPhotos(observations, force = false) {
+  if (!force && !state.showDocumentationPhotos) {
+    return;
+  }
   try {
-    const paths = [...new Set(observations.map(observation => observation.photo_path).filter(Boolean))];
-    if (!paths.length) return;
+    if (!Array.isArray(observations) || !observations.length) return;
+    const now = Date.now();
+    // 1. Immediately apply cached signed URLs if still valid (valid for at least 5 more minutes)
+    const neededPaths = new Set();
+    observations.forEach(obs => {
+      const path = obs.photo_path;
+      if (!path) return;
+      const cached = signedPhotoCache.get(path);
+      if (cached && cached.expiresAt > now + 5 * 60 * 1000) {
+        obs.photo_signed_url = cached.url;
+      } else {
+        neededPaths.add(path);
+      }
+    });
+
+    const pathsToSign = [...neededPaths];
+    if (!pathsToSign.length) {
+      // Synchronize with state.databaseObservations
+      if (state.databaseObservations && Array.isArray(state.databaseObservations)) {
+        state.databaseObservations.forEach(obs => {
+          if (obs.photo_path && signedPhotoCache.has(obs.photo_path)) {
+            obs.photo_signed_url = signedPhotoCache.get(obs.photo_path).url;
+          }
+        });
+      }
+      return;
+    }
 
     // Ensure active auth session exists so private storage bucket allows createSignedUrls
     if (typeof sb !== 'undefined' && sb) {
       try {
         const { data: sessionData } = await sb.auth.getSession();
         if (!sessionData?.session) {
-          await sb.auth.signInWithPassword({ email: 'mbaghina@plego.com', password: 'plego123' });
+          const { error: signInErr } = await sb.auth.signInWithPassword({ email: 'mbaghina@plego.com', password: 'plego123' });
+          if (signInErr) console.warn('[Supabase] background session sign-in notice:', signInErr);
         }
       } catch (authErr) {
         console.warn('[Supabase] background session sign-in note:', authErr);
@@ -7963,11 +9523,11 @@ async function signObservationPhotos(observations) {
     }
 
     const signedUrlResults = [];
-    for (let index = 0; index < paths.length; index += 100) {
+    for (let index = 0; index < pathsToSign.length; index += 100) {
       try {
         const { data, error } = await sb.storage
           .from('student-observation-photos')
-          .createSignedUrls(paths.slice(index, index + 100), 3600);
+          .createSignedUrls(pathsToSign.slice(index, index + 100), 3600);
         if (!error && Array.isArray(data)) {
           signedUrlResults.push(...data);
         }
@@ -7976,28 +9536,243 @@ async function signObservationPhotos(observations) {
       }
     }
 
-    // Map valid signed URLs and ensure they are absolute HTTPS URLs
-    const signedUrls = new Map(
-      signedUrlResults
-        .filter(item => item && !item.error && (item.signedUrl || item.signedURL))
-        .map(item => {
-          let raw = item.signedUrl || item.signedURL;
-          if (raw && raw.startsWith('/object/sign/')) {
-            raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
-          }
-          return [item.path, raw];
-        })
-    );
-
-    observations.forEach(observation => {
-      if (observation.photo_path && signedUrls.has(observation.photo_path)) {
-        observation.photo_signed_url = signedUrls.get(observation.photo_path) || '';
+    const expireTimestamp = Date.now() + 3500 * 1000;
+    signedUrlResults.forEach(item => {
+      if (item && !item.error && (item.signedUrl || item.signedURL) && item.path) {
+        let raw = item.signedUrl || item.signedURL;
+        if (raw && raw.startsWith('/object/sign/')) {
+          raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
+        }
+        signedPhotoCache.set(item.path, { url: raw, expiresAt: expireTimestamp });
       }
     });
+
+    observations.forEach(observation => {
+      if (observation.photo_path && signedPhotoCache.has(observation.photo_path)) {
+        observation.photo_signed_url = signedPhotoCache.get(observation.photo_path).url;
+      }
+    });
+
+    if (state.databaseObservations && Array.isArray(state.databaseObservations)) {
+      state.databaseObservations.forEach(obs => {
+        if (obs.photo_path && signedPhotoCache.has(obs.photo_path)) {
+          obs.photo_signed_url = signedPhotoCache.get(obs.photo_path).url;
+        }
+      });
+    }
   } catch (err) {
     console.warn('[Supabase] signObservationPhotos warning:', err);
   }
 }
+
+// Manual Sync / Refresh Button function
+async function refreshAllSupabaseData() {
+  const syncBtn = document.getElementById('btn-manual-sync');
+  const syncIcon = document.getElementById('sync-icon');
+  if (syncIcon) syncIcon.classList.add('animate-spin');
+  if (syncBtn) syncBtn.setAttribute('disabled', 'true');
+  showToast(state.lang === 'id' ? 'Menyinkronkan data terbaru dari database...' : 'Syncing fresh database data...', '🔄');
+
+  try {
+    // Clear in-memory caches to force fresh fetch
+    if (state.studentReportsCache) state.studentReportsCache = {};
+    if (state.loadedReportsTerms) state.loadedReportsTerms.clear();
+    if (typeof signedPhotoCache !== 'undefined' && signedPhotoCache) signedPhotoCache.clear();
+
+    await Promise.all([
+      loadClassesFromSupabase(true),
+      loadCurriculumFromSupabase(null, true),
+      loadStudentsFromSupabase(true),
+      loadAdminsFromSupabase(true),
+      loadParentsFromSupabase(true),
+      loadTutorsFromSupabase(true),
+      loadScheduleFromSupabase(true),
+      loadObservationsFromSupabase(true),
+    ]);
+
+    if (state.reportSelectedStudentId && typeof loadStudentReportFromSupabase === 'function') {
+      await loadStudentReportFromSupabase(state.reportSelectedStudentId, state.reportSelectedTerm || 'Semester Gasal 2026/2027', true);
+    }
+    if (typeof loadAllStudentReportsForTerm === 'function') {
+      await loadAllStudentReportsForTerm(state.reportSelectedTerm || 'Semester Gasal 2026/2027', true);
+    }
+
+    renderView();
+    showToast(state.lang === 'id' ? 'Data database berhasil disinkronkan!' : 'Database data synced successfully!', '✅');
+  } catch (err) {
+    console.error('[Supabase] refreshAllSupabaseData error:', err);
+    showToast(state.lang === 'id' ? 'Gagal menyinkronkan data database.' : 'Failed to sync database data.', '❌');
+  } finally {
+    if (syncIcon) syncIcon.classList.remove('animate-spin');
+    if (syncBtn) syncBtn.removeAttribute('disabled');
+  }
+}
+window.refreshAllSupabaseData = refreshAllSupabaseData;
+
+// ============================================================
+// EGRESS SAVER: OBSERVATION PHOTO DISPLAY TOGGLE & CONTROLS
+// ============================================================
+function updatePhotoToggleUI() {
+  const isOff = !state.showDocumentationPhotos;
+
+  // 1. Topbar Button
+  const topbarBtn = document.getElementById('btn-toggle-photo-mode');
+  const topbarIcon = document.getElementById('photo-toggle-icon');
+  const topbarLabel = document.getElementById('photo-toggle-label');
+  if (topbarBtn) {
+    if (state.currentUser?.role === 'parent') {
+      topbarBtn.classList.add('hidden');
+    } else {
+      topbarBtn.classList.remove('hidden');
+    }
+
+    if (isOff) {
+      topbarBtn.className = 'cursor-pointer px-3 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 border border-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs select-none';
+      if (topbarIcon) topbarIcon.textContent = '📸';
+      if (topbarLabel) topbarLabel.textContent = 'Foto: OFF';
+      topbarBtn.title = state.lang === 'id'
+        ? 'Tampilan foto observasi nonaktif (Mode Hemat Egress). Klik untuk mengaktifkan (Foto: ON).'
+        : 'Observation photos disabled (Egress Saver). Click to enable (Photos: ON).';
+    } else {
+      topbarBtn.className = 'cursor-pointer px-3 py-1.5 rounded-full bg-emerald-100 hover:bg-emerald-200 active:scale-95 text-emerald-900 border border-emerald-300 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs select-none';
+      if (topbarIcon) topbarIcon.textContent = '✅';
+      if (topbarLabel) topbarLabel.textContent = 'Foto: ON';
+      topbarBtn.title = state.lang === 'id'
+        ? 'Tampilan foto observasi aktif (Foto: ON). Klik untuk menonaktifkan (Foto: OFF) guna hemat egress.'
+        : 'Observation photos active (Photos: ON). Click to disable (Photos: OFF) to save egress.';
+    }
+  }
+
+  // 2. Observations View Feed Button
+  const obsBtn = document.getElementById('btn-obs-photo-toggle');
+  const obsIcon = document.getElementById('obs-photo-toggle-icon');
+  const obsLabel = document.getElementById('obs-photo-toggle-text');
+  if (obsBtn) {
+    if (state.currentUser?.role === 'parent') {
+      obsBtn.classList.add('hidden');
+    } else {
+      obsBtn.classList.remove('hidden');
+      if (isOff) {
+        obsBtn.className = 'cursor-pointer px-3 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shadow-2xs bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 border-amber-300 select-none';
+        if (obsIcon) obsIcon.textContent = '📸';
+        if (obsLabel) obsLabel.textContent = 'Foto: OFF';
+      } else {
+        obsBtn.className = 'cursor-pointer px-3 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shadow-2xs bg-emerald-100 hover:bg-emerald-200 active:scale-95 text-emerald-900 border-emerald-300 select-none';
+        if (obsIcon) obsIcon.textContent = '✅';
+        if (obsLabel) obsLabel.textContent = 'Foto: ON';
+      }
+    }
+  }
+}
+window.updatePhotoToggleUI = updatePhotoToggleUI;
+
+async function toggleDocumentationPhotos(forcedState) {
+  if (Date.now() - (window.__lastPhotoToggleTime || 0) < 150) return;
+  window.__lastPhotoToggleTime = Date.now();
+
+  if (typeof forcedState === 'boolean') {
+    state.showDocumentationPhotos = forcedState;
+  } else {
+    state.showDocumentationPhotos = !state.showDocumentationPhotos;
+  }
+
+  // 1. Immediately update UI labels, button states, and styling
+  updatePhotoToggleUI();
+
+  // 2. Synchronize local observations memory representation
+  applyDatabaseObservations();
+
+  // 3. Immediately re-render current view with zero lag
+  renderView();
+
+  // 4. Handle signing asynchronously
+  if (state.showDocumentationPhotos) {
+    showToast(
+      state.lang === 'id'
+        ? 'Tampilan foto diaktifkan (Foto: ON).'
+        : 'Observation photos enabled (Photos: ON).',
+      '📸'
+    );
+    if (typeof signObservationPhotos === 'function' && Array.isArray(state.databaseObservations) && state.databaseObservations.length > 0) {
+      signObservationPhotos(state.databaseObservations, true).then(() => {
+        applyDatabaseObservations();
+        renderView();
+      }).catch(err => {
+        console.warn('[Supabase] signObservationPhotos error on toggle:', err);
+      });
+    }
+  } else {
+    showToast(
+      state.lang === 'id'
+        ? 'Tampilan foto dinonaktifkan (Foto: OFF — Mode Hemat Egress).'
+        : 'Observation photos disabled (Photos: OFF — Egress Saver Mode).',
+      '⏸️'
+    );
+  }
+}
+window.toggleDocumentationPhotos = toggleDocumentationPhotos;
+
+async function loadAndPreviewSinglePhoto(obsId) {
+  const obs = (state.databaseObservations || []).find(o => o.id === obsId)
+    || (state.observationsLog || []).find(o => o.id === obsId);
+  if (!obs) {
+    showToast(state.lang === 'id' ? 'Data observasi tidak ditemukan.' : 'Observation not found.', '⚠️');
+    return;
+  }
+
+  const photoPath = obs.photo_path || obs.photoPath;
+  if (!photoPath && !obs.photo_url && !obs.photoUrl) {
+    showToast(state.lang === 'id' ? 'Tidak ada foto dokumentasi pada observasi ini.' : 'No photo attached to this observation.', '⚠️');
+    return;
+  }
+
+  let signedUrl = obs.photo_signed_url || obs.photo_url || obs.photoUrl || '';
+  if (!signedUrl && photoPath && typeof signedPhotoCache !== 'undefined' && signedPhotoCache.has(photoPath)) {
+    signedUrl = signedPhotoCache.get(photoPath).url;
+  }
+
+  const studentName = obs.studentName || (state.allStudents || []).find(s => s.id === obs.student_id)?.name || '';
+  const meta = studentName ? `${studentName} · ${obs.time || ''}` : (obs.time || '');
+
+  if (signedUrl) {
+    openPhotoModal(
+      signedUrl,
+      obs.milestone || (state.lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'),
+      obs.anecdote || '',
+      meta
+    );
+    return;
+  }
+
+  showToast(state.lang === 'id' ? 'Memuat foto dokumentasi...' : 'Loading photo...', '⏳');
+  try {
+    const { data, error } = await sb.storage
+      .from('student-observation-photos')
+      .createSignedUrls([photoPath], 3600);
+    if (!error && Array.isArray(data) && data[0] && (data[0].signedUrl || data[0].signedURL)) {
+      let raw = data[0].signedUrl || data[0].signedURL;
+      if (raw && raw.startsWith('/object/sign/')) {
+        raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
+      }
+      if (typeof signedPhotoCache !== 'undefined') {
+        signedPhotoCache.set(photoPath, { url: raw, expiresAt: Date.now() + 3500 * 1000 });
+      }
+      obs.photo_signed_url = raw;
+      openPhotoModal(
+        raw,
+        obs.milestone || (state.lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'),
+        obs.anecdote || '',
+        meta
+      );
+    } else {
+      showToast(state.lang === 'id' ? 'Gagal memuat URL foto dari storage.' : 'Failed to load photo URL from storage.', '⚠️');
+    }
+  } catch (e) {
+    console.warn('[Supabase] loadAndPreviewSinglePhoto error:', e);
+    showToast(state.lang === 'id' ? 'Gagal memuat foto.' : 'Failed to load photo.', '❌');
+  }
+}
+window.loadAndPreviewSinglePhoto = loadAndPreviewSinglePhoto;
 
 function applyDatabaseObservations() {
   const latestByStudent = new Map();
@@ -8027,7 +9802,9 @@ function applyDatabaseObservations() {
     level: obs.mastery_level || 'developing',
     time: obs.created_at ? new Date(obs.created_at).toLocaleString(state.lang === 'id' ? 'id-ID' : 'en-US') : '—',
     anecdote: obs.anecdote || '',
-    photoUrl: obs.photo_signed_url || obs.photo_url || '',
+    photoPath: obs.photo_path || '',
+    photoUrl: state.showDocumentationPhotos ? (obs.photo_signed_url || obs.photo_url || '') : '',
+    hasPhoto: Boolean(obs.photo_path || obs.photo_url || obs.photo_signed_url),
     createdAt: obs.created_at,
   }));
 }
@@ -8058,18 +9835,19 @@ async function loadAllFromSupabase() {
   state.databaseRecentObservationCount = null;
   state.observationsLog = [];
 
-  const studentsLoaded = await loadStudentsFromSupabase();
-  const classesLoaded = await loadClassesFromSupabase();
-  const adminsLoaded = isParent ? null : await loadAdminsFromSupabase();
-  const tutorsLoaded = isParent ? null : await loadTutorsFromSupabase();
+  const studentsLoaded = await loadStudentsFromSupabase(true);
+  const classesLoaded = await loadClassesFromSupabase(true);
+  const adminsLoaded = isParent ? null : await loadAdminsFromSupabase(true);
+  const tutorsLoaded = isParent ? null : await loadTutorsFromSupabase(true);
   renderClassSelector();
-  const scheduleLoaded = await loadScheduleFromSupabase();
+  const scheduleLoaded = await loadScheduleFromSupabase(true);
   const curriculumLoaded = await loadCurriculumFromSupabase(
     isParent
       ? state.scheduleItems.map(item => item.curriculumUnitId).filter(Boolean)
-      : null
+      : null,
+    true
   );
-  const observationsLoaded = await loadObservationsFromSupabase();
+  const observationsLoaded = await loadObservationsFromSupabase(true);
   const results = isParent
     ? [studentsLoaded, classesLoaded, scheduleLoaded, curriculumLoaded, observationsLoaded]
     : [studentsLoaded, classesLoaded, tutorsLoaded, scheduleLoaded, curriculumLoaded, observationsLoaded];
@@ -8240,6 +10018,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Default to Parent login tab on startup so parents can immediately enter their phone number & PIN
   switchLoginTab('parent');
   updateCurriculumFormLanguage();
+  if (typeof updatePhotoToggleUI === 'function') updatePhotoToggleUI();
   document.getElementById('auth-screen').classList.remove('hidden');
   document.getElementById('app-wrapper').classList.add('hidden');
   document.querySelectorAll('[data-demo-role]').forEach(button => {
@@ -8256,13 +10035,31 @@ document.addEventListener('DOMContentLoaded', () => {
     btnFilterMine.addEventListener('click', () => setPlannerFilter('mine'));
   }
 
+  // Photo toggle controls setup
+  const topbarPhotoBtn = document.getElementById('btn-toggle-photo-mode');
+  if (topbarPhotoBtn) {
+    topbarPhotoBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleDocumentationPhotos();
+    });
+  }
+  const obsPhotoBtn = document.getElementById('btn-obs-photo-toggle');
+  if (obsPhotoBtn) {
+    obsPhotoBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleDocumentationPhotos();
+    });
+  }
+
   // Observation photo drag and drop initializer
   initObsPhotoDropzone();
+  updatePhotoToggleUI();
 });
 
 // Immediate initialization if already loaded
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   initObsPhotoDropzone();
+  updatePhotoToggleUI();
 }
 
 window.removeObsPhoto = removeObsPhoto;
@@ -8270,3 +10067,22 @@ window.handleObsPhotoSelect = handleObsPhotoSelect;
 window.initObsPhotoDropzone = initObsPhotoDropzone;
 window.ensureJpegCompatiblePhoto = ensureJpegCompatiblePhoto;
 window.saveObservation = saveObservation;
+window.switchObsInputMode = switchObsInputMode;
+window.setBulkItemLevel = setBulkItemLevel;
+window.setAllBulkLevels = setAllBulkLevels;
+window.handleBulkFileInputChange = handleBulkFileInputChange;
+window.handleBulkPhotoSelect = handleBulkPhotoSelect;
+window.removeBulkPhoto = removeBulkPhoto;
+window.handleBulkAnecdoteChange = handleBulkAnecdoteChange;
+window.handleObsSubmit = handleObsSubmit;
+window.saveBulkObservations = saveBulkObservations;
+window.confirmDeleteObservation = confirmDeleteObservation;
+window.executeDeleteObservation = executeDeleteObservation;
+window.setObsAttendanceStatus = setObsAttendanceStatus;
+window.setBulkItemAttendance = setBulkItemAttendance;
+window.setAllBulkAttendance = setAllBulkAttendance;
+window.toggleShowAllObsMissions = toggleShowAllObsMissions;
+window.getStudentObservedMilestones = getStudentObservedMilestones;
+window.isMissionCompletedForStudent = isMissionCompletedForStudent;
+window.getStudentObservations = getStudentObservations;
+window.isMissionObservedForStudent = isMissionObservedForStudent;

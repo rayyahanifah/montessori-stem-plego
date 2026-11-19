@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plego Montessori STEM — Early Years Platform</title>
+  <title>Plego Future Skill STEM — Early Years Platform</title>
 
   <link rel="icon" type="image/png" href="src/logo-plego-tp.png" sizes="32x32">
   <!-- Google Fonts: Fredoka (Headings/Brand) & Nunito Sans (Body/UI) -->
@@ -27,21 +27,21 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="min-h-screen flex flex-col antialiased selection:bg-sage selection:text-white">
+<body class="min-h-screen flex flex-col antialiased selection:bg-amber-400 selection:text-slate-900">
 
   <!-- ================= SCREEN 0: STRICT STARTUP LOGIN SCREEN ================= -->
   <div id="auth-screen"
     class="min-h-screen w-full flex items-center justify-center p-4 bg-sand-100 relative overflow-hidden">
-    <!-- Ambient garden decor -->
-    <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-sage-100/60 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-sunshine-light/70 blur-3xl pointer-events-none">
+    <!-- Ambient decor -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-100/50 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-amber-100/60 blur-3xl pointer-events-none">
     </div>
 
     <div class="auth-layout">
       <section class="auth-story" aria-label="Tentang Plego">
         <div class="story-kicker"><span class="story-kicker-dot"></span> Belajar sambil bertumbuh</div>
         <h1>Setiap rasa ingin tahu adalah <span>awal yang hebat.</span></h1>
-        <p class="story-description">Ruang belajar Montessori yang membantu guru, sekolah, dan keluarga merayakan setiap
+        <p class="story-description">Ruang belajar Future Skill yang membantu guru, sekolah, dan keluarga merayakan setiap
           penemuan kecil anak.</p>
 
         <div class="story-scene" aria-hidden="true">
@@ -78,7 +78,7 @@
               class="text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-sand-200 text-forest font-bold">Early
               Years</span>
           </div>
-          <p class="text-xs text-forest-light mt-1.5" data-i18n="login.subtitle">Montessori STEM Platform · Masuk Akun
+          <p class="text-xs text-forest-light mt-1.5" data-i18n="login.subtitle">Future Skill STEM Platform · Masuk Akun
             Anda</p>
         </div>
 
@@ -214,7 +214,7 @@
                 class="text-xs uppercase tracking-widest px-2 py-0.5 rounded-full bg-sand-200 text-forest-light font-bold"
                 id="badge-app-mode">Early Years</span>
             </div>
-            <p class="text-xs text-forest-light/75 hidden sm:block">Montessori STEM Platform</p>
+            <p class="text-xs text-forest-light/75 hidden sm:block">Future Skill STEM Platform</p>
           </div>
         </div>
 
@@ -230,7 +230,23 @@
         </div>
 
         <!-- Right Controls: Language Switcher, Role Badge, Logout -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+
+          <!-- Admin Photo Mode Toggle (Egress Saver) -->
+          <button type="button" id="btn-toggle-photo-mode" onclick="toggleDocumentationPhotos()"
+            title="Kontrol Tampilan Foto Dokumentasi (Hemat Egress Supabase)"
+            class="cursor-pointer px-3 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 border border-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs select-none">
+            <span id="photo-toggle-icon">📸</span>
+            <span id="photo-toggle-label" class="text-[11px] font-bold">Foto: OFF</span>
+          </button>
+
+          <!-- Manual Refresh / Sync Button -->
+          <button type="button" id="btn-manual-sync" onclick="refreshAllSupabaseData()"
+            title="Sinkronkan / Ambil Data Terbaru dari Database Supabase"
+            class="px-2.5 py-1.5 rounded-full bg-sand-200 hover:bg-sand-300 text-forest text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
+            <span class="inline-block transition-transform duration-500" id="sync-icon">🔄</span>
+            <span class="hidden md:inline text-[11px]">Segarkan Data</span>
+          </button>
 
           <!-- Instant EN/ID Language Switcher Pill -->
           <div class="inline-flex rounded-full bg-sand-200 p-1 text-xs font-bold" role="group"
@@ -267,6 +283,10 @@
                 <p class="font-bold text-forest" id="dropdown-full-name">Nama Pengguna</p>
                 <p class="text-[10px] text-forest-light" id="dropdown-role-label">Peran</p>
               </div>
+              <button type="button" onclick="refreshAllSupabaseData(); toggleProfileDropdown();"
+                class="w-full text-left px-4 py-2 hover:bg-sand-100 text-forest font-semibold flex items-center gap-2 border-b border-sand-200">
+                <span>🔄</span> <span>Segarkan Data Database</span>
+              </button>
               <button onclick="logout()"
                 class="w-full text-left px-4 py-2 hover:bg-berry/10 text-berry font-bold flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,7 +321,7 @@
           <div>
             <div
               class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 text-sage-700 text-xs font-bold mb-3 border border-white/80">
-              <span>🌱</span> <span data-i18n="dash.cycle">Siklus Pembelajaran Montessori 09:00 - 11:30</span>
+              <span>🌱</span> <span data-i18n="dash.cycle">Siklus Pembelajaran Future Skill 09:00 - 11:30</span>
             </div>
             <h1 class="text-2xl md:text-3xl font-bold text-forest">
               <span data-i18n="dash.greeting">Selamat pagi</span>, <span id="dash-greeting-name">Pendidik</span>! 👋
@@ -424,10 +444,10 @@
 
             <div class="mt-6 p-4 rounded-2xl bg-sand-100/70 border border-sand-200 text-xs">
               <p class="font-bold text-forest flex items-center gap-1 mb-1">
-                <span>💡</span> <span data-i18n="dash.pedagogyTipTitle">Prinsip Montessori Hari Ini</span>
+                <span>💡</span> <span data-i18n="dash.pedagogyTipTitle">Prinsip Future Skill Hari Ini</span>
               </p>
               <p class="text-forest-light italic leading-relaxed" data-i18n="dash.pedagogyTipDesc">
-                "Jangan pernah membantu anak pada tugas yang ia rasa mampu selesaikan sendiri." — Maria Montessori.
+                "Mendorong kemandirian dan rasa ingin tahu anak untuk memecahkan tantangan dengan percaya diri." — Prinsip Pendampingan Future Skill.
               </p>
             </div>
           </div>
@@ -781,7 +801,15 @@
                 <h2 class="font-heading font-bold text-forest text-lg" data-i18n="obs.recentFeedTitle">Catatan Observasi
                   Terkini</h2>
               </div>
-              <span class="observation-source-badge" data-i18n="obs.liveSynced">Tersinkron dengan database</span>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btn-obs-photo-toggle" onclick="toggleDocumentationPhotos()"
+                  title="Klik untuk mengaktifkan/menonaktifkan tampilan foto observasi"
+                  class="cursor-pointer px-3 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shadow-2xs bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 border-amber-300 select-none">
+                  <span id="obs-photo-toggle-icon">📸</span>
+                  <span id="obs-photo-toggle-text">Foto: OFF</span>
+                </button>
+                <span class="observation-source-badge" data-i18n="obs.liveSynced">Tersinkron dengan database</span>
+              </div>
             </div>
             <div class="observation-feed-list" id="observation-feed"></div>
           </div>
@@ -798,7 +826,7 @@
           <div class="parent-report-identity">
             <div id="parent-student-avatar" class="parent-student-avatar">—</div>
             <div class="parent-report-copy">
-              <span class="parent-report-eyebrow" data-i18n="parent.reportEyebrow">Jurnal tumbuh kembang</span>
+              <span class="parent-report-eyebrow" data-i18n="parent.reportEyebrow">Jurnal Perjalanan Eksplorasi Belajar</span>
               <div class="parent-report-name-row">
                 <h1 id="parent-student-name">Memuat profil...</h1>
                 <span id="parent-student-badge" class="parent-student-age">—</span>
@@ -898,15 +926,15 @@
               <p data-i18n="parent.plantDesc">Setiap pencapaian baru menumbuhkan daun pemahaman</p>
               <div class="parent-garden-illustration" aria-hidden="true">
                 <svg viewBox="0 0 150 150" fill="none">
-                  <circle cx="75" cy="73" r="61" fill="rgba(255,255,255,.32)" />
+                  <circle cx="75" cy="73" r="61" fill="rgba(255,255,255,.45)" />
                   <path d="M46 118h58l-7 18H53l-7-18Z" fill="#D9825B" />
                   <path d="M44 114c0-3 2-5 5-5h52c3 0 5 2 5 5v8H44v-8Z" fill="#B8653F" />
                   <path d="M75 111V49" stroke="#4C9A6A" stroke-width="5" stroke-linecap="round" />
-                  <path d="M73 87C52 84 39 70 39 52c19 0 34 10 36 31" fill="#6B8F71" />
-                  <path d="M77 72c2-20 16-33 35-33 0 18-12 33-35 37" fill="#83A77C" />
-                  <path d="M74 57c-13-8-17-21-12-35 14 6 21 18 16 34" fill="#9AB889" />
-                  <circle cx="76" cy="28" r="6" fill="#F2C14E" />
-                  <path d="M35 115c-5-7-5-15 0-22m80 18c5-7 5-15 0-22" stroke="#F2C14E" stroke-width="3"
+                  <path d="M73 87C52 84 39 70 39 52c19 0 34 10 36 31" fill="#5A9E6F" />
+                  <path d="M77 72c2-20 16-33 35-33 0 18-12 33-35 37" fill="#72A87A" />
+                  <path d="M74 57c-13-8-17-21-12-35 14 6 21 18 16 34" fill="#8DB87E" />
+                  <circle cx="76" cy="28" r="6" fill="#F59E0B" />
+                  <path d="M35 115c-5-7-5-15 0-22m80 18c5-7 5-15 0-22" stroke="#F59E0B" stroke-width="3"
                     stroke-linecap="round" />
                 </svg>
               </div>
@@ -1340,7 +1368,7 @@
         </div>
 
         <div>
-          <label class="block font-bold mb-1">Pilih Aktivitas Montessori STEM:</label>
+          <label class="block font-bold mb-1">Pilih Aktivitas Future Skill STEM:</label>
           <select id="modal-schedule-act" required
             class="w-full bg-sand-50 border border-sand-200 rounded-xl p-2.5 font-semibold">
             <!-- Populated dynamically -->
@@ -1431,76 +1459,160 @@
           class="w-8 h-8 rounded-full bg-sand-200 hover:bg-sand-300 flex items-center justify-center text-forest transition">✕</button>
       </div>
 
+      <!-- Mode Switcher: Single Mission vs Bulk All Missions -->
+      <div class="px-6 pt-4 pb-2 bg-sand-50/70 border-b border-sand-200">
+        <div class="flex p-1 rounded-2xl bg-sand-200/90 text-xs font-bold" role="tablist">
+          <button type="button" id="tab-obs-mode-single" onclick="switchObsInputMode('single')"
+            class="flex-1 py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 bg-white text-forest shadow-2xs">
+            <span>🎯</span> <span>Input Satu Misi</span>
+          </button>
+          <button type="button" id="tab-obs-mode-bulk" onclick="switchObsInputMode('bulk')"
+            class="flex-1 py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 text-forest-light hover:text-forest">
+            <span>📋</span> <span>Pilih Semua Misi Sekaligus (Massal)</span>
+          </button>
+        </div>
+        <p id="obs-mode-subtitle" class="text-[11px] text-forest-light mt-2 flex items-center justify-between flex-wrap gap-1">
+          <span id="obs-school-badge" class="font-semibold text-forest">Memuat daftar misi sekolah...</span>
+          <span class="inline-flex items-center gap-1.5">
+            <span id="obs-count-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-sand-200 text-forest font-bold">0 Misi</span>
+            <button type="button" id="btn-toggle-obs-all-missions" onclick="toggleShowAllObsMissions()" class="text-[10px] font-bold text-forest hover:underline cursor-pointer hidden"></button>
+          </span>
+        </p>
+      </div>
+
       <div class="p-6 overflow-y-auto space-y-5 text-xs text-forest">
-        <div>
-          <label class="block font-bold text-forest mb-1.5" data-i18n="obsModal.indicator">Indikator yang
-            Diamati:</label>
-          <select id="obs-milestone-select" required
-            class="w-full p-3 rounded-2xl bg-sand-50 border border-sand-200 mb-2 font-semibold text-sm text-forest">
-          </select>
+        <!-- MODE 1: SINGLE MISSION INPUT -->
+        <div id="obs-single-container" class="space-y-5">
+          <div>
+            <label class="block font-bold text-forest mb-1.5" data-i18n="obsModal.indicator">Indikator / Misi yang Diamati:</label>
+            <select id="obs-milestone-select" required
+              class="w-full p-3 rounded-2xl bg-sand-50 border border-sand-200 mb-2 font-semibold text-sm text-forest">
+            </select>
+            <p id="obs-single-milestone-hint" class="text-[10px] text-forest-light mt-0.5"></p>
 
-          <label class="block font-bold text-forest mb-1" data-i18n="obsModal.levelLabel">Tingkat Capaian (Montessori
-            Mastery Scale):</label>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="obs-level-selector">
-            <button type="button" onclick="selectObsLevel('not_observed')" data-level="not_observed"
-              class="obs-level-btn p-2 rounded-xl border border-sand-300 bg-sand-100 text-forest font-semibold text-center hover:border-forest transition">
-              <span class="block text-xs" data-i18n="level.none">Belum Muncul</span>
-              <span class="text-[10px] text-forest-light">Not observed</span>
-            </button>
-            <button type="button" onclick="selectObsLevel('emerging')" data-level="emerging"
-              class="obs-level-btn p-2 rounded-xl border border-sunshine/40 bg-sunshine-light text-sunshine-dark font-semibold text-center hover:border-sunshine transition">
-              <span class="block text-xs" data-i18n="level.emerging">Mulai Muncul</span>
-              <span class="text-[10px] opacity-75">Emerging</span>
-            </button>
-            <button type="button" onclick="selectObsLevel('developing')" data-level="developing"
-              class="obs-level-btn p-2 rounded-xl border-2 border-sky bg-sky-light text-sky font-bold text-center transition">
-              <span class="block text-xs" data-i18n="level.developing">Berkembang</span>
-              <span class="text-[10px] opacity-75">Developing</span>
-            </button>
-            <button type="button" onclick="selectObsLevel('mastered')" data-level="mastered"
-              class="obs-level-btn p-2 rounded-xl border border-leaf/40 bg-leaf/10 text-leaf font-semibold text-center hover:border-leaf transition">
-              <span class="block text-xs" data-i18n="level.mastered">Menguasai</span>
-              <span class="text-[10px] opacity-75">Mastered</span>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-bold text-forest mb-1" data-i18n="obsModal.anecdoteLabel">Catatan Anekdot & Kutipan
-            Anak:</label>
-          <textarea id="obs-anecdote-input" rows="3"
-            placeholder="Contoh: 'Bu Rina, lampu menyala saat kututup sensor cahayanya!' Kenzo mencoba mencelupkan dan menguji 3 kali dengan tenang."
-            class="w-full text-xs p-3 rounded-2xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-forest"></textarea>
-        </div>
-
-        <div id="obs-photo-dropzone"
-          class="relative p-4 rounded-2xl bg-sand-100/70 border-2 border-dashed border-sand-300 hover:border-sage transition cursor-pointer text-center group">
-          <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            aria-describedby="obs-photo-help">
-          
-          <div id="obs-photo-empty-state" class="flex flex-col items-center justify-center py-2 pointer-events-none">
-            <span class="w-10 h-10 rounded-2xl bg-cream border border-sand-300 flex items-center justify-center text-lg mb-2 shadow-2xs group-hover:scale-110 transition">📷</span>
-            <span class="font-bold text-forest text-xs block" data-i18n="obsModal.attachPhoto">Pilih Foto atau Tarik &amp; Lepas (Drag &amp; Drop) di Sini</span>
-            <span id="obs-photo-help" class="mt-1 block text-[10px] text-forest-light"
-              data-i18n="obsModal.photoHelp">JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.</span>
-          </div>
-
-          <div id="obs-photo-preview-state" class="hidden flex items-center justify-between gap-3 p-2 bg-cream rounded-xl border border-sand-200">
-            <div class="flex items-center gap-2.5 overflow-hidden">
-              <div class="w-12 h-12 rounded-lg bg-sand-200 border border-sand-300 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                <img id="obs-photo-preview-img" src="" alt="Preview" class="w-full h-full object-cover hidden">
-                <span id="obs-photo-preview-icon" class="text-xl">📸</span>
+            <!-- Status Kehadiran Siswa Saat Misi -->
+            <div class="mt-3.5 mb-3 p-3 bg-sand-100/70 rounded-2xl border border-sand-200">
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block font-bold text-forest text-xs">
+                  Status Kehadiran Siswa Saat Misi:
+                </label>
+                <span id="obs-att-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">👤 Hadir (Normal)</span>
               </div>
-              <div class="text-left overflow-hidden">
-                <p id="obs-photo-file-name" class="font-bold text-forest text-xs truncate max-w-[220px] sm:max-w-xs">file.heic</p>
-                <p id="obs-photo-file-size" class="text-[10px] text-forest-light">1.2 MB</p>
+              <div class="grid grid-cols-4 gap-1.5" id="obs-attendance-selector">
+                <button type="button" onclick="setObsAttendanceStatus('present')" id="obs-att-btn-present"
+                  class="obs-att-btn p-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-bold text-center transition shadow-2xs">
+                  <span class="block text-xs">👤 Hadir</span>
+                </button>
+                <button type="button" onclick="setObsAttendanceStatus('sick')" id="obs-att-btn-sick"
+                  class="obs-att-btn p-2 rounded-xl border border-sand-300 bg-white hover:border-amber-400 text-forest font-semibold text-center transition shadow-2xs">
+                  <span class="block text-xs">🏥 Sakit</span>
+                </button>
+                <button type="button" onclick="setObsAttendanceStatus('excused')" id="obs-att-btn-excused"
+                  class="obs-att-btn p-2 rounded-xl border border-sand-300 bg-white hover:border-sky-400 text-forest font-semibold text-center transition shadow-2xs">
+                  <span class="block text-xs">✉️ Izin</span>
+                </button>
+                <button type="button" onclick="setObsAttendanceStatus('absent')" id="obs-att-btn-absent"
+                  class="obs-att-btn p-2 rounded-xl border border-sand-300 bg-white hover:border-rose-400 text-forest font-semibold text-center transition shadow-2xs">
+                  <span class="block text-xs">⚠️ Alpa</span>
+                </button>
               </div>
             </div>
-            <button type="button" id="btn-remove-obs-photo" onclick="removeObsPhoto(event)"
-              class="relative z-20 px-2.5 py-1 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
-              Hapus
-            </button>
+
+            <label class="block font-bold text-forest mb-1 mt-3" data-i18n="obsModal.levelLabel">Tingkat Capaian (Future Skill Mastery Scale):</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="obs-level-selector">
+              <button type="button" onclick="selectObsLevel('not_observed')" data-level="not_observed"
+                class="obs-level-btn p-2 rounded-xl border border-sand-300 bg-sand-100 text-forest font-semibold text-center hover:border-forest transition">
+                <span class="block text-xs" data-i18n="level.none">Belum Muncul</span>
+                <span class="text-[10px] text-forest-light">Not observed</span>
+              </button>
+              <button type="button" onclick="selectObsLevel('emerging')" data-level="emerging"
+                class="obs-level-btn p-2 rounded-xl border border-sunshine/40 bg-sunshine-light text-sunshine-dark font-semibold text-center hover:border-sunshine transition">
+                <span class="block text-xs" data-i18n="level.emerging">Mulai Muncul</span>
+                <span class="text-[10px] opacity-75">Emerging</span>
+              </button>
+              <button type="button" onclick="selectObsLevel('developing')" data-level="developing"
+                class="obs-level-btn p-2 rounded-xl border-2 border-sky bg-sky-light text-sky font-bold text-center transition">
+                <span class="block text-xs" data-i18n="level.developing">Berkembang</span>
+                <span class="text-[10px] opacity-75">Developing</span>
+              </button>
+              <button type="button" onclick="selectObsLevel('mastered')" data-level="mastered"
+                class="obs-level-btn p-2 rounded-xl border border-leaf/40 bg-leaf/10 text-leaf font-semibold text-center hover:border-leaf transition">
+                <span class="block text-xs" data-i18n="level.mastered">Menguasai</span>
+                <span class="text-[10px] opacity-75">Mastered</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-forest mb-1" data-i18n="obsModal.anecdoteLabel">Catatan Anekdot & Kutipan Anak:</label>
+            <textarea id="obs-anecdote-input" rows="3"
+              placeholder="Contoh: 'Bu Rina, lampu menyala saat kututup sensor cahayanya!' Kenzo mencoba mencelupkan dan menguji 3 kali dengan tenang."
+              class="w-full text-xs p-3 rounded-2xl bg-sand-50 border border-sand-200 focus:outline-none focus:ring-2 focus:ring-sage text-forest"></textarea>
+          </div>
+
+          <div id="obs-photo-dropzone"
+            class="relative p-4 rounded-2xl bg-sand-100/70 border-2 border-dashed border-sand-300 hover:border-sage transition cursor-pointer text-center group">
+            <input type="file" id="obs-photo-file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              aria-describedby="obs-photo-help">
+            
+            <div id="obs-photo-empty-state" class="flex flex-col items-center justify-center py-2 pointer-events-none">
+              <span class="w-10 h-10 rounded-2xl bg-cream border border-sand-300 flex items-center justify-center text-lg mb-2 shadow-2xs group-hover:scale-110 transition">📷</span>
+              <span class="font-bold text-forest text-xs block" data-i18n="obsModal.attachPhoto">Pilih Foto atau Tarik &amp; Lepas (Drag &amp; Drop) di Sini</span>
+              <span id="obs-photo-help" class="mt-1 block text-[10px] text-forest-light"
+                data-i18n="obsModal.photoHelp">JPG, PNG, WebP, atau HEIC, maksimal 8 MB. Foto disimpan privat.</span>
+            </div>
+
+            <div id="obs-photo-preview-state" class="hidden flex items-center justify-between gap-3 p-2 bg-cream rounded-xl border border-sand-200">
+              <div class="flex items-center gap-2.5 overflow-hidden">
+                <div class="w-12 h-12 rounded-lg bg-sand-200 border border-sand-300 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <img id="obs-photo-preview-img" src="" alt="Preview" class="w-full h-full object-cover hidden">
+                  <span id="obs-photo-preview-icon" class="text-xl">📸</span>
+                </div>
+                <div class="text-left overflow-hidden">
+                  <p id="obs-photo-file-name" class="font-bold text-forest text-xs truncate max-w-[220px] sm:max-w-xs">file.heic</p>
+                  <p id="obs-photo-file-size" class="text-[10px] text-forest-light">1.2 MB</p>
+                </div>
+              </div>
+              <button type="button" id="btn-remove-obs-photo" onclick="removeObsPhoto(event)"
+                class="relative z-20 px-2.5 py-1 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODE 2: BULK ALL MISSIONS INPUT (Foto & Capaian Berpasangan per Misi) -->
+        <div id="obs-bulk-container" class="hidden space-y-4">
+          <!-- Batch Quick Actions -->
+          <div id="obs-bulk-batch-actions" class="p-3 bg-amber-50/90 border border-amber-200 rounded-2xl space-y-2 text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="font-bold text-amber-950 flex items-center gap-1.5">
+                <span>⚡</span> <span>Atur Serentak Tingkat Capaian Seluruh Misi:</span>
+              </span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="setAllBulkLevels('not_observed')" class="px-2.5 py-1 rounded-lg bg-white border border-sand-300 hover:border-forest text-[11px] font-bold text-forest transition shadow-2xs">Belum Muncul</button>
+                <button type="button" onclick="setAllBulkLevels('emerging')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-[11px] font-bold text-amber-900 border border-amber-300 transition shadow-2xs">Mulai Muncul</button>
+                <button type="button" onclick="setAllBulkLevels('developing')" class="px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-[11px] font-bold text-sky-900 border border-sky-300 transition shadow-2xs">Berkembang</button>
+                <button type="button" onclick="setAllBulkLevels('mastered')" class="px-2.5 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-[11px] font-bold text-blue-900 border border-blue-300 transition shadow-2xs">Menguasai</button>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-200/60">
+              <span class="font-bold text-amber-950 flex items-center gap-1.5 text-[11px]">
+                <span>📋</span> <span>Atur Serentak Status Kehadiran Siswa:</span>
+              </span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="setAllBulkAttendance('present')" class="px-2 py-0.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-[10px] font-bold text-emerald-900 border border-emerald-300 transition shadow-2xs">👤 Semua Hadir</button>
+                <button type="button" onclick="setAllBulkAttendance('sick')" class="px-2 py-0.5 rounded-lg bg-amber-200 hover:bg-amber-300 text-[10px] font-bold text-amber-950 border border-amber-400 transition shadow-2xs">🏥 Semua Sakit</button>
+                <button type="button" onclick="setAllBulkAttendance('excused')" class="px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-[10px] font-bold text-sky-900 border border-sky-300 transition shadow-2xs">✉️ Semua Izin</button>
+                <button type="button" onclick="setAllBulkAttendance('absent')" class="px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-[10px] font-bold text-rose-900 border border-rose-300 transition shadow-2xs">⚠️ Semua Tidak Hadir</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Cards for Each Mission & Dedicated Photo Upload -->
+          <div id="obs-bulk-list" class="space-y-4">
+            <!-- Rendered dynamically by renderBulkObservationList() -->
           </div>
         </div>
       </div>
@@ -1508,11 +1620,38 @@
       <div class="p-4 px-6 border-t border-sand-200 bg-sand-50 flex items-center justify-between">
         <button onclick="closeModal('modal-observation')" class="text-xs font-bold text-forest-light hover:text-forest"
           data-i18n="modal.cancel">Batal</button>
-        <button id="btn-save-obs" onclick="saveObservation()"
-          class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-sm garden-interactive-btn flex items-center gap-2"
-          data-i18n="modal.saveObs">
+        <button id="btn-save-obs" onclick="handleObsSubmit()"
+          class="px-5 py-2.5 rounded-full bg-sage hover:bg-sage-600 text-white font-semibold text-xs transition shadow-sm garden-interactive-btn flex items-center gap-2">
           <span id="save-obs-spinner" class="hidden animate-spin">🌀</span>
           <span id="save-obs-btn-text">Simpan Observasi (Catat)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KONFIRMASI HAPUS OBSERVASI (ADMIN / TUTOR) -->
+  <div id="modal-delete-observation"
+    class="fixed inset-0 z-50 bg-forest/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div
+      class="bg-cream w-full max-w-md rounded-3xl border border-sand-200 shadow-float overflow-hidden fade-enter p-6 text-center">
+      <div
+        class="w-14 h-14 rounded-2xl bg-red-50 text-red-600 mx-auto flex items-center justify-center text-2xl mb-4 border border-red-200 shadow-2xs">
+        🗑️
+      </div>
+      <h3 class="text-base font-extrabold text-forest mb-2">Hapus Catatan Observasi?</h3>
+      <p class="text-xs text-forest-light leading-relaxed mb-5">
+        Catatan observasi untuk <strong id="delete-obs-student" class="text-forest">...</strong> pada materi <strong
+          id="delete-obs-milestone" class="text-forest">...</strong> akan dihapus permanen dari database Supabase beserta file lampiran fotonya.
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <button type="button" onclick="closeModal('modal-delete-observation')"
+          class="px-5 py-2.5 rounded-full border border-sand-300 text-forest hover:bg-sand-100 font-bold text-xs transition">
+          Batal
+        </button>
+        <button type="button" id="btn-confirm-delete-obs" onclick="executeDeleteObservation()"
+          class="px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-sm flex items-center gap-2">
+          <span id="delete-obs-spinner" class="hidden animate-spin">🌀</span>
+          <span id="delete-obs-btn-text">Ya, Hapus Observasi</span>
         </button>
       </div>
     </div>
@@ -2139,7 +2278,7 @@
     </div>
 
     <!-- ================= JAVASCRIPT LOGIC & STATE ================= -->
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=20261119_6"></script>
 </body>
 
 </html>
