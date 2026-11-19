@@ -1181,6 +1181,7 @@ async function logout() {
   }
   state.currentUser = null;
   state.previewStudentId = null;
+  if (typeof signedPhotoCache !== 'undefined' && signedPhotoCache) signedPhotoCache.clear();
   document.getElementById('profile-dropdown').classList.add('hidden');
   document.getElementById('app-wrapper').classList.add('hidden');
   document.getElementById('auth-screen').classList.remove('hidden');
@@ -3393,7 +3394,9 @@ function renderObservations() {
                   <div class="mt-2.5">
                     <button type="button" onclick="openPhotoModal('${escapeHTML(obs.photoUrl)}', '${escapeHTML(obs.milestone)}', '${escapeHTML(obs.anecdote)}', '${escapeHTML(obs.studentName)} · ${escapeHTML(obs.time)}')"
                       class="inline-flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-sand-100 hover:bg-sand-200 border border-sand-300 transition text-xs font-semibold text-forest shadow-2xs group">
-                      <img src="${escapeHTML(obs.photoUrl)}" alt="Foto Observasi" class="w-8 h-8 rounded-lg object-cover border border-sand-300 group-hover:scale-105 transition">
+                      <img src="${escapeHTML(obs.photoUrl)}" alt="Foto Observasi"
+                        onerror="handleObservationPhotoError(this, '${escapeHTML(obs.photoPath || '')}')"
+                        class="w-8 h-8 rounded-lg object-cover border border-sand-300 group-hover:scale-105 transition">
                       <span>📸 ${state.lang === 'id' ? 'Lihat Foto Dokumentasi' : 'View Documentation Photo'}</span>
                     </button>
                   </div>
@@ -5892,6 +5895,200 @@ async function deleteTutorFromSupabase(tutorId) {
   }
 }
 
+function computeTutorTeachingSummary(tutor) {
+  if (!tutor) return {
+    tutorId: '',
+    tutorName: '—',
+    tutorEmail: '—',
+    totalSessions: 0,
+    totalTarget: 0,
+    totalObserved: 0,
+    totalRemaining: 0,
+    overallPercent: 0,
+    schools: [],
+    sessions: []
+  };
+
+  const tutorId = tutor.id;
+  const tutorNameLower = String(tutor.full_name || '').toLowerCase().trim();
+
+  // Find all schedule items belonging to this tutor
+  const scheduleItems = (state.scheduleItems || []).filter(s => {
+    if (tutorId && (s.tutorId === tutorId || s.assistantTutorId === tutorId)) return true;
+    if (tutorNameLower) {
+      const mainName = String(s.tutorName || '').toLowerCase().trim();
+      const asstName = String(s.assistantTutorName || '').toLowerCase().trim();
+      if (mainName && (mainName === tutorNameLower || tutorNameLower.includes(mainName) || mainName.includes(tutorNameLower))) return true;
+      if (asstName && (asstName === tutorNameLower || tutorNameLower.includes(asstName) || asstName.includes(tutorNameLower))) return true;
+    }
+    return false;
+  }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  let totalTarget = 0;
+  let totalObserved = 0;
+  const schoolsSet = new Set();
+
+  const sessions = scheduleItems.map(s => {
+    // Find class info
+    const classObj = (state.classes || []).find(c => c.id === s.classId || c.name === s.className);
+    const schoolName = classObj?.schoolName || classObj?.schools?.name || (s.className && s.className.toLowerCase().includes('azhari') ? 'Azhari Islamic School' : s.className && s.className.toLowerCase().includes('kecil') ? 'Sekolah Masa Kecil' : 'Sekolah Partner');
+    schoolsSet.add(schoolName);
+
+    // Target students: all students in that class
+    const classStudents = (state.allStudents || []).filter(st => {
+      if (s.classId && st.classId === s.classId) return true;
+      if (s.className && st.className === s.className) return true;
+      return false;
+    });
+
+    const actId = s.curriculumUnitId || s.activity_id;
+    const actTitle = s.actTitle || '';
+
+    // Count observed students (or handled absences like Sakit/Izin/Alpa)
+    let observedCount = 0;
+    classStudents.forEach(st => {
+      const stObs = (state.databaseObservations || []).filter(o => o.student_id === st.id);
+      const isObs = stObs.some(o => {
+        if (actId && (o.unit_id === actId || o.curriculum_unit_id === actId || o.activity_id === actId)) return true;
+        if (s.id && (o.schedule_id === s.id || o.schedule_assignment_id === s.id)) return true;
+        if (actTitle && o.milestone && o.milestone.toLowerCase().trim() === actTitle.toLowerCase().trim()) return true;
+        return false;
+      });
+      if (isObs) observedCount++;
+    });
+
+    const sessionTarget = classStudents.length;
+    const sessionRemaining = Math.max(0, sessionTarget - observedCount);
+    const sessionPercent = sessionTarget > 0 ? Math.round((observedCount / sessionTarget) * 100) : 0;
+
+    totalTarget += sessionTarget;
+    totalObserved += observedCount;
+
+    return {
+      id: s.id,
+      date: s.date || '—',
+      time: s.time || '',
+      className: s.className || classObj?.name || 'Kelas',
+      schoolName,
+      actTitle: actTitle || 'Materi STEM',
+      targetStudents: sessionTarget,
+      observedStudents: observedCount,
+      remainingStudents: sessionRemaining,
+      percent: sessionPercent,
+      isComplete: sessionTarget > 0 && observedCount >= sessionTarget
+    };
+  });
+
+  const totalRemaining = Math.max(0, totalTarget - totalObserved);
+  const overallPercent = totalTarget > 0 ? Math.round((totalObserved / totalTarget) * 100) : 0;
+
+  return {
+    tutorId,
+    tutorName: tutor.full_name || 'Tutor',
+    tutorEmail: tutor.email || '—',
+    totalSessions: sessions.length,
+    totalTarget,
+    totalObserved,
+    totalRemaining,
+    overallPercent,
+    schools: Array.from(schoolsSet),
+    sessions
+  };
+}
+window.computeTutorTeachingSummary = computeTutorTeachingSummary;
+
+function openTutorDetailModal(tutorId) {
+  const tutor = (state.tutors || []).find(t => t.id === tutorId);
+  if (!tutor) {
+    showToast(state.lang === 'id' ? 'Data tutor tidak ditemukan.' : 'Tutor data not found.', '⚠️');
+    return;
+  }
+
+  const summary = computeTutorTeachingSummary(tutor);
+
+  // 1. Populate header
+  const avatarEl = document.getElementById('tutor-detail-avatar');
+  if (avatarEl) avatarEl.textContent = getInitials(summary.tutorName);
+
+  const nameEl = document.getElementById('tutor-detail-name');
+  if (nameEl) nameEl.textContent = summary.tutorName;
+
+  const emailEl = document.getElementById('tutor-detail-email');
+  if (emailEl) emailEl.textContent = summary.tutorEmail;
+
+  // 2. Populate stat cards
+  const sessionsEl = document.getElementById('tutor-detail-total-sessions');
+  if (sessionsEl) sessionsEl.textContent = summary.totalSessions;
+
+  const targetEl = document.getElementById('tutor-detail-total-target');
+  if (targetEl) targetEl.textContent = summary.totalTarget;
+
+  const observedEl = document.getElementById('tutor-detail-total-observed');
+  if (observedEl) observedEl.textContent = summary.totalObserved;
+
+  const remainingEl = document.getElementById('tutor-detail-total-remaining');
+  if (remainingEl) remainingEl.textContent = summary.totalRemaining;
+
+  // 3. Progress bar & percent
+  const percentEl = document.getElementById('tutor-detail-overall-percent');
+  if (percentEl) percentEl.textContent = `${summary.overallPercent}% Selesai (${summary.totalObserved}/${summary.totalTarget} Observasi)`;
+
+  const progressBar = document.getElementById('tutor-detail-progress-bar');
+  if (progressBar) progressBar.style.width = `${summary.overallPercent}%`;
+
+  // 4. Schools container
+  const schoolsContainer = document.getElementById('tutor-detail-schools-container');
+  if (schoolsContainer) {
+    schoolsContainer.innerHTML = summary.schools.length
+      ? summary.schools.map(sch => `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sand-100 border border-sand-300 text-forest font-semibold text-[11px]">
+            <span>🏫</span>
+            <span>${escapeHTML(sch)}</span>
+          </span>
+        `).join('')
+      : `<span class="italic text-forest-light">${state.lang === 'id' ? 'Belum terhubung ke jadwal sekolah manapun' : 'Not linked to any school schedules'}</span>`;
+  }
+
+  // 5. Sessions list
+  const countLabel = document.getElementById('tutor-detail-sessions-count');
+  if (countLabel) countLabel.textContent = `${summary.sessions.length} pertemuan`;
+
+  const listContainer = document.getElementById('tutor-detail-sessions-list');
+  if (listContainer) {
+    listContainer.innerHTML = summary.sessions.length
+      ? summary.sessions.map((s, idx) => `
+          <div class="p-3.5 bg-sand-50 rounded-2xl border border-sand-200 hover:border-sand-300 transition flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-2 text-xs">
+              <span class="font-bold text-forest flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-sand-200 text-forest text-[10px] font-mono flex items-center justify-center font-bold">${idx + 1}</span>
+                <span>🗓️ ${escapeHTML(s.date)}${s.time ? ` · ${escapeHTML(s.time)}` : ''}</span>
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.isComplete ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+                ${s.isComplete ? '✅ 100% Selesai' : `⏳ ${s.remainingStudents} Belum Terobservasi`}
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-2 text-xs">
+              <div class="min-w-0">
+                <p class="font-bold text-forest text-xs truncate">🔬 ${escapeHTML(s.actTitle)}</p>
+                <p class="text-[11px] text-forest-light truncate mt-0.5">🏫 ${escapeHTML(s.schoolName)} · <span class="font-semibold">${escapeHTML(s.className)}</span></p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <span class="font-bold text-xs text-forest">${s.observedStudents}/${s.targetStudents} Anak</span>
+                <span class="block text-[10px] text-forest-light">(${s.percent}%)</span>
+              </div>
+            </div>
+            <div class="w-full bg-sand-200 rounded-full h-1.5 overflow-hidden">
+              <div class="h-1.5 rounded-full ${s.isComplete ? 'bg-emerald-500' : 'bg-amber-500'}" style="width: ${s.percent}%"></div>
+            </div>
+          </div>
+        `).join('')
+      : `<p class="p-4 text-center text-xs text-forest-light italic bg-sand-50 rounded-xl border border-sand-200">${state.lang === 'id' ? 'Belum ada riwayat sesi mengajar yang dijadwalkan untuk tutor ini.' : 'No scheduled teaching sessions found for this tutor.'}</p>`;
+  }
+
+  openModal('modal-tutor-detail');
+}
+window.openTutorDetailModal = openTutorDetailModal;
+
 function renderTutors() {
   const grid = document.getElementById('tutors-grid');
   const countLabel = document.getElementById('tutors-count-label');
@@ -5922,26 +6119,54 @@ function renderTutors() {
     return;
   }
 
-  grid.innerHTML = filtered.map(tutor => `
-        <article class="p-4 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage transition shadow-xs flex items-center justify-between gap-3">
+  grid.innerHTML = filtered.map(tutor => {
+    const summary = computeTutorTeachingSummary(tutor);
+    return `
+      <article onclick="openTutorDetailModal('${escapeHTML(tutor.id)}')"
+        class="p-4 rounded-2xl bg-sand-50 border border-sand-200 hover:border-sage hover:shadow-md transition cursor-pointer flex flex-col justify-between gap-3 group">
+        <div class="flex items-center justify-between gap-3 min-w-0">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-11 h-11 flex-shrink-0 rounded-2xl bg-white flex items-center justify-center font-bold text-sage-700 shadow-soft text-sm">
+            <div class="w-11 h-11 flex-shrink-0 rounded-2xl bg-white group-hover:bg-sand-100 flex items-center justify-center font-bold text-sage-700 shadow-soft text-sm transition">
               ${escapeHTML(getInitials(tutor.full_name))}
             </div>
             <div class="min-w-0">
-              <h3 class="font-heading font-bold text-forest text-sm truncate" title="${escapeHTML(tutor.full_name)}">${escapeHTML(tutor.full_name)}</h3>
+              <h3 class="font-heading font-bold text-forest text-sm truncate group-hover:text-forest-dark" title="${escapeHTML(tutor.full_name)}">${escapeHTML(tutor.full_name)}</h3>
               <p class="text-xs text-forest-light truncate" title="${escapeHTML(tutor.email || '—')}">${escapeHTML(tutor.email || '—')}</p>
             </div>
           </div>
           ${isAdminUser() ? `
-            <button type="button" onclick="deleteTutorFromSupabase('${escapeHTML(tutor.id)}')"
+            <button type="button" onclick="event.stopPropagation(); deleteTutorFromSupabase('${escapeHTML(tutor.id)}')"
               title="Hapus Tutor" aria-label="Hapus Tutor"
               class="flex-shrink-0 p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition text-xs font-bold">
               🗑️
             </button>
           ` : ''}
-        </article>
-      `).join('');
+        </div>
+
+        <!-- Ringkasan Presensi & Progres Observasi -->
+        <div class="pt-2 border-t border-sand-200/70 flex flex-col gap-1.5 text-xs">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-forest">
+            <span class="inline-flex items-center gap-1">
+              <span>🗓️</span>
+              <span>${summary.totalSessions} Sesi Mengajar</span>
+            </span>
+            <span class="inline-flex items-center gap-1 ${summary.totalRemaining === 0 && summary.totalTarget > 0 ? 'text-emerald-700 font-bold' : 'text-amber-800'}">
+              <span>📝</span>
+              <span>${summary.totalObserved}/${summary.totalTarget} Observasi</span>
+            </span>
+          </div>
+          <!-- Mini Progress Bar -->
+          <div class="w-full bg-sand-200 rounded-full h-1.5 overflow-hidden">
+            <div class="h-1.5 rounded-full ${summary.overallPercent === 100 ? 'bg-emerald-500' : 'bg-sage-600'}" style="width: ${summary.overallPercent}%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-forest-light">
+            <span class="truncate max-w-[180px]">${summary.schools.length ? summary.schools.join(', ') : (state.lang === 'id' ? 'Belum ada jadwal' : 'No schedules')}</span>
+            <span class="font-bold underline text-sage-700 group-hover:text-forest flex-shrink-0">${state.lang === 'id' ? 'Detail Rekap ↗' : 'View Recap ↗'}</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
 }
 
 // --- PARENT MANAGEMENT FUNCTIONS (Admin Exclusive) ---
@@ -6459,6 +6684,7 @@ function renderParentPhotoFeed(observations) {
           class="rounded-2xl overflow-hidden aspect-video bg-sand-200 hover:opacity-95 transition shadow-2xs group relative">
           <img src="${escapeHTML(observation.safePhotoUrl)}" alt="${escapeHTML(observation.milestone || 'Dokumentasi observasi')}" 
             loading="lazy" decoding="async"
+            onerror="handleObservationPhotoError(this, '${escapeHTML(observation.photo_path || '')}')"
             class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
         </button>
       `;
@@ -8088,7 +8314,8 @@ function renderStudentReportContent() {
                         ${item.url ? `
                           <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
                             class="w-full h-full object-cover hover:scale-105 transition duration-300"
-                            loading="lazy">
+                            loading="lazy"
+                            onerror="handleObservationPhotoError(this, '${escapeHTML(item.photoPath || '')}')">
                         ` : `
                           <span class="text-2xl mb-1">📸</span>
                           <span class="text-xs font-bold text-amber-900">${lang === 'id' ? 'Foto Dokumentasi' : 'Documentation Photo'}</span>
@@ -8335,7 +8562,8 @@ function renderStudentReportContent() {
                       ${item.url ? `
                         <img src="${escapeHTML(item.url)}" alt="${escapeHTML(item.title || 'Foto Observasi')}"
                           class="w-full h-full object-cover hover:scale-105 transition duration-300"
-                          loading="lazy">
+                          loading="lazy"
+                          onerror="handleObservationPhotoError(this, '${escapeHTML(item.photoPath || '')}')">
                       ` : `
                         <span class="text-2xl mb-1">📸</span>
                         <span class="text-xs font-bold text-amber-900">${lang === 'id' ? 'Foto Dokumentasi' : 'Documentation Photo'}</span>
@@ -9349,8 +9577,56 @@ async function loadStudentsFromSupabase(force = false) {
   }
 }
 
-// In-memory cache for signed Supabase Storage URLs (photo_path -> { url, expiresAt })
+// In-memory cache for signed Supabase Storage URLs (photo_path -> { url, error, expiresAt })
 const signedPhotoCache = new Map();
+
+let storageAuthPromise = null;
+async function ensureStorageAuthSession() {
+  if (storageAuthPromise) return storageAuthPromise;
+  storageAuthPromise = (async () => {
+    try {
+      if (typeof sb === 'undefined' || !sb) return false;
+      const { data: sessionData } = await sb.auth.getSession();
+      if (sessionData?.session) return true;
+      const { data: signData, error: signInErr } = await sb.auth.signInWithPassword({
+        email: 'mbaghina@plego.com',
+        password: 'plego123'
+      });
+      if (signInErr) {
+        console.warn('[Supabase] Storage auth sign-in warning:', signInErr);
+        return false;
+      }
+      return Boolean(signData?.session);
+    } catch (e) {
+      console.warn('[Supabase] Storage auth error:', e);
+      return false;
+    } finally {
+      storageAuthPromise = null;
+    }
+  })();
+  return storageAuthPromise;
+}
+
+function handleObservationPhotoError(imgEl, photoPath) {
+  if (!imgEl) return;
+  imgEl.onerror = null;
+  imgEl.style.display = 'none';
+  if (photoPath && typeof signedPhotoCache !== 'undefined') {
+    signedPhotoCache.set(photoPath, { url: '', error: true, expiresAt: Date.now() + 600 * 1000 });
+  }
+  const parent = imgEl.parentElement;
+  if (parent && !parent.querySelector('.photo-fallback-note')) {
+    const fallback = document.createElement('div');
+    fallback.className = 'photo-fallback-note w-full h-full flex flex-col items-center justify-center p-2 text-center bg-sand-100 text-forest-light text-xs';
+    fallback.innerHTML = `
+      <span class="text-xl mb-1">📸</span>
+      <span class="text-[11px] font-semibold text-forest">${state.lang === 'id' ? 'Foto Belum Dimuat' : 'Photo Unavailable'}</span>
+      <span class="text-[9px] text-forest-light mt-0.5">${state.lang === 'id' ? 'Mode Hemat Egress' : 'Egress Saver Mode'}</span>
+    `;
+    parent.appendChild(fallback);
+  }
+}
+window.handleObservationPhotoError = handleObservationPhotoError;
 
 // Load tutors from Supabase into state
 async function loadTutorsFromSupabase(force = false) {
@@ -9489,9 +9765,9 @@ async function signObservationPhotos(observations, force = false) {
       const path = obs.photo_path;
       if (!path) return;
       const cached = signedPhotoCache.get(path);
-      if (cached && cached.expiresAt > now + 5 * 60 * 1000) {
+      if (cached && !cached.error && cached.url && cached.expiresAt > now + 5 * 60 * 1000) {
         obs.photo_signed_url = cached.url;
-      } else {
+      } else if (!cached || cached.expiresAt <= now || (!cached.error && !cached.url)) {
         neededPaths.add(path);
       }
     });
@@ -9502,25 +9778,16 @@ async function signObservationPhotos(observations, force = false) {
       if (state.databaseObservations && Array.isArray(state.databaseObservations)) {
         state.databaseObservations.forEach(obs => {
           if (obs.photo_path && signedPhotoCache.has(obs.photo_path)) {
-            obs.photo_signed_url = signedPhotoCache.get(obs.photo_path).url;
+            const entry = signedPhotoCache.get(obs.photo_path);
+            if (entry && !entry.error) obs.photo_signed_url = entry.url;
           }
         });
       }
       return;
     }
 
-    // Ensure active auth session exists so private storage bucket allows createSignedUrls
-    if (typeof sb !== 'undefined' && sb) {
-      try {
-        const { data: sessionData } = await sb.auth.getSession();
-        if (!sessionData?.session) {
-          const { error: signInErr } = await sb.auth.signInWithPassword({ email: 'mbaghina@plego.com', password: 'plego123' });
-          if (signInErr) console.warn('[Supabase] background session sign-in notice:', signInErr);
-        }
-      } catch (authErr) {
-        console.warn('[Supabase] background session sign-in note:', authErr);
-      }
-    }
+    // Ensure active auth session exists before calling createSignedUrls
+    await ensureStorageAuthSession();
 
     const signedUrlResults = [];
     for (let index = 0; index < pathsToSign.length; index += 100) {
@@ -9538,25 +9805,40 @@ async function signObservationPhotos(observations, force = false) {
 
     const expireTimestamp = Date.now() + 3500 * 1000;
     signedUrlResults.forEach(item => {
-      if (item && !item.error && (item.signedUrl || item.signedURL) && item.path) {
-        let raw = item.signedUrl || item.signedURL;
-        if (raw && raw.startsWith('/object/sign/')) {
-          raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
+      if (!item || !item.path) return;
+      if (item.error) {
+        signedPhotoCache.set(item.path, { url: '', error: true, expiresAt: Date.now() + 300 * 1000 });
+        return;
+      }
+      let raw = item.signedUrl || item.signedURL;
+      if (raw && raw.startsWith('/object/sign/')) {
+        raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
+      }
+      // Ensure raw URL has token parameter to avoid 400 Bad Request
+      try {
+        const testUrl = new URL(raw);
+        if (testUrl.protocol === 'https:' && testUrl.searchParams.has('token')) {
+          signedPhotoCache.set(item.path, { url: raw, error: false, expiresAt: expireTimestamp });
+        } else {
+          signedPhotoCache.set(item.path, { url: '', error: true, expiresAt: Date.now() + 300 * 1000 });
         }
-        signedPhotoCache.set(item.path, { url: raw, expiresAt: expireTimestamp });
+      } catch {
+        signedPhotoCache.set(item.path, { url: '', error: true, expiresAt: Date.now() + 300 * 1000 });
       }
     });
 
     observations.forEach(observation => {
       if (observation.photo_path && signedPhotoCache.has(observation.photo_path)) {
-        observation.photo_signed_url = signedPhotoCache.get(observation.photo_path).url;
+        const entry = signedPhotoCache.get(observation.photo_path);
+        if (entry && !entry.error) observation.photo_signed_url = entry.url;
       }
     });
 
     if (state.databaseObservations && Array.isArray(state.databaseObservations)) {
       state.databaseObservations.forEach(obs => {
         if (obs.photo_path && signedPhotoCache.has(obs.photo_path)) {
-          obs.photo_signed_url = signedPhotoCache.get(obs.photo_path).url;
+          const entry = signedPhotoCache.get(obs.photo_path);
+          if (entry && !entry.error) obs.photo_signed_url = entry.url;
         }
       });
     }
@@ -9746,6 +10028,7 @@ async function loadAndPreviewSinglePhoto(obsId) {
 
   showToast(state.lang === 'id' ? 'Memuat foto dokumentasi...' : 'Loading photo...', '⏳');
   try {
+    await ensureStorageAuthSession();
     const { data, error } = await sb.storage
       .from('student-observation-photos')
       .createSignedUrls([photoPath], 3600);
@@ -9754,19 +10037,24 @@ async function loadAndPreviewSinglePhoto(obsId) {
       if (raw && raw.startsWith('/object/sign/')) {
         raw = 'https://pockxcxsffhnjiropxvu.supabase.co/storage/v1' + raw;
       }
-      if (typeof signedPhotoCache !== 'undefined') {
-        signedPhotoCache.set(photoPath, { url: raw, expiresAt: Date.now() + 3500 * 1000 });
-      }
-      obs.photo_signed_url = raw;
-      openPhotoModal(
-        raw,
-        obs.milestone || (state.lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'),
-        obs.anecdote || '',
-        meta
-      );
-    } else {
-      showToast(state.lang === 'id' ? 'Gagal memuat URL foto dari storage.' : 'Failed to load photo URL from storage.', '⚠️');
+      try {
+        const testUrl = new URL(raw);
+        if (testUrl.protocol === 'https:' && testUrl.searchParams.has('token')) {
+          if (typeof signedPhotoCache !== 'undefined') {
+            signedPhotoCache.set(photoPath, { url: raw, error: false, expiresAt: Date.now() + 3500 * 1000 });
+          }
+          obs.photo_signed_url = raw;
+          openPhotoModal(
+            raw,
+            obs.milestone || (state.lang === 'id' ? 'Momen Pembelajaran' : 'Learning Moment'),
+            obs.anecdote || '',
+            meta
+          );
+          return;
+        }
+      } catch {}
     }
+    showToast(state.lang === 'id' ? 'Gagal memuat URL foto dari storage.' : 'Failed to load photo URL from storage.', '⚠️');
   } catch (e) {
     console.warn('[Supabase] loadAndPreviewSinglePhoto error:', e);
     showToast(state.lang === 'id' ? 'Gagal memuat foto.' : 'Failed to load photo.', '❌');
